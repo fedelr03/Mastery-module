@@ -260,7 +260,7 @@ function ProfileScreen({ session, profile, onSave }) {
         <div style={{ marginBottom: 28 }}>
           <label style={{ fontSize: 11, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>
             KNOWLEDGE LEVEL{' '}
-            <span style={{ color: TH.textFaint, fontWeight: 400 }}>— adjusts how Claude explains things to you</span>
+            <span style={{ color: TH.textFaint, fontWeight: 400 }}>— adjusts how the System explains things to you</span>
           </label>
           <div style={{ display: 'flex', gap: 0, borderRadius: 10, overflow: 'hidden', border: '1px solid ' + TH.border }}>
             {[
