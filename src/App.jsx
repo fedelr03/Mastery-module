@@ -584,7 +584,7 @@ function TopBar({ session, profile, isAdmin, view, setView, onLogout, dark, lang
   });
   return (
     <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, height: 48,
       background: dark ? '#111114' : '#f7f5f0',
       borderBottom: '1px solid ' + TH.border,
     }}>
