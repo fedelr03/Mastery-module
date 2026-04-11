@@ -1703,7 +1703,6 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
 
     const isFast=mode==="fast";
     const isLite=mode==="lite";
-    const isLite=mode==="lite";
     const prompt=fileContent?"Topic: "+(topic||"Analyze this math content")+"\n\nContent:\n"+fileContent.slice(0,5000):"Topic: "+topic;
     const modConf=MOD_CONF[detectedMod];
     const roleStr=lang==="es"?modConf.roleEs:modConf.roleEn;
