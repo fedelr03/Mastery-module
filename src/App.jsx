@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import LandingPage from './LandingPage';
 import { supabase } from './supabase';
 import MasteryModule from './MasteryModule';
 
@@ -920,7 +921,7 @@ export default function App() {
     }} />
   );
 
-  if (!session) return <AuthScreen confirmedEmail={confirmedEmail} />;
+  if (!session) return <LandingPage confirmedEmail={confirmedEmail} />;
 
   if (isBlocked) return (
     <div style={{ minHeight: '100vh', background: TH.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
