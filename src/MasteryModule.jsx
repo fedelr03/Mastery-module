@@ -512,8 +512,8 @@ function shuffleMC(data){
 
 /* ═══════════ i18n ═══════════ */
 const T={
-  en:{badge:"FOCUS: MATHEMATICS",title:"Mastery Module",subtitle:"Type a topic in math, statistics, economics, or finance. Get a first-principles breakdown, quiz, and study materials.",placeholder:"e.g. Derivatives, Normal Distribution, Supply & Demand\u2026",learn:"Learn",generating:"Generating\u2026",remove:"\u2715",understand:"Understand",quiz:"Quiz",tips:"Tips",exam:"Exam",deck:"Deck",feynman:"FEYNMAN EXPLANATION",keyConcepts:"Key Concepts",testYourself:"Quick Check",selectBest:"Pick the best answer.",score:"Score",submit:"Submit",retry:"Retry",why:"Why?",tips_title:"Mastery Tips",tips_sub:"How to actually learn this",examTitle:"Exam",examSub:"10 questions \u2014 solid foundation.",examSubFast:"5 questions \u2014 quick check.",examChallengeTitle:"\uD83D\uDD25 Want a Challenge?",examChallengeSub:"5 tricky multiple-choice + 3 open problems. Work them out, then reveal the solution.",summaryDeck:"Summary Deck",question:"Q",hint:"Hint",concept:"KEY CONCEPT",tipBadge:"TIP",slideTitle:"Mastery Module Summary",slideEnd:"Now Go Practice",slideEndSub:"Understanding = Explaining Simply",loadingSub:"~20 seconds",footer:"Learn by First Principles",invalidInput:"Please enter a math, statistics, economics, or finance topic.",goDeeper:"Watch on YouTube",ytLang:"in English",learnAgain:"\u2728 Explore a New Topic",pdfError:"Could not read this PDF.",fileReadError:"Could not read this file.",downloadSlides:"Download Slides",formatPDF:"PDF",formatHTML:"Web (HTML)",trueLabel:"True",falseLabel:"False",revealSolution:"Reveal Solution",hideSolution:"Hide Solution",yourTurn:"Your turn \u2014 solve it, then reveal.",tfInstruction:"True or False?",solveInstruction:"Work it out on paper, then check.",interestPlaceholder:"\uD83C\uDFAE What do you like? e.g. The Simpsons, Rugby, Minecraft\u2026",interestHint:"Optional \u2014 personalizes analogies & quiz with your interests",realWorld:"\uD83C\uDF0D Real-World Applications",realWorldSub:"Where this actually matters",thinking:"Thinking",almostThere:"Almost there!",modeFast:"Fast",modeThink:"Think",modeFastDesc:"Quick explanation + quiz",modeThinkDesc:"Full deep dive + exam + deck",didntUnderstand:"\uD83E\uDD14 I didn\u2019t understand",simplifying:"Simplifying\u2026",simplerExplain:"SIMPLER EXPLANATION"},
-  es:{badge:"ENFOQUE: MATEM\u00C1TICA",title:"M\u00F3dulo de Dominio",subtitle:"Escrib\u00ED un tema de mate, estad\u00EDstica, econom\u00EDa o finanzas. Te lo explico desde cero.",placeholder:"ej. Derivadas, Distribuci\u00F3n Normal, Oferta y Demanda\u2026",learn:"Dale",generating:"Armando todo\u2026",remove:"\u2715",understand:"Entender",quiz:"Quiz",tips:"Tips",exam:"Examen",deck:"Slides",feynman:"EXPLICACI\u00D3N FEYNMAN",keyConcepts:"Conceptos Clave",testYourself:"Chequeo R\u00E1pido",selectBest:"Eleg\u00ED la mejor respuesta.",score:"Puntaje",submit:"Enviar",retry:"De nuevo",why:"\u00BFPor?",tips_title:"Tips para Dominar",tips_sub:"C\u00F3mo aprender esto posta",examTitle:"Examen",examSub:"10 preguntas \u2014 base s\u00F3lida.",examSubFast:"5 preguntas \u2014 chequeo r\u00E1pido.",examChallengeTitle:"\uD83D\uDD25 \u00BFTe la banc\u00E1s?",examChallengeSub:"5 m\u00FAltiple choice dif\u00EDciles + 3 problemas abiertos. Resolv\u00E9 y despu\u00E9s revel\u00E1.",summaryDeck:"Slides de Resumen",question:"P",hint:"Pista",concept:"CONCEPTO CLAVE",tipBadge:"TIP",slideTitle:"Resumen del M\u00F3dulo",slideEnd:"Ahora a Practicar",slideEndSub:"Entender = Explicar Simple",loadingSub:"~20 segundos",footer:"Aprend\u00E9 desde los Principios Fundamentales",invalidInput:"Met\u00E9 un tema de mate, estad\u00EDstica, econom\u00EDa o finanzas, dale.",goDeeper:"Ver en YouTube",ytLang:"en espa\u00F1ol",learnAgain:"\u2728 Explorar Otro Tema",pdfError:"No se pudo leer el PDF.",fileReadError:"No se pudo leer el archivo.",downloadSlides:"Descargar Slides",formatPDF:"PDF",formatHTML:"Web (HTML)",trueLabel:"Verdadero",falseLabel:"Falso",revealSolution:"Revelar",hideSolution:"Ocultar",yourTurn:"Tu turno \u2014 resolv\u00E9lo y despu\u00E9s revel\u00E1.",tfInstruction:"\u00BFVerdadero o Falso?",solveInstruction:"Resolv\u00E9 en papel y despu\u00E9s cheque\u00E1.",interestPlaceholder:"\uD83C\uDFAE \u00BFQu\u00E9 te copa? ej. Los Simpsons, F\u00FAtbol, Minecraft\u2026",interestHint:"Opcional \u2014 personaliza las analog\u00EDas y el quiz con lo que te gusta",realWorld:"\uD83C\uDF0D Aplicaciones en la Vida Real",realWorldSub:"D\u00F3nde se usa esto posta",thinking:"Pensando",almostThere:"\u00A1Ya casi!",modeFast:"R\u00E1pido",modeThink:"Profundo",modeFastDesc:"Explicaci\u00F3n r\u00E1pida + quiz",modeThinkDesc:"An\u00E1lisis completo + examen + slides",didntUnderstand:"\uD83E\uDD14 No entend\u00ED",simplifying:"Simplificando\u2026",simplerExplain:"EXPLICACI\u00D3N M\u00C1S SIMPLE"},
+  en:{badge:"FOCUS: MATHEMATICS",title:"Mastery Module",subtitle:"Type a topic in math, statistics, economics, or finance. Get a first-principles breakdown, quiz, and study materials.",placeholder:"e.g. Derivatives, Normal Distribution, Supply & Demand\u2026",learn:"Learn",generating:"Generating\u2026",remove:"\u2715",understand:"Understand",quiz:"Quiz",tips:"Tips",exam:"Exam",deck:"Deck",feynman:"FEYNMAN EXPLANATION",keyConcepts:"Key Concepts",testYourself:"Quick Check",selectBest:"Pick the best answer.",score:"Score",submit:"Submit",retry:"Retry",why:"Why?",tips_title:"Mastery Tips",tips_sub:"How to actually learn this",examTitle:"Exam",examSub:"10 questions \u2014 solid foundation.",examSubFast:"5 questions \u2014 quick check.",examChallengeTitle:"\uD83D\uDD25 Want a Challenge?",examChallengeSub:"5 tricky multiple-choice + 3 open problems. Work them out, then reveal the solution.",summaryDeck:"Summary Deck",question:"Q",hint:"Hint",concept:"KEY CONCEPT",tipBadge:"TIP",slideTitle:"Mastery Module Summary",slideEnd:"Now Go Practice",slideEndSub:"Understanding = Explaining Simply",loadingSub:"~20 seconds",footer:"Learn by First Principles",invalidInput:"Please enter a math, statistics, economics, or finance topic.",goDeeper:"Watch on YouTube",ytLang:"in English",learnAgain:"\u2728 Explore a New Topic",pdfError:"Could not read this PDF.",fileReadError:"Could not read this file.",downloadSlides:"Download Slides",formatPDF:"PDF",formatHTML:"Web (HTML)",trueLabel:"True",falseLabel:"False",revealSolution:"Reveal Solution",hideSolution:"Hide Solution",yourTurn:"Your turn \u2014 solve it, then reveal.",tfInstruction:"True or False?",solveInstruction:"Work it out on paper, then check.",interestPlaceholder:"\uD83C\uDFAE What do you like? e.g. The Simpsons, Rugby, Minecraft\u2026",interestHint:"Optional \u2014 personalizes analogies & quiz with your interests",realWorld:"\uD83C\uDF0D Real-World Applications",realWorldSub:"Where this actually matters",thinking:"Thinking",almostThere:"Almost there!",modeFast:"Fast",modeThink:"Think",modeFastDesc:"Quick explanation + quiz",modeThinkDesc:"Full deep dive + exam + deck",modeLite:"Lite",modeLiteDesc:"Essential overview ~$0.004",examSubLite:"3 questions \u2014 essential check.",didntUnderstand:"\uD83E\uDD14 I didn\u2019t understand",simplifying:"Simplifying\u2026",simplerExplain:"SIMPLER EXPLANATION"},
+  es:{badge:"ENFOQUE: MATEM\u00C1TICA",title:"M\u00F3dulo de Dominio",subtitle:"Escrib\u00ED un tema de mate, estad\u00EDstica, econom\u00EDa o finanzas. Te lo explico desde cero.",placeholder:"ej. Derivadas, Distribuci\u00F3n Normal, Oferta y Demanda\u2026",learn:"Dale",generating:"Armando todo\u2026",remove:"\u2715",understand:"Entender",quiz:"Quiz",tips:"Tips",exam:"Examen",deck:"Slides",feynman:"EXPLICACI\u00D3N FEYNMAN",keyConcepts:"Conceptos Clave",testYourself:"Chequeo R\u00E1pido",selectBest:"Eleg\u00ED la mejor respuesta.",score:"Puntaje",submit:"Enviar",retry:"De nuevo",why:"\u00BFPor?",tips_title:"Tips para Dominar",tips_sub:"C\u00F3mo aprender esto posta",examTitle:"Examen",examSub:"10 preguntas \u2014 base s\u00F3lida.",examSubFast:"5 preguntas \u2014 chequeo r\u00E1pido.",examChallengeTitle:"\uD83D\uDD25 \u00BFTe la banc\u00E1s?",examChallengeSub:"5 m\u00FAltiple choice dif\u00EDciles + 3 problemas abiertos. Resolv\u00E9 y despu\u00E9s revel\u00E1.",summaryDeck:"Slides de Resumen",question:"P",hint:"Pista",concept:"CONCEPTO CLAVE",tipBadge:"TIP",slideTitle:"Resumen del M\u00F3dulo",slideEnd:"Ahora a Practicar",slideEndSub:"Entender = Explicar Simple",loadingSub:"~20 segundos",footer:"Aprend\u00E9 desde los Principios Fundamentales",invalidInput:"Met\u00E9 un tema de mate, estad\u00EDstica, econom\u00EDa o finanzas, dale.",goDeeper:"Ver en YouTube",ytLang:"en espa\u00F1ol",learnAgain:"\u2728 Explorar Otro Tema",pdfError:"No se pudo leer el PDF.",fileReadError:"No se pudo leer el archivo.",downloadSlides:"Descargar Slides",formatPDF:"PDF",formatHTML:"Web (HTML)",trueLabel:"Verdadero",falseLabel:"Falso",revealSolution:"Revelar",hideSolution:"Ocultar",yourTurn:"Tu turno \u2014 resolv\u00E9lo y despu\u00E9s revel\u00E1.",tfInstruction:"\u00BFVerdadero o Falso?",solveInstruction:"Resolv\u00E9 en papel y despu\u00E9s cheque\u00E1.",interestPlaceholder:"\uD83C\uDFAE \u00BFQu\u00E9 te copa? ej. Los Simpsons, F\u00FAtbol, Minecraft\u2026",interestHint:"Opcional \u2014 personaliza las analog\u00EDas y el quiz con lo que te gusta",realWorld:"\uD83C\uDF0D Aplicaciones en la Vida Real",realWorldSub:"D\u00F3nde se usa esto posta",thinking:"Pensando",almostThere:"\u00A1Ya casi!",modeFast:"R\u00E1pido",modeThink:"Profundo",modeFastDesc:"Explicaci\u00F3n r\u00E1pida + quiz",modeThinkDesc:"An\u00E1lisis completo + examen + slides",modeLite:"Lite",modeLiteDesc:"Resumen esencial ~$0.004",examSubLite:"3 preguntas \u2014 chequeo esencial.",didntUnderstand:"\uD83E\uDD14 No entend\u00ED",simplifying:"Simplificando\u2026",simplerExplain:"EXPLICACI\u00D3N M\u00C1S SIMPLE"},
 };
 
 /* ═══════════ Loading ═══════════ */
@@ -625,11 +625,11 @@ es:[
 "Un romano entra a un bar y levanta dos dedos: \u2018Cinco cervezas, por favor.\u2019",
 "Hay 10 tipos de personas: las que entienden binario y las que no.",
 "\u00BFPor qu\u00E9 la fracci\u00F3n dudaba en casarse con el decimal? Porque iba a tener que convertirse.",
-"\u00BFCu\u00E1l es la estaci\u00F3n favorita del profesor de mate? El verano, por las sumas.",
+"\u00BFCu\u00E1l es la bebida favorita del matem\u00E1tico argentino? El mate, pero siempre toma en cantidades irracionales.",
 "\u00BFPor qu\u00E9 los dos cuatros no almorzaron? Porque ya se com\u00EDan (8).",
 "\u00BFPor qu\u00E9 la aritm\u00E9tica cansa tanto? Por todos los n\u00FAmeros que ten\u00E9s que acarrear.",
 "\u00BFPor qu\u00E9 los adolescentes van en grupos de 3 o 5? Porque no pueden ser pares.",
-"\u00BFQu\u00E9 dijo la bellota cuando creci\u00F3? \u00A1Ge-o-me-tr\u00EDa! (Soy un \u00E1rbol).",
+"\u00BFPor qu\u00E9 el tri\u00E1ngulo fue al psic\u00F3logo? Porque ten\u00EDa demasiados \u00E1ngulos en su vida.",
 "Hago \u00E1lgebra, hago trigonometr\u00EDa, hasta estad\u00EDstica. Pero graficar es donde trazo la l\u00EDnea.",
 "Un matem\u00E1tico ve 3 personas entrar a un edificio y 5 salir. \u2018Si entran 2 m\u00E1s, queda vac\u00EDo.\u2019",
 "\u00BFPor qu\u00E9 el pollo cruz\u00F3 la banda de M\u00F6bius? Para llegar al mismo lado.",
@@ -643,8 +643,8 @@ es:[
 "\u00BFPor qu\u00E9 el libro de geometr\u00EDa estaba cansado? Muchos ejercicios.",
 "\u00BFCu\u00E1l es la materia favorita de las mariposas? Mate-m\u00E1ticas.",
 "\u00BFPor qu\u00E9 a pi le sacaron la licencia? No sab\u00EDa cu\u00E1ndo frenar.",
-"\u00BFC\u00F3mo hac\u00E9s desaparecer al uno? Le pon\u00E9s una \u2018g\u2019 y se fue (g-one).",
-"\u00BFC\u00F3mo le llam\u00E1s a un n\u00FAmero que no para quieto? Un n\u00FAmero romano (roam-in).",
+"\u00BFC\u00F3mo hac\u00E9s desaparecer al 1? Le agreg\u00E1s una \u2018i\u2019: ahora es imaginario.",
+"\u00BFCu\u00E1l es el colmo de un n\u00FAmero racional? Que su vida no tenga per\u00EDodo.",
 // ─── Curiosidades ───
 "Una pizza con radio z y grosor a tiene volumen pi\u00D7z\u00D7z\u00D7a.",
 "111.111.111 \u00D7 111.111.111 = 12.345.678.987.654.321. Un pal\u00EDndromo perfecto.",
@@ -831,7 +831,7 @@ es:[
 "\u00BFCu\u00E1l es la comida favorita de un bayesiano? Reserva prior-itaria en un restaurante.",
 "\u2018Creo que hay un sesgo de selecci\u00F3n ac\u00E1.\u2019 \u2018Claro, fuiste seleccionado para pensar eso.\u2019",
 "Un intervalo de confianza entra a un bar. Tal vez. Estamos 95% seguros.",
-"\u00BFPor qu\u00E9 los estad\u00EDsticos aman la naturaleza? Por las distribuciones muestrales naturales.",
+"El estad\u00EDstico lleg\u00F3 al bar y pidi\u00F3 \u2018el promedio de lo que toman todos\u2019. Le trajeron 1,3 vasos.",
 "\u00BFCu\u00E1l es el colmo de un estad\u00EDstico? Que su vida sea insignificante.",
 // ─── Curiosidades ───
 "El Teorema Central del L\u00EDmite dice: promedi\u00E1 suficientes cosas aleatorias y siempre sale una campana.",
@@ -1086,7 +1086,7 @@ es:[
 "\u00BFPor qu\u00E9 los analistas financieros nunca ganan al p\u00F3ker? Siempre se retiran cuando deber\u00EDan quedarse.",
 "\u00BFC\u00F3mo le llam\u00E1s a un estudiante de finanzas optimista? Alguien que hoy no mir\u00F3 el mercado.",
 "El ejercicio favorito de un day trader: correr de las p\u00E9rdidas.",
-"\u00BFPor qu\u00E9 a la plata le dicen \u2018guita\u2019? Porque todo el mundo la necesita.",
+"\u00BFPor qu\u00E9 al billete de mil le dec\u00EDan \u2018uno\u2019? Porque para cuando lo gastabas, ya val\u00EDa eso.",
 "Puse toda mi plata en acciones. De Arcor, b\u00E1sicamente. Al menos siempre voy a tener caramelos.",
 "\u00BFQu\u00E9 es un presupuesto? Una confirmaci\u00F3n matem\u00E1tica de tus sospechas.",
 "El colmo de un financista: no tener liquidez ni para comprarse una botella de agua.",
@@ -1702,6 +1702,8 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
     setLoadingPhase(0);setActiveSection("explain");usedRef.current.clear();
 
     const isFast=mode==="fast";
+    const isLite=mode==="lite";
+    const isLite=mode==="lite";
     const prompt=fileContent?"Topic: "+(topic||"Analyze this math content")+"\n\nContent:\n"+fileContent.slice(0,5000):"Topic: "+topic;
     const modConf=MOD_CONF[detectedMod];
     const roleStr=lang==="es"?modConf.roleEs:modConf.roleEn;
@@ -1716,70 +1718,97 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
     /* ── Interest context: split by call ── */
     const sonnetInterestCtx=safeInterest?"\n\nPERSONALIZATION (very important): The user loves \""+safeInterest+"\". You MUST:\n- Make ALL analogies and explanations reference \""+safeInterest+"\" creatively (characters, scenarios, themes from it).\n- In the exam: at least 2-3 questions should frame the math problem using \""+safeInterest+"\" context (e.g. if they like The Simpsons, use Homer/Bart in word problems).\n- Be creative and fun with the references, not forced. Make it feel like a fan made this module.":"";
     const haikuInterestCtx=safeInterest?"\n\nPERSONALIZATION: The user loves \""+safeInterest+"\". You MUST weave \""+safeInterest+"\" references naturally into tips. Be creative and fun, not forced.":"";
+    const liteInterestCtx=safeInterest?"\n\nPERSONALIZATION: The user loves \""+safeInterest+"\". Weave references into tips and 1-2 exam questions. Be creative, not forced.":"";
 
     try{
-      const controller=new AbortController();
-      const timeout=setTimeout(()=>controller.abort(),120000);/* 2 min timeout */
-      const authH={"Content-Type":"application/json","Authorization":"Bearer "+(session?.access_token||"")};
+      if(isLite){
+        /* ── LITE MODE: single Haiku call — all sections, minimal content ── */
+        const controller=new AbortController();
+        const timeout=setTimeout(()=>controller.abort(),60000);
+        const liteSystem="You are "+roleStr+"."+levelCtx+"\n"+langRule+"\n\nNOTATION: Fractions: (num)/(den). Radicals: \u221A{content}. Greek: \u03B1\u03B2\u03B3\u03B4\u03B5\u03B8\u03BB\u03BC\u03C0\u03C3\u03C6\u03C9. NEVER use ^ _ or LaTeX."+modConf.notationPrompt+"\n\nRESPOND WITH ONLY A SINGLE JSON OBJECT. No markdown fences.\nRequired JSON keys (ALL MANDATORY):\n- \"title\": string\n- \"explanationBlocks\": array of 2-3 objects. BLOCK ORDER: analogy first, then text/keypoint, steps last.\n  {\"type\":\"analogy\",\"label\":\"Think of it like this\",\"text\":\"...\"} | {\"type\":\"text\",\"text\":\"...\"} | {\"type\":\"keypoint\",\"text\":\"...\"} | {\"type\":\"steps\",\"title\":\"Worked Example: [name]\",\"context\":\"Full problem. MANDATORY.\",\"items\":[\"Step 1:...\"]}\n  CRITICAL: every block MUST have non-empty text/items.\n- \"keyConcepts\": array of 2 objects {\"title\",\"description\",\"formula\"}\n- \"applications\": array of 1 object {\"title\",\"description\",\"example\"}\n- \"quiz\": array of 3 objects (2 mc + 1 tf).\n  MC: {\"type\":\"mc\",\"question\":\"...\",\"options\":[4 strings],\"correctIndex\":0-3,\"explanation\":\"1 sentence\"}\n  TF: {\"type\":\"tf\",\"statement\":\"A clear true-or-false claim\",\"answer\":true or false,\"explanation\":\"Why\"}\n- \"exam\": array of 3 mc objects {\"type\":\"mc\",\"question\",\"options\":[4 strings],\"correctIndex\":0-3,\"explanation\"}\n- \"tips\": array of 2 objects {\"title\",\"content\"}\n- "+ytLang+"\nKeep ALL sections concise: 1-2 sentences per block, 1 sentence per explanation. Vary correctIndex 0-3 randomly."+liteInterestCtx;
+        const liteRes=await fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(session?.access_token||"")},signal:controller.signal,
+          body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:4000,
+            _meta:{topic:topic||"file",module:detectedMod,mode:"lite",lang,level},
+            system:liteSystem,messages:[{role:"user",content:prompt}]})});
+        const liteData=await liteRes.json();clearTimeout(timeout);
+        if(liteData.error)throw new Error(liteData.error.message||liteData.error);
+        const rawLite=(liteData.content||[]).map(b=>b.text||"").join("");
+        if(!rawLite||rawLite.trim().length<10)throw new Error("Empty response from API. Please try again.");
+        const parsed=safeParseJSON(rawLite);if(!parsed.title)throw new Error("Could not parse response. Please try again.");
+        if(!parsed.exam||!Array.isArray(parsed.exam)||parsed.exam.length===0){parsed.exam=[{type:"mc",question:lang==="es"?"El examen no se gener\u00F3. Intent\u00E1 de nuevo.":"Exam was not generated. Please try again.",options:["\u2014","\u2014","\u2014","\u2014"],correctIndex:0,explanation:""}];}
+        if(!parsed.tips||!Array.isArray(parsed.tips)||parsed.tips.length===0){parsed.tips=[{title:lang==="es"?"Practic\u00E1 con ejemplos":"Practice with examples",content:lang==="es"?"La mejor forma de aprender es resolver problemas paso a paso.":"The best way to learn is by solving problems step by step."}];}
+        if(!parsed.quiz||!Array.isArray(parsed.quiz)||parsed.quiz.length===0){parsed.quiz=[{type:"mc",question:lang==="es"?"El quiz no se gener\u00F3. Intent\u00E1 de nuevo.":"Quiz was not generated. Please try again.",options:["\u2014","\u2014","\u2014","\u2014"],correctIndex:0,explanation:""}];}
+        if(!parsed.keyConcepts||!Array.isArray(parsed.keyConcepts))parsed.keyConcepts=[];
+        if(!parsed.applications||!Array.isArray(parsed.applications))parsed.applications=[];
+        if(!parsed.explanationBlocks||!Array.isArray(parsed.explanationBlocks))parsed.explanationBlocks=[];
+        setContent(shuffleMC(deepFmt(parsed)));setPhase("complete");playDing();
+        setTimeout(()=>resultsRef.current?.scrollIntoView({behavior:"smooth"}),200);
+      }else{
+        /* ── FAST / THINK: parallel Sonnet + Haiku calls ── */
+        const controller=new AbortController();
+        const timeout=setTimeout(()=>controller.abort(),120000);/* 2 min timeout */
+        const authH={"Content-Type":"application/json","Authorization":"Bearer "+(session?.access_token||"")};
 
-      /* ── Sonnet: explanation + keyConcepts + applications + exam (+ examChallenge in think) ── */
-      const sonnetSystem="You are "+roleStr+"."+levelCtx+"\n"+langRule+"\n\nNOTATION: Superscripts \u00B2\u00B3\u2074. Subscripts \u2080\u2081\u2082. Fractions: (num)/(den) ALWAYS with parentheses. Radicals: \u221A{content}. Integrals: \u222B[a,b]. Sums: \u2211[i=1,n]. Greek: \u03B1\u03B2\u03B3\u03B4\u03B5\u03B8\u03BB\u03BC\u03C0\u03C3\u03C6\u03C9. NEVER use ^ _ or LaTeX.\nDerivatives: (dy)/(dx) not dydx. f'(x) for prime."+modConf.notationPrompt+"\n\nFORMULA FORMATTING RULES (CRITICAL):\n1. EVERY fraction MUST have (numerator)/(denominator) with BOTH parentheses. Example: (n\u2211xy - \u2211x\u2211y)/(n\u2211x\u00B2 - (\u2211x)\u00B2). NEVER write num/den without parens.\n2. ONE formula per line. NEVER chain multiple formulas with commas. If showing slope AND intercept, put each on its OWN line.\n3. In keyConcepts formula field: put ONLY the main formula. If there are multiple related formulas, separate with \\n newline character.\n4. In keypoint blocks: if you include a formula, put it on its own line after the explanation text, separated by \\n.\n5. Formatting: **bold** key terms, __underline__ key formulas (explanations only, sparingly).\n\nRESPOND WITH ONLY A SINGLE JSON OBJECT. No markdown fences.\nRequired JSON keys (ALL are MANDATORY - never omit any):\n- \"title\": string\n- \"explanationBlocks\": array of "+(isFast?"3-4":"5-6")+" objects, each with \"type\" and fields. "+(isFast?"Include 1+ \"steps\" block.":"Include 2+ \"steps\" blocks.")+"\n  BLOCK ORDER (MANDATORY): Explain the concept FIRST, then show examples. Structure: 1) Start with an \"analogy\" block, 2) then \"text\" and \"keypoint\" blocks for theory/definitions/formulas, 3) put \"steps\" blocks LAST as worked examples. NEVER start with a steps block.\n  BLOCK FORMATS (follow exactly):\n  - {\"type\":\"analogy\", \"label\":\"Think of it like this\", \"text\":\"A concrete everyday analogy that makes the concept click. MUST NOT be empty.\"}\n  - {\"type\":\"text\", \"text\":\"A paragraph explaining theory, definitions, or intuition.\"}\n  - {\"type\":\"keypoint\", \"text\":\"A key takeaway or important formula.\"}\n  - {\"type\":\"steps\", \"title\":\"Worked Example: [name]\", \"context\":\"The FULL problem statement — what is given, what to find. MANDATORY.\", \"items\":[\"Step 1: ...\",\"Step 2: ...\"]}\n  CRITICAL: Every block MUST have non-empty \"text\" (for analogy/text/keypoint) or \"items\" (for steps). NEVER return empty strings.\n- \"keyConcepts\": array of 3 objects {\"title\",\"description\",\"formula\"}\n- \"applications\": array of "+(isFast?"2":"3")+" objects {\"title\",\"description\",\"example\"}\n- \"exam\": array of "+(isFast?"5":"10")+" objects, ALL mc with question, options, correctIndex, explanation.\n"+(isFast?"":"- \"examChallenge\": array of 8 objects. 5 hard mc + 3 solve.\n  Solve format: {\"type\":\"solve\",\"problem\":\"A word problem to solve on paper\",\"hint\":\"A brief clue\",\"solution\":\"Full step-by-step solution with calculations\"}\n  CRITICAL: solve MUST have \"problem\" (NOT \"question\"), \"hint\", and \"solution\".\n")+"OUTPUT LENGTH MANAGEMENT (CRITICAL): ALL sections above are MANDATORY. Keep explanationBlocks CONCISE (max 2-3 sentences per text block, max 4 steps). Keep keyConcepts to 1-2 sentences. Keep exam explanations to 1 sentence. PRIORITIZE completeness over verbosity. Vary correctIndex 0-3 randomly."+sonnetInterestCtx;
+        /* ── Sonnet: explanation + keyConcepts + applications + exam (+ examChallenge in think) ── */
+        const sonnetSystem="You are "+roleStr+"."+levelCtx+"\n"+langRule+"\n\nNOTATION: Superscripts \u00B2\u00B3\u2074. Subscripts \u2080\u2081\u2082. Fractions: (num)/(den) ALWAYS with parentheses. Radicals: \u221A{content}. Integrals: \u222B[a,b]. Sums: \u2211[i=1,n]. Greek: \u03B1\u03B2\u03B3\u03B4\u03B5\u03B8\u03BB\u03BC\u03C0\u03C3\u03C6\u03C9. NEVER use ^ _ or LaTeX.\nDerivatives: (dy)/(dx) not dydx. f'(x) for prime."+modConf.notationPrompt+"\n\nFORMULA FORMATTING RULES (CRITICAL):\n1. EVERY fraction MUST have (numerator)/(denominator) with BOTH parentheses. Example: (n\u2211xy - \u2211x\u2211y)/(n\u2211x\u00B2 - (\u2211x)\u00B2). NEVER write num/den without parens.\n2. ONE formula per line. NEVER chain multiple formulas with commas. If showing slope AND intercept, put each on its OWN line.\n3. In keyConcepts formula field: put ONLY the main formula. If there are multiple related formulas, separate with \\n newline character.\n4. In keypoint blocks: if you include a formula, put it on its own line after the explanation text, separated by \\n.\n5. Formatting: **bold** key terms, __underline__ key formulas (explanations only, sparingly).\n\nRESPOND WITH ONLY A SINGLE JSON OBJECT. No markdown fences.\nRequired JSON keys (ALL are MANDATORY - never omit any):\n- \"title\": string\n- \"explanationBlocks\": array of "+(isFast?"3-4":"5-6")+" objects, each with \"type\" and fields. "+(isFast?"Include 1+ \"steps\" block.":"Include 2+ \"steps\" blocks.")+"\n  BLOCK ORDER (MANDATORY): Explain the concept FIRST, then show examples. Structure: 1) Start with an \"analogy\" block, 2) then \"text\" and \"keypoint\" blocks for theory/definitions/formulas, 3) put \"steps\" blocks LAST as worked examples. NEVER start with a steps block.\n  BLOCK FORMATS (follow exactly):\n  - {\"type\":\"analogy\", \"label\":\"Think of it like this\", \"text\":\"A concrete everyday analogy that makes the concept click. MUST NOT be empty.\"}\n  - {\"type\":\"text\", \"text\":\"A paragraph explaining theory, definitions, or intuition.\"}\n  - {\"type\":\"keypoint\", \"text\":\"A key takeaway or important formula.\"}\n  - {\"type\":\"steps\", \"title\":\"Worked Example: [name]\", \"context\":\"The FULL problem statement \u2014 what is given, what to find. MANDATORY.\", \"items\":[\"Step 1: ...\",\"Step 2: ...\"]}\n  CRITICAL: Every block MUST have non-empty \"text\" (for analogy/text/keypoint) or \"items\" (for steps). NEVER return empty strings.\n- \"keyConcepts\": array of 3 objects {\"title\",\"description\",\"formula\"}\n- \"applications\": array of "+(isFast?"2":"3")+" objects {\"title\",\"description\",\"example\"}\n- \"exam\": array of "+(isFast?"5":"10")+" objects, ALL mc with question, options, correctIndex, explanation.\n"+(isFast?"":"- \"examChallenge\": array of 8 objects. 5 hard mc + 3 solve.\n  Solve format: {\"type\":\"solve\",\"problem\":\"A word problem to solve on paper\",\"hint\":\"A brief clue\",\"solution\":\"Full step-by-step solution with calculations\"}\n  CRITICAL: solve MUST have \"problem\" (NOT \"question\"), \"hint\", and \"solution\".\n")+"OUTPUT LENGTH MANAGEMENT (CRITICAL): ALL sections above are MANDATORY. Keep explanationBlocks CONCISE (max 2-3 sentences per text block, max 4 steps). Keep keyConcepts to 1-2 sentences. Keep exam explanations to 1 sentence. PRIORITIZE completeness over verbosity. Vary correctIndex 0-3 randomly."+sonnetInterestCtx;
 
-      /* ── Haiku: quiz + tips + youtubeSearches ── */
-      const haikuSystem="You are "+roleStr+"."+levelCtx+"\n"+langRule+"\n\nNOTATION: Fractions: (num)/(den). Radicals: \u221A{content}. Greek: \u03B1\u03B2\u03B3\u03B4\u03B5\u03B8\u03BB\u03BC\u03C0\u03C3\u03C6\u03C9. NEVER use ^ _ or LaTeX.\n\nRESPOND WITH ONLY A SINGLE JSON OBJECT. No markdown fences.\nRequired JSON keys (ALL are MANDATORY - never omit any):\n- \"quiz\": array of "+(isFast?"3":"5")+" objects. "+(isFast?"2 mc + 1 tf.":"3 mc + 2 tf.")+"\n  MC format: {\"type\":\"mc\",\"question\":\"...\",\"options\":[4 strings],\"correctIndex\":0-3,\"explanation\":\"1 sentence\"}\n  TF format: {\"type\":\"tf\",\"statement\":\"A clear true-or-false claim\",\"answer\":true or false,\"explanation\":\"Why\"}\n  CRITICAL: tf MUST have \"statement\" (NOT \"question\"), \"answer\" (boolean), and \"explanation\".\n- \"tips\": array of "+(isFast?"2":"3")+" objects {\"title\",\"content\"}\n- "+ytLang+"\nKeep quiz explanations to 1 sentence. Vary correctIndex 0-3 randomly."+haikuInterestCtx;
+        /* ── Haiku: quiz + tips + youtubeSearches ── */
+        const haikuSystem="You are "+roleStr+"."+levelCtx+"\n"+langRule+"\n\nNOTATION: Fractions: (num)/(den). Radicals: \u221A{content}. Greek: \u03B1\u03B2\u03B3\u03B4\u03B5\u03B8\u03BB\u03BC\u03C0\u03C3\u03C6\u03C9. NEVER use ^ _ or LaTeX.\n\nRESPOND WITH ONLY A SINGLE JSON OBJECT. No markdown fences.\nRequired JSON keys (ALL are MANDATORY - never omit any):\n- \"quiz\": array of "+(isFast?"3":"5")+" objects. "+(isFast?"2 mc + 1 tf.":"3 mc + 2 tf.")+"\n  MC format: {\"type\":\"mc\",\"question\":\"...\",\"options\":[4 strings],\"correctIndex\":0-3,\"explanation\":\"1 sentence\"}\n  TF format: {\"type\":\"tf\",\"statement\":\"A clear true-or-false claim\",\"answer\":true or false,\"explanation\":\"Why\"}\n  CRITICAL: tf MUST have \"statement\" (NOT \"question\"), \"answer\" (boolean), and \"explanation\".\n- \"tips\": array of "+(isFast?"2":"3")+" objects {\"title\",\"content\"}\n- "+ytLang+"\nKeep quiz explanations to 1 sentence. Vary correctIndex 0-3 randomly."+haikuInterestCtx;
 
-      /* ── Fire both in parallel ── */
-      const [sonnetRes,haikuRes]=await Promise.all([
-        fetch("/api/claude",{method:"POST",headers:authH,signal:controller.signal,
-          body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:isFast?8000:12000,
-            _meta:{topic:topic||"file",module:detectedMod,mode,lang,level},
-            system:sonnetSystem,messages:[{role:"user",content:prompt}]})}),
-        fetch("/api/claude",{method:"POST",headers:authH,signal:controller.signal,
-          body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:isFast?2000:3000,
-            _meta:{topic:topic||"file",module:detectedMod,mode:mode+"_haiku",lang,level},
-            system:haikuSystem,messages:[{role:"user",content:prompt}]})}),
-      ]);
-      const [sonnetData,haikuData]=await Promise.all([sonnetRes.json(),haikuRes.json()]);
-      clearTimeout(timeout);
-      if(sonnetData.error)throw new Error(sonnetData.error.message||sonnetData.error);
-      if(haikuData.error)throw new Error(haikuData.error.message||haikuData.error);
+        /* ── Fire both in parallel ── */
+        const [sonnetRes,haikuRes]=await Promise.all([
+          fetch("/api/claude",{method:"POST",headers:authH,signal:controller.signal,
+            body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:isFast?8000:12000,
+              _meta:{topic:topic||"file",module:detectedMod,mode,lang,level},
+              system:sonnetSystem,messages:[{role:"user",content:prompt}]})}),
+          fetch("/api/claude",{method:"POST",headers:authH,signal:controller.signal,
+            body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:isFast?2000:3000,
+              _meta:{topic:topic||"file",module:detectedMod,mode:mode+"_haiku",lang,level},
+              system:haikuSystem,messages:[{role:"user",content:prompt}]})}),
+        ]);
+        const [sonnetData,haikuData]=await Promise.all([sonnetRes.json(),haikuRes.json()]);
+        clearTimeout(timeout);
+        if(sonnetData.error)throw new Error(sonnetData.error.message||sonnetData.error);
+        if(haikuData.error)throw new Error(haikuData.error.message||haikuData.error);
 
-      const rawSonnet=(sonnetData.content||[]).map(b=>b.text||"").join("");
-      const rawHaiku=(haikuData.content||[]).map(b=>b.text||"").join("");
-      if(!rawSonnet||rawSonnet.trim().length<10)throw new Error("Empty response from API. Please try again.");
-      if(!rawHaiku||rawHaiku.trim().length<10)throw new Error("Empty response from API. Please try again.");
+        const rawSonnet=(sonnetData.content||[]).map(b=>b.text||"").join("");
+        const rawHaiku=(haikuData.content||[]).map(b=>b.text||"").join("");
+        if(!rawSonnet||rawSonnet.trim().length<10)throw new Error("Empty response from API. Please try again.");
+        if(!rawHaiku||rawHaiku.trim().length<10)throw new Error("Empty response from API. Please try again.");
 
-      const parsedSonnet=safeParseJSON(rawSonnet);
-      const parsedHaiku=safeParseJSON(rawHaiku);
-      if(!parsedSonnet.title)throw new Error("Could not parse response. Please try again.");
+        const parsedSonnet=safeParseJSON(rawSonnet);
+        const parsedHaiku=safeParseJSON(rawHaiku);
+        if(!parsedSonnet.title)throw new Error("Could not parse response. Please try again.");
 
-      /* ── Merge both responses ── */
-      const parsed={...parsedSonnet,
-        quiz:parsedHaiku.quiz,
-        tips:parsedHaiku.tips,
-        youtubeSearches:parsedHaiku.youtubeSearches,
-      };
+        /* ── Merge both responses ── */
+        const parsed={...parsedSonnet,
+          quiz:parsedHaiku.quiz,
+          tips:parsedHaiku.tips,
+          youtubeSearches:parsedHaiku.youtubeSearches,
+        };
 
-      /* Validate critical sections — fill fallbacks if truncated */
-      if(!parsed.exam||!Array.isArray(parsed.exam)||parsed.exam.length===0){
-        parsed.exam=[{type:"mc",question:lang==="es"?"El contenido del examen no se generó correctamente. Intentá de nuevo.":"Exam content was not generated correctly. Please try again.",options:["—","—","—","—"],correctIndex:0,explanation:""}];
-      }
-      if(!parsed.tips||!Array.isArray(parsed.tips)||parsed.tips.length===0){
-        parsed.tips=[{title:lang==="es"?"Practicá con ejemplos":"Practice with examples",content:lang==="es"?"La mejor forma de aprender es resolver problemas paso a paso.":"The best way to learn is by solving problems step by step."}];
-      }
-      if(!parsed.quiz||!Array.isArray(parsed.quiz)||parsed.quiz.length===0){
-        parsed.quiz=[{type:"mc",question:lang==="es"?"El quiz no se generó. Intentá de nuevo.":"Quiz was not generated. Please try again.",options:["—","—","—","—"],correctIndex:0,explanation:""}];
-      }
-      if(!parsed.keyConcepts||!Array.isArray(parsed.keyConcepts))parsed.keyConcepts=[];
-      if(!parsed.applications||!Array.isArray(parsed.applications))parsed.applications=[];
-      if(!parsed.explanationBlocks||!Array.isArray(parsed.explanationBlocks))parsed.explanationBlocks=[];
-      setContent(shuffleMC(deepFmt(parsed)));setPhase("complete");playDing();
-      setTimeout(()=>resultsRef.current?.scrollIntoView({behavior:"smooth"}),200);
+        /* Validate critical sections */
+        if(!parsed.exam||!Array.isArray(parsed.exam)||parsed.exam.length===0){
+          parsed.exam=[{type:"mc",question:lang==="es"?"El contenido del examen no se gener\u00F3 correctamente. Intent\u00E1 de nuevo.":"Exam content was not generated correctly. Please try again.",options:["\u2014","\u2014","\u2014","\u2014"],correctIndex:0,explanation:""}];
+        }
+        if(!parsed.tips||!Array.isArray(parsed.tips)||parsed.tips.length===0){
+          parsed.tips=[{title:lang==="es"?"Practic\u00E1 con ejemplos":"Practice with examples",content:lang==="es"?"La mejor forma de aprender es resolver problemas paso a paso.":"The best way to learn is by solving problems step by step."}];
+        }
+        if(!parsed.quiz||!Array.isArray(parsed.quiz)||parsed.quiz.length===0){
+          parsed.quiz=[{type:"mc",question:lang==="es"?"El quiz no se gener\u00F3. Intent\u00E1 de nuevo.":"Quiz was not generated. Please try again.",options:["\u2014","\u2014","\u2014","\u2014"],correctIndex:0,explanation:""}];
+        }
+        if(!parsed.keyConcepts||!Array.isArray(parsed.keyConcepts))parsed.keyConcepts=[];
+        if(!parsed.applications||!Array.isArray(parsed.applications))parsed.applications=[];
+        if(!parsed.explanationBlocks||!Array.isArray(parsed.explanationBlocks))parsed.explanationBlocks=[];
+        setContent(shuffleMC(deepFmt(parsed)));setPhase("complete");playDing();
+        setTimeout(()=>resultsRef.current?.scrollIntoView({behavior:"smooth"}),200);
+      }/* end fast/think else */
     }catch(err){
       console.error(err);
       const msg=err.name==="AbortError"?"Request timed out. Please try again.":(err.message||"Something went wrong. Please try again.");
       setError(msg);setPhase("idle");
     }
+
     }catch(outerErr){console.error("go() error:",outerErr);setError("Something went wrong: "+outerErr.message);setPhase("idle");}
   };
 
@@ -1889,9 +1918,9 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
           {/* Mode toggle + Learn button */}
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <div style={{display:"flex",gap:4,flex:1}}>
-              {["fast","think"].map(m=><button key={m} onClick={()=>setMode(m)} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"7px 0",borderRadius:8,border:"1px solid "+(mode===m?mt.borderAccent:TH.borderLight),background:mode===m?mt.accentBg:"transparent",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s",flex:1}}>
-                <span style={{fontSize:11,fontWeight:700,color:mode===m?mt.accent:TH.textMuted}}>{m==="fast"?t.modeFast:t.modeThink}</span>
-                <span style={{fontSize:7.5,color:mode===m?mt.accentText:TH.textFaint,marginTop:1}}>{m==="fast"?t.modeFastDesc:t.modeThinkDesc}</span>
+              {["fast","think","lite"].map(m=><button key={m} onClick={()=>setMode(m)} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"7px 0",borderRadius:8,border:"1px solid "+(mode===m?mt.borderAccent:TH.borderLight),background:mode===m?mt.accentBg:"transparent",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s",flex:1}}>
+                <span style={{fontSize:11,fontWeight:700,color:mode===m?mt.accent:TH.textMuted}}>{m==="fast"?t.modeFast:m==="think"?t.modeThink:t.modeLite}</span>
+                <span style={{fontSize:7.5,color:mode===m?mt.accentText:TH.textFaint,marginTop:1}}>{m==="fast"?t.modeFastDesc:m==="think"?t.modeThinkDesc:t.modeLiteDesc}</span>
               </button>)}
             </div>
             <button onClick={go} disabled={phase==="loading"||(!topic.trim()&&!fileContent)} style={{background:phase==="loading"?TH.bgAlt:"linear-gradient(135deg, "+mt.accentLight+", "+mt.accent+")",border:"none",borderRadius:10,padding:"14px 28px",color:phase==="loading"?TH.textMuted:"#fff",fontWeight:700,fontSize:13,cursor:phase==="loading"?"wait":"pointer",fontFamily:"inherit",opacity:(!topic.trim()&&!fileContent)?0.35:1,boxShadow:phase==="loading"?"none":"0 2px 12px "+mt.btnShadow,transition:"all 0.2s",letterSpacing:0.3}}>{phase==="loading"?t.generating:t.learn}</button>
@@ -1984,7 +2013,7 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
       {/* EXAM + CHALLENGE */}
       {activeSection==="exam"&&<div style={{animation:"fadeUp 0.3s ease"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-          <div><h2 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:19,fontWeight:700,color:TH.text}}>{t.examTitle} {"\uD83C\uDF93"}</h2><p style={{color:TH.textMuted,fontSize:10,marginTop:1}}>{examSubmitted?t.score+": "+examScore+"/"+examTotal:(mode==="fast"?t.examSubFast:t.examSub)}</p></div>
+          <div><h2 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:19,fontWeight:700,color:TH.text}}>{t.examTitle} {"\uD83C\uDF93"}</h2><p style={{color:TH.textMuted,fontSize:10,marginTop:1}}>{examSubmitted?t.score+": "+examScore+"/"+examTotal:(mode==="think"?t.examSub:mode==="lite"?t.examSubLite:t.examSubFast)}</p></div>
           {examSubmitted&&<span style={{fontSize:17,fontWeight:800,fontFamily:"'Bricolage Grotesque',sans-serif",color:examScore>=examTotal*0.8?TH.green:examScore>=examTotal*0.5?mt.accent:TH.red,background:examScore>=examTotal*0.8?TH.greenBg:examScore>=examTotal*0.5?mt.accentBg:TH.redBg,padding:"4px 12px",borderRadius:8}}>{Math.round((examScore/Math.max(examTotal,1))*100)}%</span>}
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:9}}>
