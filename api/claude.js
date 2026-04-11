@@ -110,8 +110,9 @@ module.exports = async function handler(req, res) {
   const meta = body._meta || {};
   delete body._meta;
 
-  /* ── Force model to Sonnet 4.6 ── */
-  body.model = 'claude-sonnet-4-6';
+  /* ── Whitelist allowed models (default: Sonnet 4.6) ── */
+  const ALLOWED_MODELS = ['claude-sonnet-4-6', 'claude-haiku-4-5-20251001'];
+  if (!ALLOWED_MODELS.includes(body.model)) body.model = 'claude-sonnet-4-6';
 
   /* ── Cache lookup ── */
   const cacheKey = getCacheKey(meta, body);
@@ -163,8 +164,9 @@ module.exports = async function handler(req, res) {
     if (user && SB_SERVICE_KEY && data.usage) {
       const inputTokens = data.usage.input_tokens || 0;
       const outputTokens = data.usage.output_tokens || 0;
-      /* Sonnet 4.6 pricing: $3/M input, $15/M output */
-      const cost = (inputTokens * 3 + outputTokens * 15) / 1_000_000;
+      /* Model-aware pricing: Haiku ($0.80/$4 per M) vs Sonnet ($3/$15 per M) */
+      const isHaiku = (body.model || '').includes('haiku');
+      const cost = (inputTokens * (isHaiku ? 0.80 : 3) + outputTokens * (isHaiku ? 4 : 15)) / 1_000_000;
 
       try {
         const sb = createClient(SB_URL, SB_SERVICE_KEY);
