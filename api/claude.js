@@ -9,7 +9,7 @@ const CACHE_TTL_MS  = 60 * 60 * 1000; // 1 hour
 function getCacheKey(meta, body) {
   // Only cache explanation-style requests — quizzes/exams should always vary
   if (!meta.topic || meta.module === 'quiz' || meta.module === 'exam') return null;
-  return `${(meta.topic || '').toLowerCase().trim()}|${meta.level || ''}|${meta.lang || ''}|${meta.module || ''}`;
+  return `${(meta.topic || '').toLowerCase().trim()}|${meta.level || ''}|${meta.lang || ''}|${meta.module || ''}|${meta.mode || ''}`;
 }
 
 function getCached(key) {
