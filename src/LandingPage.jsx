@@ -22,16 +22,16 @@ const T = {
     /* nav */
     navWhat: 'What is it', navHow: 'How it works', navTips: 'Tips', navGetStarted: 'Get Started',
     /* hero */
-    heroEyebrow: 'AI-POWERED LEARNING',
+    heroEyebrow: 'THE FEYNMAN TECHNIQUE',
     heroTitle: 'Master anything.',
     heroTitleAccent: 'From first principles.',
-    heroSub: 'Mastery Module turns any topic into a structured learning engine — explanations, quizzes, flashcards, and challenges, all powered by AI and the Feynman Technique.',
+    heroSub: 'Mastery Module turns any topic into a structured learning engine — explanations, quizzes, flashcards, and challenges, built on the Feynman Technique.',
     heroLogin: 'Log In', heroSignup: 'Sign Up Free',
     /* what */
     whatTitle: 'What is Mastery Module?',
-    whatSub: 'It\'s not a textbook. It\'s not a chatbot. It\'s a learning system.',
+    whatSub: 'It\'s not a textbook. It\'s not a search engine. It\'s a learning system.',
     whatP1: 'Mastery Module is built on one idea: you only truly understand something when you can explain it simply. That\'s the Feynman Technique — and it\'s the engine behind everything here.',
-    whatP2: 'Enter any topic. The AI generates a first-principles explanation tailored to your level, then challenges you to prove you understood it.',
+    whatP2: 'Enter any topic. Get a first-principles explanation tailored to your level, then get challenged to prove you understood it.',
     /* modes */
     modesTitle: 'Six ways to learn',
     modesSub: 'Every mode serves a different purpose in the learning cycle.',
@@ -48,7 +48,7 @@ const T = {
     howSub: 'A simple loop that builds deep understanding fast.',
     steps: [
       { n: '01', title: 'Pick a topic', desc: 'Type anything: "Black-Scholes model", "Central Limit Theorem", "Supply and Demand", "Compound Interest". The more specific, the better.' },
-      { n: '02', title: 'Start with Explain', desc: 'Read the AI-generated explanation carefully. Don\'t skim. This is your foundation. If something is unclear, hit Simplify.' },
+      { n: '02', title: 'Start with Explain', desc: 'Read the explanation carefully. Don\'t skim. This is your foundation. If something is unclear, hit Simplify.' },
       { n: '03', title: 'Quiz yourself immediately', desc: 'Knowledge fades fast without retrieval practice. Run the Quiz right after reading to lock concepts in.' },
       { n: '04', title: 'Go deeper with Exam or Challenge', desc: 'When you feel confident, stress-test it. Exams score you. Challenges push you beyond recall into real application.' },
       { n: '05', title: 'Lock it with Flashcards', desc: 'Generate a flashcard deck and review it over multiple days. Spaced repetition is how memory becomes permanent.' },
@@ -85,15 +85,15 @@ const T = {
   },
   es: {
     navWhat: 'Qué es', navHow: 'Cómo funciona', navTips: 'Tips', navGetStarted: 'Empezar',
-    heroEyebrow: 'APRENDIZAJE CON IA',
+    heroEyebrow: 'LA TÉCNICA FEYNMAN',
     heroTitle: 'Dominá cualquier tema.',
     heroTitleAccent: 'Desde los principios.',
-    heroSub: 'Mastery Module convierte cualquier tema en un motor de aprendizaje — explicaciones, quizzes, flashcards y desafíos, impulsados por IA y la Técnica Feynman.',
+    heroSub: 'Mastery Module convierte cualquier tema en un motor de aprendizaje — explicaciones, quizzes, flashcards y desafíos, construidos sobre la Técnica Feynman.',
     heroLogin: 'Iniciar sesión', heroSignup: 'Registrarse gratis',
     whatTitle: '¿Qué es Mastery Module?',
-    whatSub: 'No es un libro. No es un chatbot. Es un sistema de aprendizaje.',
+    whatSub: 'No es un libro. No es un buscador. Es un sistema de aprendizaje.',
     whatP1: 'Mastery Module se basa en una idea: solo entendés algo de verdad cuando podés explicarlo de forma simple. Eso es la Técnica Feynman — y es el motor de todo lo que hacemos acá.',
-    whatP2: 'Ingresá cualquier tema. La IA genera una explicación desde los principios fundamentales, adaptada a tu nivel, y luego te desafía a demostrar que lo entendiste.',
+    whatP2: 'Ingresá cualquier tema. Recibís una explicación desde los principios fundamentales, adaptada a tu nivel, y luego te desafía a demostrar que lo entendiste.',
     modesTitle: 'Seis formas de aprender',
     modesSub: 'Cada modo cumple un propósito distinto en el ciclo de aprendizaje.',
     modes: [
@@ -108,7 +108,7 @@ const T = {
     howSub: 'Un ciclo simple que construye comprensión profunda rápido.',
     steps: [
       { n: '01', title: 'Elegí un tema', desc: 'Escribí cualquier cosa: "Modelo Black-Scholes", "Teorema Central del Límite", "Oferta y Demanda", "Interés Compuesto". Cuanto más específico, mejor.' },
-      { n: '02', title: 'Empezá con Explicar', desc: 'Leé la explicación generada con atención. No la escanees. Es tu base. Si algo no queda claro, usá Simplificar.' },
+      { n: '02', title: 'Empezá con Explicar', desc: 'Leé la explicación con atención. No la escanees. Es tu base. Si algo no queda claro, usá Simplificar.' },
       { n: '03', title: 'Hacé el Quiz de inmediato', desc: 'El conocimiento se desvanece rápido sin práctica de recuperación. Hacé el Quiz justo después de leer para fijar los conceptos.' },
       { n: '04', title: 'Profundizá con Examen o Desafío', desc: 'Cuando te sentís seguro, poné a prueba ese conocimiento. Los exámenes te puntúan. Los desafíos te llevan más allá del recuerdo a la aplicación real.' },
       { n: '05', title: 'Fijalo con Flashcards', desc: 'Generá un mazo y repasalo durante varios días. La repetición espaciada es como la memoria se vuelve permanente.' },
@@ -214,10 +214,22 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             <span style={{ fontSize: 13, fontWeight: 700, color: TH.text, letterSpacing: '-0.01em' }}>Mastery Module</span>
           </div>
           {/* Nav links — hidden on small screens */}
-          <div className="lp-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-            {navBtn(t.navWhat, () => scrollTo(whatRef))}
-            {navBtn(t.navHow, () => scrollTo(howRef))}
-            {navBtn(t.navTips, () => scrollTo(tipsRef))}
+          <div className="lp-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {[
+              { label: t.navWhat, ref: whatRef },
+              { label: t.navHow,  ref: howRef  },
+              { label: t.navTips, ref: tipsRef  },
+            ].map(({ label, ref }) => (
+              <button key={label} onClick={() => scrollTo(ref)} style={{
+                padding: '5px 13px', borderRadius: 8, border: '1px solid ' + TH.border,
+                background: TH.surface, color: TH.textSecondary, fontSize: 11,
+                fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                transition: 'border-color 0.15s, color 0.15s',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = TH.accent; e.currentTarget.style.color = TH.accent; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = TH.border;  e.currentTarget.style.color = TH.textSecondary; }}
+              >{label}</button>
+            ))}
           </div>
           {/* Right controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
