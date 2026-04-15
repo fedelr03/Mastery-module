@@ -33,6 +33,19 @@ const T = {
     whatP1: 'Mastery Module is built on one idea: you only truly understand something when you can explain it simply. That\'s the Feynman Technique — and it\'s the engine behind everything here.',
     whatP2: 'Enter any topic. Get a first-principles explanation tailored to your level, then get challenged to prove you understood it.',
     /* modes */
+    /* section badge labels */
+    badgeIdea: 'THE IDEA', badgeModes: 'MODES', badgeWorkflow: 'WORKFLOW', badgeTips: 'TIPS',
+    /* hero mockup labels */
+    heroMockupChips: ['💡 Explain','⚡ Quiz','📄 Exam','🧩 Challenge','🔑 Keys','🗂️ Flashcards'],
+    heroMockupTopic: 'COMPOUND INTEREST',
+    /* speed/depth modes */
+    speedModesTitle: 'Choose your depth',
+    speedModesSub: 'Three modes — pick the one that fits your situation right now.',
+    speedModes: [
+      { icon: '⚡', label: 'Lite', desc: 'Essential overview in ~2 min. Core idea, 2 key concepts, 3-question check.', when: 'Quick refresher, limited time, or just curious about a concept.', example: '"What is a derivative?" before jumping into a problem set.' },
+      { icon: '🚀', label: 'Fast', desc: 'Full explanation + quiz + 5-question exam. The everyday study loop.', when: 'Actively studying and want explanation + practice in one shot.', example: '"Black-Scholes model" when prepping for a finance exam.' },
+      { icon: '🔬', label: 'Think', desc: 'Deep-dive + 10-question exam + challenge problems + full summary deck.', when: 'You want true mastery — not just to pass a test, but to own the concept.', example: '"Central Limit Theorem" when you want to explain it from scratch to someone else.' },
+    ],
     modesTitle: 'Six ways to learn',
     modesSub: 'Every mode serves a different purpose in the learning cycle.',
     modes: [
@@ -94,6 +107,19 @@ const T = {
     whatSub: 'No es un libro. No es un buscador. Es un sistema de aprendizaje.',
     whatP1: 'Mastery Module se basa en una idea: solo entendés algo de verdad cuando podés explicarlo de forma simple. Eso es la Técnica Feynman — y es el motor de todo lo que hacemos acá.',
     whatP2: 'Ingresá cualquier tema. Recibís una explicación desde los principios fundamentales, adaptada a tu nivel, y luego te desafía a demostrar que lo entendiste.',
+    /* etiquetas de sección */
+    badgeIdea: 'LA IDEA', badgeModes: 'MODOS', badgeWorkflow: 'FLUJO', badgeTips: 'TIPS',
+    /* chips del mockup del hero */
+    heroMockupChips: ['💡 Explicar','⚡ Quiz','📄 Examen','🧩 Desafío','🔑 Claves','🗂️ Flashcards'],
+    heroMockupTopic: 'INTERÉS COMPUESTO',
+    /* modos de velocidad/profundidad */
+    speedModesTitle: 'Elegí la profundidad',
+    speedModesSub: 'Tres modos — elegí el que se adapta a tu situación ahora.',
+    speedModes: [
+      { icon: '⚡', label: 'Lite', desc: 'Resumen esencial en ~2 min. Idea central, 2 conceptos clave, 3 preguntas.', when: 'Repaso rápido, poco tiempo, o simplemente querés entender un concepto.', example: '"¿Qué es una derivada?" antes de arrancar con un parcial.' },
+      { icon: '🚀', label: 'Rápido', desc: 'Explicación completa + quiz + examen de 5 preguntas. El ciclo de estudio del día a día.', when: 'Estás estudiando y querés explicación + práctica en un solo paso.', example: '"Modelo Black-Scholes" cuando te preparás para un final de finanzas.' },
+      { icon: '🔬', label: 'Profundo', desc: 'Análisis a fondo + examen de 10 preguntas + desafíos + slides de resumen.', when: 'Querés dominar el tema de verdad — no solo aprobar, sino poder explicarlo.', example: '"Teorema Central del Límite" cuando querés poder enseñárselo a alguien más.' },
+    ],
     modesTitle: 'Seis formas de aprender',
     modesSub: 'Cada modo cumple un propósito distinto en el ciclo de aprendizaje.',
     modes: [
@@ -306,7 +332,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             </div>
             {/* Fake content rows */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-              {['💡 Explain','⚡ Quiz','📄 Exam','🧩 Challenge','🔑 Keys','🗂️ Flashcards'].map((m, i) => (
+              {t.heroMockupChips.map((m, i) => (
                 <div key={i} style={{
                   padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
                   background: i === 0 ? TH.accentBg : TH.bg,
@@ -317,7 +343,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             </div>
             {/* Fake explanation block */}
             <div style={{ background: TH.bg, borderRadius: 12, padding: '14px 16px', border: '1px solid ' + TH.borderLight }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: TH.accent, marginBottom: 8, letterSpacing: 1 }}>COMPOUND INTEREST</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: TH.accent, marginBottom: 8, letterSpacing: 1 }}>{t.heroMockupTopic}</div>
               {[1,0.7,0.85,0.5].map((w,i) => (
                 <div key={i} style={{ height: 8, borderRadius: 4, background: TH.border, width: (w*100)+'%', marginBottom: 7 }} />
               ))}
@@ -341,7 +367,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
       <section ref={whatRef} style={{ padding: '80px 20px', borderTop: '1px solid ' + TH.borderLight }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>THE IDEA</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeIdea}</div>
             <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.whatTitle}</h2>
             <p style={{ fontSize: 14, color: TH.accent, fontWeight: 600 }}>{t.whatSub}</p>
           </div>
@@ -363,7 +389,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
       <section style={{ padding: '80px 20px', background: dark ? TH.surface : '#faf8f4', borderTop: '1px solid ' + TH.borderLight, borderBottom: '1px solid ' + TH.borderLight }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>MODES</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeModes}</div>
             <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.modesTitle}</h2>
             <p style={{ fontSize: 13, color: TH.textMuted, maxWidth: 400, margin: '0 auto' }}>{t.modesSub}</p>
           </div>
@@ -382,11 +408,55 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
+      {/* ── SPEED / DEPTH MODES ── */}
+      <section style={{ padding: '80px 20px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{lang === 'es' ? 'PROFUNDIDAD' : 'DEPTH'}</div>
+            <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.speedModesTitle}</h2>
+            <p style={{ fontSize: 13, color: TH.textMuted, maxWidth: 440, margin: '0 auto' }}>{t.speedModesSub}</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 20 }}>
+            {t.speedModes.map((sm, i) => {
+              const modeColors = [
+                { accent: '#059669', accentBg: 'rgba(5,150,105,0.07)', border: 'rgba(5,150,105,0.2)', tag: 'LITE' },
+                { accent: '#e8940a', accentBg: 'rgba(232,148,10,0.07)', border: 'rgba(232,148,10,0.2)', tag: dark ? 'FAST' : 'FAST' },
+                { accent: '#6366f1', accentBg: 'rgba(99,102,241,0.07)', border: 'rgba(99,102,241,0.2)', tag: 'THINK' },
+              ][i];
+              return (
+                <div key={i} className="lp-card" style={{
+                  background: TH.surface, borderRadius: 16, border: '1px solid ' + TH.border,
+                  padding: 24, boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.2)' : '0 4px 24px rgba(0,0,0,0.04)',
+                  borderTop: '3px solid ' + modeColors.accent,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <span style={{ fontSize: 20 }}>{sm.icon}</span>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: TH.text }}>{sm.label}</span>
+                    <span style={{ marginLeft: 'auto', fontSize: 8, fontWeight: 700, letterSpacing: 1.2, color: modeColors.accent, background: modeColors.accentBg, border: '1px solid ' + modeColors.border, borderRadius: 4, padding: '2px 7px' }}>{modeColors.tag}</span>
+                  </div>
+                  <p style={{ fontSize: 13, color: TH.textSecondary, lineHeight: 1.6, marginBottom: 14 }}>{sm.desc}</p>
+                  <div style={{ borderTop: '1px solid ' + TH.borderLight, paddingTop: 14 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: TH.textMuted, letterSpacing: 0.8, marginBottom: 5, textTransform: 'uppercase' }}>
+                      {lang === 'es' ? 'Cuándo usarlo' : 'Best when'}
+                    </div>
+                    <p style={{ fontSize: 12, color: TH.textMuted, lineHeight: 1.6, marginBottom: 10 }}>{sm.when}</p>
+                    <div style={{ background: TH.bg, borderRadius: 8, padding: '8px 12px', border: '1px solid ' + TH.borderLight }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: modeColors.accent, marginRight: 5 }}>{lang === 'es' ? 'Ejemplo' : 'e.g.'}</span>
+                      <span style={{ fontSize: 11, color: TH.textSecondary, fontStyle: 'italic' }}>{sm.example}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ── HOW IT WORKS ── */}
       <section ref={howRef} style={{ padding: '80px 20px' }}>
         <div style={{ maxWidth: 680, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>WORKFLOW</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeWorkflow}</div>
             <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.howTitle}</h2>
             <p style={{ fontSize: 13, color: TH.textMuted }}>{t.howSub}</p>
           </div>
@@ -413,7 +483,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
       <section ref={tipsRef} style={{ padding: '80px 20px', background: dark ? TH.surface : '#faf8f4', borderTop: '1px solid ' + TH.borderLight, borderBottom: '1px solid ' + TH.borderLight }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>TIPS</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeTips}</div>
             <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text }}>{t.tipsTitle}</h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 16 }}>
