@@ -25,32 +25,32 @@ const T = {
     heroEyebrow: 'THE FEYNMAN TECHNIQUE',
     heroTitle: 'Master anything.',
     heroTitleAccent: 'From first principles.',
-    heroSub: 'Mastery Module turns any topic into a structured learning engine — explanations, quizzes, and challenges — built around one idea: you only truly understand something when you can explain it simply.',
+    heroSub: 'Mastery Module turns any topic into a structured learning engine: explanations, quizzes, and challenges, all built around one idea. You only truly understand something when you can explain it simply.',
     heroLogin: 'Log In', heroSignup: 'Sign Up Free',
     /* what */
     whatTitle: 'What is Mastery Module?',
-    whatSub: 'Part explanation engine, part study partner — built around one idea: you don\'t really know something until you can teach it.',
-    whatP1: 'Mastery Module is built on one idea: you only truly understand something when you can explain it simply. That\'s the Feynman Technique — and it\'s the engine behind everything here.',
+    whatSub: 'Part explanation engine, part study partner. Built around one idea: you don\'t really know something until you can teach it.',
+    whatP1: 'Mastery Module is built on one idea: you only truly understand something when you can explain it simply. That\'s the Feynman Technique, and it\'s the engine behind everything here.',
     whatP2: 'Enter any topic. Get a first-principles explanation tailored to your level, then get challenged to prove you understood it.',
     /* modes */
     /* section badge labels */
     badgeIdea: 'THE IDEA', badgeModes: 'MODES', badgeWorkflow: 'WORKFLOW', badgeTips: 'TIPS',
     /* speed/depth modes */
     speedModesTitle: 'Choose your depth',
-    speedModesSub: 'Three modes — pick the one that fits your situation right now.',
+    speedModesSub: 'Three modes. Pick the one that fits your situation right now.',
     speedModes: [
       { icon: '⚡', label: 'Lite', desc: 'Essential overview in ~2 min. Core idea, 2 key concepts, 3-question check.', when: 'Quick refresher, limited time, or just curious about a concept.', example: '"What is a derivative?" before jumping into a problem set.' },
       { icon: '🚀', label: 'Fast', desc: 'Full explanation + quiz + 5-question exam. The everyday study loop.', when: 'Actively studying and want explanation + practice in one shot.', example: '"Black-Scholes model" when prepping for a finance exam.' },
-      { icon: '🔬', label: 'Think', desc: 'Deep-dive + 10-question exam + challenge problems + full summary deck.', when: 'You want true mastery — not just to pass a test, but to own the concept.', example: '"Central Limit Theorem" when you want to explain it from scratch to someone else.' },
+      { icon: '🔬', label: 'Think', desc: 'Deep-dive + 10-question exam + challenge problems + full summary deck.', when: 'You want true mastery, not just to pass a test, but to own the concept.', example: '"Central Limit Theorem" when you want to explain it from scratch to someone else.' },
     ],
     modesTitle: 'Six ways to learn',
     modesSub: 'Every mode serves a different purpose in the learning cycle.',
     modes: [
-      { icon: '💡', label: 'Explain', desc: 'A clear, layered explanation of any concept — from simple to deep, adjusted to your knowledge level.' },
+      { icon: '💡', label: 'Explain', desc: 'A clear, layered explanation of any concept, from simple to deep, adjusted to your knowledge level.' },
       { icon: '⚡', label: 'Quiz', desc: 'Rapid-fire questions to test recall. Instant feedback on every answer.' },
       { icon: '📄', label: 'Exam', desc: 'A structured, scored exam that simulates a real academic test on the topic.' },
       { icon: '🧩', label: 'Challenge', desc: 'Hard, application-level problems. Designed to reveal gaps you didn\'t know you had.' },
-      { icon: '🔑', label: 'Key Concepts', desc: 'A clean list of the essential ideas — what you must know to claim mastery.' },
+      { icon: '🔑', label: 'Key Concepts', desc: 'A clean list of the essential ideas: what you must know to claim mastery.' },
     ],
     /* how */
     howTitle: 'How to use it',
@@ -69,7 +69,7 @@ const T = {
       { icon: '🔄', title: 'Use the full loop', desc: 'Explain → Quiz → Exam is not optional. Each step reinforces the last. Skipping any one of them leaves gaps.' },
       { icon: '📝', title: 'Teach it back', desc: 'After reading an explanation, close it and try to explain the topic in your own words. If you get stuck, that\'s exactly where to focus.' },
       { icon: '🌙', title: 'Switch to Night Mode', desc: 'Long study sessions are easier on your eyes in dark mode. Set it once in your Profile and it sticks.' },
-      { icon: '🌐', title: 'Use your language', desc: 'Content is generated in the language you select — English or Spanish. Set it in your Profile for a consistent experience.' },
+      { icon: '🌐', title: 'Use your language', desc: 'Content is generated in the language you select, English or Spanish. Set it in your Profile for a consistent experience.' },
     ],
     /* auth */
     authTitle: 'Ready to start?',
@@ -96,30 +96,30 @@ const T = {
     heroEyebrow: 'LA TÉCNICA FEYNMAN',
     heroTitle: 'Dominá cualquier tema.',
     heroTitleAccent: 'Desde los principios.',
-    heroSub: 'Mastery Module convierte cualquier tema en un motor de aprendizaje — explicaciones, quizzes y desafíos — construidos alrededor de una sola idea: solo entendés algo de verdad cuando podés explicarlo simple.',
+    heroSub: 'Mastery Module convierte cualquier tema en un motor de aprendizaje: explicaciones, quizzes y desafíos, construidos alrededor de una sola idea. Solo entendés algo de verdad cuando podés explicarlo simple.',
     heroLogin: 'Iniciar sesión', heroSignup: 'Registrarse gratis',
     whatTitle: '¿Qué es Mastery Module?',
-    whatSub: 'Parte motor de explicación, parte compañero de estudio — todo alrededor de una sola idea: no entendés algo de verdad hasta que podés enseñarlo.',
-    whatP1: 'Mastery Module se basa en una idea: solo entendés algo de verdad cuando podés explicarlo de forma simple. Eso es la Técnica Feynman — y es el motor de todo lo que hacemos acá.',
+    whatSub: 'Parte motor de explicación, parte compañero de estudio. Todo alrededor de una sola idea: no entendés algo de verdad hasta que podés enseñarlo.',
+    whatP1: 'Mastery Module se basa en una idea: solo entendés algo de verdad cuando podés explicarlo de forma simple. Eso es la Técnica Feynman, y es el motor de todo lo que hacemos acá.',
     whatP2: 'Ingresá cualquier tema. Recibís una explicación desde los principios fundamentales, adaptada a tu nivel, y luego te desafía a demostrar que lo entendiste.',
     /* etiquetas de sección */
     badgeIdea: 'LA IDEA', badgeModes: 'MODOS', badgeWorkflow: 'FLUJO', badgeTips: 'TIPS',
     /* modos de velocidad/profundidad */
     speedModesTitle: 'Elegí la profundidad',
-    speedModesSub: 'Tres modos — elegí el que se adapta a tu situación ahora.',
+    speedModesSub: 'Tres modos. Elegí el que se adapta a tu situación ahora.',
     speedModes: [
       { icon: '⚡', label: 'Lite', desc: 'Resumen esencial en ~2 min. Idea central, 2 conceptos clave, 3 preguntas.', when: 'Repaso rápido, poco tiempo, o simplemente querés entender un concepto.', example: '"¿Qué es una derivada?" antes de arrancar con un parcial.' },
       { icon: '🚀', label: 'Rápido', desc: 'Explicación completa + quiz + examen de 5 preguntas. El ciclo de estudio del día a día.', when: 'Estás estudiando y querés explicación + práctica en un solo paso.', example: '"Modelo Black-Scholes" cuando te preparás para un final de finanzas.' },
-      { icon: '🔬', label: 'Profundo', desc: 'Análisis a fondo + examen de 10 preguntas + desafíos + slides de resumen.', when: 'Querés dominar el tema de verdad — no solo aprobar, sino poder explicarlo.', example: '"Teorema Central del Límite" cuando querés poder enseñárselo a alguien más.' },
+      { icon: '🔬', label: 'Profundo', desc: 'Análisis a fondo + examen de 10 preguntas + desafíos + slides de resumen.', when: 'Querés dominar el tema de verdad, no solo aprobar, sino poder explicarlo.', example: '"Teorema Central del Límite" cuando querés poder enseñárselo a alguien más.' },
     ],
     modesTitle: 'Seis formas de aprender',
     modesSub: 'Cada modo cumple un propósito distinto en el ciclo de aprendizaje.',
     modes: [
-      { icon: '💡', label: 'Explicar', desc: 'Una explicación clara y en capas de cualquier concepto — de lo simple a lo profundo, ajustada a tu nivel.' },
+      { icon: '💡', label: 'Explicar', desc: 'Una explicación clara y en capas de cualquier concepto, de lo simple a lo profundo, ajustada a tu nivel.' },
       { icon: '⚡', label: 'Quiz', desc: 'Preguntas rápidas para testear lo que recordás. Feedback instantáneo en cada respuesta.' },
       { icon: '📄', label: 'Examen', desc: 'Un examen estructurado y con puntaje que simula una prueba académica real sobre el tema.' },
       { icon: '🧩', label: 'Desafío', desc: 'Problemas de aplicación difíciles. Diseñados para revelar vacíos que no sabías que tenías.' },
-      { icon: '🔑', label: 'Conceptos Clave', desc: 'Una lista limpia de las ideas esenciales — lo que tenés que saber para decir que dominás el tema.' },
+      { icon: '🔑', label: 'Conceptos Clave', desc: 'Una lista limpia de las ideas esenciales: lo que tenés que saber para decir que dominás el tema.' },
     ],
     howTitle: 'Cómo usarlo',
     howSub: 'Un ciclo simple que construye comprensión profunda rápido.',
@@ -136,7 +136,7 @@ const T = {
       { icon: '🔄', title: 'Usá el ciclo completo', desc: 'Explicar → Quiz → Examen no es opcional. Cada paso refuerza al anterior. Saltarse uno deja huecos.' },
       { icon: '📝', title: 'Enseñalo vos', desc: 'Después de leer una explicación, cerrala e intentá explicar el tema con tus propias palabras. Donde te trabes, ahí está el hueco.' },
       { icon: '🌙', title: 'Usá el Modo Noche', desc: 'Las sesiones largas son más cómodas para los ojos en modo oscuro. Configuralo en tu Perfil y queda guardado.' },
-      { icon: '🌐', title: 'Usá tu idioma', desc: 'El contenido se genera en el idioma que elijas — inglés o español. Configuralo en tu Perfil para una experiencia consistente.' },
+      { icon: '🌐', title: 'Usá tu idioma', desc: 'El contenido se genera en el idioma que elijas, inglés o español. Configuralo en tu Perfil para una experiencia consistente.' },
     ],
     authTitle: '¿Listo para empezar?',
     authSub: 'Creá tu cuenta gratuita en segundos.',
@@ -446,7 +446,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
                   }}>✕</div>
                 </div>
                 <div style={{ fontSize: 8, color: TH.textFaint, textAlign: 'center', marginBottom: 10 }}>
-                  {lang === 'es' ? 'Opcional — personaliza las analogías y el quiz con lo que te gusta' : 'Optional — personalizes analogies & quiz with your interests'}
+                  {lang === 'es' ? 'Opcional, personaliza las analogías y el quiz con lo que te gusta' : 'Optional, personalizes analogies & quiz with your interests'}
                 </div>
 
                 {/* Divider */}
