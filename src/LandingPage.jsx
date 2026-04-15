@@ -435,7 +435,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
                     background: TH.surface,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0, fontSize: 10,
-                  }}>✦</div>
+                  }}>🎲</div>
                   {/* X button */}
                   <div style={{
                     width: 20, height: 20, borderRadius: 5,
