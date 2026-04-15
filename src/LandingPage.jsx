@@ -402,7 +402,22 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
                   <span style={{ flex: 1, fontSize: 10, color: TH.text, fontWeight: 500 }}>
                     {lang === 'es' ? 'Interés Compuesto' : 'Compound Interest'}
                   </span>
-                  <span style={{ fontSize: 10, color: TH.textFaint }}>⬆</span>
+                  {/* Dice button */}
+                  <div style={{
+                    width: 22, height: 22, borderRadius: 6,
+                    border: '1px solid ' + TH.border,
+                    background: TH.surface,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 11, flexShrink: 0,
+                  }}>🎲</div>
+                  {/* Upload/document button */}
+                  <div style={{
+                    width: 22, height: 22, borderRadius: 6,
+                    border: '1px solid ' + TH.border,
+                    background: TH.surface,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 10, flexShrink: 0, color: TH.textSecondary, fontWeight: 700,
+                  }}>📄</div>
                 </div>
 
                 {/* Interests input */}
