@@ -1644,6 +1644,7 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
   const[activeSection,setActiveSection]=useState("explain");const[fileError,setFileError]=useState("");
   const[interest,setInterest]=useState("");const[interestFocused,setInterestFocused]=useState(false);const[interestError,setInterestError]=useState(false);
   const[mod,setMod]=useState("general");
+  const[classifierReady,setClassifierReady]=useState(true);/* true=ready, false=waiting for classifier */
   const[mode,setMode]=useState("fast");/* "fast" or "think" */
   const[simplifiedBlocks,setSimplifiedBlocks]=useState(null);const[simplifying,setSimplifying]=useState(false);
   const mc=MOD_CONF[mod]||MOD_CONF.general;
@@ -1671,6 +1672,7 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
     setValidationError(false);setPhase("loading");setError(null);setContent(null);setSimplifiedBlocks(null);setSimplifying(false);
     setQuizAnswers({});setQuizSubmitted(false);setExamAnswers({});setExamSubmitted(false);setChallengeAnswers({});setChallengeSubmitted(false);
     setLoadingPhase(0);setActiveSection("explain");usedRef.current.clear();
+    setMod("general");setClassifierReady(false);/* reset module + show detecting state */
     /* ── Fire-and-forget AI classifier: snaps colors + jokes to correct module within ~1s ── */
     /* Fires BEFORE the if(isLite) branch, so it works for ALL modes: lite, fast, think      */
     const classifyInput=(topic||fileContent||"").slice(0,300);
@@ -1681,8 +1683,8 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
           system:"Reply with ONLY one word — no punctuation, no explanation: math, stats, econ, or finance.",
           messages:[{role:"user",content:"Topic: "+classifyInput}]})})
       .then(r=>r.json())
-      .then(d=>{const m=(d.content||[]).map(b=>b.text||"").join("").trim().toLowerCase().replace(/[^a-z]/g,"");if(["math","stats","econ","finance"].includes(m))setMod(m);})
-      .catch(()=>{});/* silent fail — general theme stays as fallback */
+      .then(d=>{const m=(d.content||[]).map(b=>b.text||"").join("").trim().toLowerCase().replace(/[^a-z]/g,"");if(["math","stats","econ","finance"].includes(m))setMod(m);setClassifierReady(true);})
+      .catch(()=>{setClassifierReady(true);});/* always reveal loading UI even on classifier failure */
     }
     const detectedMod=mod;/* snapshot for _meta logging only — real mod set async above */
 
@@ -1929,18 +1931,26 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
     {error&&<div style={{maxWidth:540,margin:"0 auto 8px",padding:"9px 14px",background:TH.redBg,border:"1px solid rgba(239,68,68,0.12)",borderRadius:7,color:TH.red,fontSize:11,textAlign:"center"}}>{error}</div>}
 
     {phase==="loading"&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,padding:"48px 20px 36px"}}>
-      <div style={{position:"relative",width:50,height:50}}><div style={{width:50,height:50,border:"2px solid "+TH.borderLight,borderTopColor:mt.accent,borderRadius:"50%",animation:"spin 1s linear infinite"}}/><div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:18}}>{mc.icon}</div></div>
-      {/* Thinking text with animated dots */}
+      {/* Spinner — neutral until classifier resolves, then module-colored */}
+      <div style={{position:"relative",width:50,height:50}}>
+        <div style={{width:50,height:50,border:"2px solid "+TH.borderLight,borderTopColor:classifierReady?mt.accent:TH.textMuted,borderRadius:"50%",animation:"spin 1s linear infinite",transition:"border-top-color 0.4s ease"}}/>
+        {classifierReady&&<div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:18,animation:"fadeUp 0.3s ease"}}>{mc.icon}</div>}
+      </div>
+      {/* Thinking text — "Identifying topic" until ready, then normal thinking+dots */}
       <div style={{display:"flex",alignItems:"center",gap:2}}>
-        <span style={{color:mt.accent,fontSize:13,fontWeight:600,fontFamily:"'Bricolage Grotesque',sans-serif"}}>{loadProg>=88?t.almostThere:t.thinking}</span>
-        {loadProg<88&&<span style={{display:"inline-flex",gap:2,marginLeft:2}}>{[0,1,2].map(i=><span key={i} style={{width:4,height:4,borderRadius:"50%",background:mt.accent,animation:"thinkDot 1.4s ease-in-out infinite",animationDelay:i*0.2+"s"}}/>)}</span>}
+        {!classifierReady
+          ?<span style={{color:TH.textMuted,fontSize:13,fontWeight:600,fontFamily:"'Bricolage Grotesque',sans-serif"}}>{lang==="es"?"Identificando tema":"Identifying topic"}<span style={{display:"inline-flex",gap:2,marginLeft:3}}>{[0,1,2].map(i=><span key={i} style={{width:4,height:4,borderRadius:"50%",background:TH.textMuted,animation:"thinkDot 1.4s ease-in-out infinite",animationDelay:i*0.2+"s"}}/>)}</span></span>
+          :<><span style={{color:mt.accent,fontSize:13,fontWeight:600,fontFamily:"'Bricolage Grotesque',sans-serif"}}>{loadProg>=88?t.almostThere:t.thinking}</span>
+          {loadProg<88&&<span style={{display:"inline-flex",gap:2,marginLeft:2}}>{[0,1,2].map(i=><span key={i} style={{width:4,height:4,borderRadius:"50%",background:mt.accent,animation:"thinkDot 1.4s ease-in-out infinite",animationDelay:i*0.2+"s"}}/>)}</span>}</>
+        }
       </div>
-      <div style={{textAlign:"center",maxWidth:460,padding:"0 16px"}}>
+      {/* Loading message — only show after classifier resolves */}
+      {classifierReady&&<div style={{textAlign:"center",maxWidth:460,padding:"0 16px"}}>
         <p style={{color:TH.textSecondary,fontWeight:500,fontSize:12.5,lineHeight:1.65,fontStyle:loadingMsg.startsWith("\u201C")?"italic":"normal",animation:"fadeUp 0.5s ease",minHeight:52,marginBottom:8}} key={loadingMsg}>{loadingMsg}</p>
-      </div>
+      </div>}
       <div style={{width:"100%",maxWidth:280,marginTop:6}}>
         <div style={{height:5,borderRadius:4,background:TH.borderLight,overflow:"hidden",position:"relative"}}>
-          <div style={{height:"100%",borderRadius:4,background:"linear-gradient(90deg, "+mt.accent+", "+mt.accentLight+", "+mt.accent+")",backgroundSize:"200% 100%",animation:"gradientShift 2s ease infinite",width:loadProg+"%",transition:"width 0.5s cubic-bezier(0.22,1,0.36,1)"}}/>
+          <div style={{height:"100%",borderRadius:4,background:"linear-gradient(90deg, "+(classifierReady?mt.accent:TH.textMuted)+", "+(classifierReady?mt.accentLight:TH.textSecondary)+", "+(classifierReady?mt.accent:TH.textMuted)+")",backgroundSize:"200% 100%",animation:"gradientShift 2s ease infinite",width:loadProg+"%",transition:"width 0.5s cubic-bezier(0.22,1,0.36,1)"}}/>
         </div>
         <p style={{color:TH.textFaint,fontSize:8,marginTop:6,textAlign:"center",letterSpacing:0.5}}>{Math.round(loadProg)}%</p>
       </div>
