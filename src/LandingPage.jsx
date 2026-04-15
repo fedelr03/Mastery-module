@@ -25,19 +25,16 @@ const T = {
     heroEyebrow: 'THE FEYNMAN TECHNIQUE',
     heroTitle: 'Master anything.',
     heroTitleAccent: 'From first principles.',
-    heroSub: 'Mastery Module turns any topic into a structured learning engine — explanations, quizzes, flashcards, and challenges, built on the Feynman Technique.',
+    heroSub: 'Mastery Module turns any topic into a structured learning engine — explanations, quizzes, and challenges — built around one idea: you only truly understand something when you can explain it simply.',
     heroLogin: 'Log In', heroSignup: 'Sign Up Free',
     /* what */
     whatTitle: 'What is Mastery Module?',
-    whatSub: 'It\'s not a textbook. It\'s not a search engine. It\'s a learning system.',
+    whatSub: 'Part explanation engine, part study partner — built around one idea: you don\'t really know something until you can teach it.',
     whatP1: 'Mastery Module is built on one idea: you only truly understand something when you can explain it simply. That\'s the Feynman Technique — and it\'s the engine behind everything here.',
     whatP2: 'Enter any topic. Get a first-principles explanation tailored to your level, then get challenged to prove you understood it.',
     /* modes */
     /* section badge labels */
     badgeIdea: 'THE IDEA', badgeModes: 'MODES', badgeWorkflow: 'WORKFLOW', badgeTips: 'TIPS',
-    /* hero mockup labels */
-    heroMockupChips: ['💡 Explain','⚡ Quiz','📄 Exam','🧩 Challenge','🔑 Keys','🗂️ Flashcards'],
-    heroMockupTopic: 'COMPOUND INTEREST',
     /* speed/depth modes */
     speedModesTitle: 'Choose your depth',
     speedModesSub: 'Three modes — pick the one that fits your situation right now.',
@@ -54,7 +51,6 @@ const T = {
       { icon: '📄', label: 'Exam', desc: 'A structured, scored exam that simulates a real academic test on the topic.' },
       { icon: '🧩', label: 'Challenge', desc: 'Hard, application-level problems. Designed to reveal gaps you didn\'t know you had.' },
       { icon: '🔑', label: 'Key Concepts', desc: 'A clean list of the essential ideas — what you must know to claim mastery.' },
-      { icon: '🗂️', label: 'Flashcards', desc: 'Auto-generated flashcard decks for spaced repetition and long-term retention.' },
     ],
     /* how */
     howTitle: 'How to use it',
@@ -64,7 +60,6 @@ const T = {
       { n: '02', title: 'Start with Explain', desc: 'Read the explanation carefully. Don\'t skim. This is your foundation. If something is unclear, hit Simplify.' },
       { n: '03', title: 'Quiz yourself immediately', desc: 'Knowledge fades fast without retrieval practice. Run the Quiz right after reading to lock concepts in.' },
       { n: '04', title: 'Go deeper with Exam or Challenge', desc: 'When you feel confident, stress-test it. Exams score you. Challenges push you beyond recall into real application.' },
-      { n: '05', title: 'Lock it with Flashcards', desc: 'Generate a flashcard deck and review it over multiple days. Spaced repetition is how memory becomes permanent.' },
     ],
     /* tips */
     tipsTitle: 'Tips to get the most out of it',
@@ -101,17 +96,14 @@ const T = {
     heroEyebrow: 'LA TÉCNICA FEYNMAN',
     heroTitle: 'Dominá cualquier tema.',
     heroTitleAccent: 'Desde los principios.',
-    heroSub: 'Mastery Module convierte cualquier tema en un motor de aprendizaje — explicaciones, quizzes, flashcards y desafíos, construidos sobre la Técnica Feynman.',
+    heroSub: 'Mastery Module convierte cualquier tema en un motor de aprendizaje — explicaciones, quizzes y desafíos — construidos alrededor de una sola idea: solo entendés algo de verdad cuando podés explicarlo simple.',
     heroLogin: 'Iniciar sesión', heroSignup: 'Registrarse gratis',
     whatTitle: '¿Qué es Mastery Module?',
-    whatSub: 'No es un libro. No es un buscador. Es un sistema de aprendizaje.',
+    whatSub: 'Parte motor de explicación, parte compañero de estudio — todo alrededor de una sola idea: no entendés algo de verdad hasta que podés enseñarlo.',
     whatP1: 'Mastery Module se basa en una idea: solo entendés algo de verdad cuando podés explicarlo de forma simple. Eso es la Técnica Feynman — y es el motor de todo lo que hacemos acá.',
     whatP2: 'Ingresá cualquier tema. Recibís una explicación desde los principios fundamentales, adaptada a tu nivel, y luego te desafía a demostrar que lo entendiste.',
     /* etiquetas de sección */
     badgeIdea: 'LA IDEA', badgeModes: 'MODOS', badgeWorkflow: 'FLUJO', badgeTips: 'TIPS',
-    /* chips del mockup del hero */
-    heroMockupChips: ['💡 Explicar','⚡ Quiz','📄 Examen','🧩 Desafío','🔑 Claves','🗂️ Flashcards'],
-    heroMockupTopic: 'INTERÉS COMPUESTO',
     /* modos de velocidad/profundidad */
     speedModesTitle: 'Elegí la profundidad',
     speedModesSub: 'Tres modos — elegí el que se adapta a tu situación ahora.',
@@ -128,7 +120,6 @@ const T = {
       { icon: '📄', label: 'Examen', desc: 'Un examen estructurado y con puntaje que simula una prueba académica real sobre el tema.' },
       { icon: '🧩', label: 'Desafío', desc: 'Problemas de aplicación difíciles. Diseñados para revelar vacíos que no sabías que tenías.' },
       { icon: '🔑', label: 'Conceptos Clave', desc: 'Una lista limpia de las ideas esenciales — lo que tenés que saber para decir que dominás el tema.' },
-      { icon: '🗂️', label: 'Flashcards', desc: 'Mazos de flashcards generados automáticamente para repetición espaciada y retención a largo plazo.' },
     ],
     howTitle: 'Cómo usarlo',
     howSub: 'Un ciclo simple que construye comprensión profunda rápido.',
@@ -137,7 +128,6 @@ const T = {
       { n: '02', title: 'Empezá con Explicar', desc: 'Leé la explicación con atención. No la escanees. Es tu base. Si algo no queda claro, usá Simplificar.' },
       { n: '03', title: 'Hacé el Quiz de inmediato', desc: 'El conocimiento se desvanece rápido sin práctica de recuperación. Hacé el Quiz justo después de leer para fijar los conceptos.' },
       { n: '04', title: 'Profundizá con Examen o Desafío', desc: 'Cuando te sentís seguro, poné a prueba ese conocimiento. Los exámenes te puntúan. Los desafíos te llevan más allá del recuerdo a la aplicación real.' },
-      { n: '05', title: 'Fijalo con Flashcards', desc: 'Generá un mazo y repasalo durante varios días. La repetición espaciada es como la memoria se vuelve permanente.' },
     ],
     tipsTitle: 'Tips para sacarle el máximo',
     tips: [
@@ -174,6 +164,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
   const [lang, setLang] = useState(() => localStorage.getItem('mm_lang') || 'es');
   const [dark, setDark] = useState(() => localStorage.getItem('mm_dark') === 'true');
   const [scrolled, setScrolled] = useState(false);
+  const [morphKey, setMorphKey] = useState(0);
 
   const TH = getTheme(dark);
   const t = T[lang];
@@ -183,7 +174,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
   const howRef = useRef(null);
   const tipsRef = useRef(null);
 
-  const changeLang = (l) => { setLang(l); localStorage.setItem('mm_lang', l); };
+  const changeLang = (l) => { setLang(l); localStorage.setItem('mm_lang', l); setMorphKey(k => k + 1); };
   const toggleDark = () => { const n = !dark; setDark(n); localStorage.setItem('mm_dark', String(n)); };
 
   useEffect(() => {
@@ -219,10 +210,20 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes morphIn {
+          0%   { opacity: 0; filter: blur(8px); transform: translateY(6px) scale(0.98); }
+          100% { opacity: 1; filter: blur(0px); transform: translateY(0)   scale(1);    }
+        }
         .lp-fade { animation: fadeUp 0.5s ease both; }
+        .lp-morph { animation: morphIn 0.38s cubic-bezier(0.22,1,0.36,1) both; }
         .lp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important; }
         .lp-card { transition: transform 0.2s, box-shadow 0.2s; }
         input { font-size: 16px; }
+        @media (max-width: 640px) {
+          .lp-nav-links { display: none !important; }
+          .lp-nav-right { gap: 6px !important; }
+          .lp-nav-right .lp-lang-toggle span { display: none; }
+        }
       `}</style>
 
       {/* ── STICKY NAV ── */}
@@ -232,8 +233,9 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         backdropFilter: scrolled ? 'blur(12px)' : 'none',
         borderBottom: scrolled ? '1px solid ' + TH.border : '1px solid transparent',
         transition: 'all 0.25s',
+        overflow: 'hidden',
       }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 18, fontWeight: 800, color: TH.accent }}>&#x2211;</span>
@@ -258,7 +260,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             ))}
           </div>
           {/* Right controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="lp-nav-right" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {/* Lang toggle */}
             <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', border: '1px solid ' + TH.border }}>
               {['es', 'en'].map(l => (
@@ -278,7 +280,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             <button onClick={() => goToAuth('login')} style={{
               padding: '6px 14px', borderRadius: 8, border: '1px solid ' + TH.border,
               background: TH.surface, color: TH.textSecondary, fontSize: 11, fontWeight: 700,
-              cursor: 'pointer', fontFamily: 'inherit',
+              cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
             }}>{t.heroLogin}</button>
           </div>
         </div>
@@ -286,7 +288,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
 
       {/* ── HERO ── */}
       <section style={{ paddingTop: 120, paddingBottom: 90, textAlign: 'center', padding: '120px 20px 90px' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto' }} className="lp-fade">
+        <div key={morphKey} style={{ maxWidth: 680, margin: '0 auto' }} className="lp-fade lp-morph">
           {/* Eyebrow pill */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.25)', borderRadius: 20, padding: '5px 14px', marginBottom: 28, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 2 }}>
             <span>&#x2211;</span> {t.heroEyebrow}
@@ -316,49 +318,165 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
           </div>
         </div>
 
-        {/* Hero visual — module mockup */}
-        <div style={{ maxWidth: 680, margin: '56px auto 0', position: 'relative' }}>
+        {/* Hero visual — faithful app replica */}
+        <div style={{ maxWidth: 640, margin: '56px auto 0', position: 'relative' }}>
+          {/* Browser chrome */}
           <div style={{
-            background: TH.surface, borderRadius: 20, border: '1px solid ' + TH.border,
-            boxShadow: dark ? '0 24px 80px rgba(0,0,0,0.5)' : '0 24px 80px rgba(0,0,0,0.08)',
-            padding: 20, textAlign: 'left', overflow: 'hidden',
+            background: dark ? '#0e0e11' : '#e8e4dc',
+            borderRadius: '16px 16px 0 0',
+            padding: '10px 14px',
+            display: 'flex', alignItems: 'center', gap: 6,
+            borderBottom: '1px solid ' + TH.border,
           }}>
-            {/* Fake top bar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 18 }}>
-              {['#ff5f57','#febc2e','#28c840'].map((c,i) => (
-                <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />
-              ))}
-              <div style={{ flex: 1, height: 8, borderRadius: 4, background: TH.bg, marginLeft: 8 }} />
-            </div>
-            {/* Fake content rows */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-              {t.heroMockupChips.map((m, i) => (
+            {['#ff5f57','#febc2e','#28c840'].map((c,i) => (
+              <div key={i} style={{ width: 9, height: 9, borderRadius: '50%', background: c, opacity: 0.85 }} />
+            ))}
+            <div style={{ flex: 1, height: 7, borderRadius: 20, background: dark ? '#2a2a38' : '#d0ccc3', marginLeft: 8, maxWidth: 260 }} />
+          </div>
+
+          {/* App window */}
+          <div style={{
+            background: TH.bg,
+            borderRadius: '0 0 16px 16px',
+            boxShadow: dark ? '0 24px 80px rgba(0,0,0,0.55)' : '0 24px 80px rgba(0,0,0,0.1)',
+            overflow: 'hidden',
+            border: '1px solid ' + TH.border,
+            borderTop: 'none',
+          }}>
+            {/* Mini nav bar */}
+            <div style={{
+              display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
+              padding: '8px 14px', gap: 6,
+              borderBottom: '1px solid ' + TH.border,
+              background: TH.bg,
+            }}>
+              {[
+                { label: lang === 'es' ? 'Módulo' : 'Module', accent: true },
+                { label: lang === 'es' ? 'Perfil' : 'Profile', accent: false },
+                { label: lang === 'es' ? 'Salir' : 'Log Out', accent: false },
+              ].map((b, i) => (
                 <div key={i} style={{
-                  padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
-                  background: i === 0 ? TH.accentBg : TH.bg,
-                  color: i === 0 ? TH.accent : TH.textMuted,
-                  border: '1px solid ' + (i === 0 ? 'rgba(232,148,10,0.3)' : TH.border),
-                }}>{m}</div>
+                  padding: '3px 10px', borderRadius: 6, fontSize: 9, fontWeight: 700,
+                  border: '1px solid ' + (b.accent ? TH.accent : TH.border),
+                  color: b.accent ? TH.accent : TH.textSecondary,
+                  background: 'transparent',
+                }}>{b.label}</div>
               ))}
             </div>
-            {/* Fake explanation block */}
-            <div style={{ background: TH.bg, borderRadius: 12, padding: '14px 16px', border: '1px solid ' + TH.borderLight }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: TH.accent, marginBottom: 8, letterSpacing: 1 }}>{t.heroMockupTopic}</div>
-              {[1,0.7,0.85,0.5].map((w,i) => (
-                <div key={i} style={{ height: 8, borderRadius: 4, background: TH.border, width: (w*100)+'%', marginBottom: 7 }} />
-              ))}
-              <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                {[0.35,0.25].map((w,i) => (
-                  <div key={i} style={{ height: 7, borderRadius: 4, background: TH.borderLight, width: (w*100)+'%' }} />
+
+            {/* App content */}
+            <div style={{ padding: '22px 28px 24px', textAlign: 'center' }}>
+              {/* Subject pill */}
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                border: '1px solid ' + TH.border, borderRadius: 20,
+                padding: '3px 12px', marginBottom: 12, fontSize: 8, fontWeight: 700,
+                color: TH.textSecondary, letterSpacing: 1,
+              }}>
+                🎯 {lang === 'es' ? 'MATEMÁTICA · ESTADÍSTICA · ECONOMÍA · FINANZAS' : 'MATH · STATISTICS · ECONOMICS · FINANCE'}
+              </div>
+
+              {/* App title */}
+              <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', color: TH.text, marginBottom: 6 }}>
+                {lang === 'es' ? 'Módulo de Dominio' : 'Mastery Module'}
+              </div>
+              <div style={{ fontSize: 10, color: TH.textSecondary, marginBottom: 18, lineHeight: 1.5 }}>
+                {lang === 'es'
+                  ? 'Escribí un tema de mate, estadística, economía o finanzas.'
+                  : 'Type a topic in math, statistics, economics, or finance.'}
+              </div>
+
+              {/* Input card */}
+              <div style={{
+                background: TH.surface, borderRadius: 14, border: '1px solid ' + TH.border,
+                padding: '12px', textAlign: 'left',
+                boxShadow: dark ? '0 4px 20px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.05)',
+              }}>
+                {/* Topic input */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  background: TH.bg, borderRadius: 10, border: '1px solid ' + TH.border,
+                  padding: '8px 10px', marginBottom: 8,
+                }}>
+                  <span style={{ fontSize: 11 }}>🔍</span>
+                  <span style={{ flex: 1, fontSize: 10, color: TH.text, fontWeight: 500 }}>
+                    {lang === 'es' ? 'Interés Compuesto' : 'Compound Interest'}
+                  </span>
+                  <span style={{ fontSize: 10, color: TH.textFaint }}>⬆</span>
+                </div>
+
+                {/* Interests input */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: TH.bg, borderRadius: 10,
+                  border: '1px solid ' + TH.accentBg,
+                  padding: '7px 10px', marginBottom: 6,
+                }}>
+                  <span style={{ fontSize: 10 }}>🎯</span>
+                  <span style={{ fontSize: 10 }}>🎮</span>
+                  <span style={{ flex: 1, fontSize: 10, color: TH.textMuted }}>
+                    {lang === 'es' ? 'Fútbol' : 'Basketball'}
+                  </span>
+                  <span style={{ fontSize: 9, color: TH.textFaint }}>✨</span>
+                </div>
+                <div style={{ fontSize: 8, color: TH.textFaint, textAlign: 'center', marginBottom: 10 }}>
+                  {lang === 'es' ? 'Opcional — personaliza las analogías y el quiz con lo que te gusta' : 'Optional — personalizes analogies & quiz with your interests'}
+                </div>
+
+                {/* Divider */}
+                <div style={{ height: 1, background: TH.borderLight, marginBottom: 10 }} />
+
+                {/* Mode buttons */}
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  {(lang === 'es'
+                    ? [['Lite','Resumen esencial'], ['Rápido','Explicación rápida + quiz'], ['Profundo','Análisis completo + examen']]
+                    : [['Lite','Essential overview'], ['Fast','Quick explanation + quiz'], ['Think','Full deep dive + exam + deck']]
+                  ).map(([label, sub], i) => (
+                    <div key={i} style={{
+                      flex: 1, textAlign: 'center', padding: '6px 4px', borderRadius: 8,
+                      border: '1px solid ' + (i === 1 ? TH.border : 'transparent'),
+                      background: i === 1 ? TH.surface : 'transparent',
+                    }}>
+                      <div style={{ fontSize: 9, fontWeight: 800, color: i === 1 ? TH.text : TH.textMuted }}>{label}</div>
+                      <div style={{ fontSize: 7, color: i === 1 ? TH.accent : TH.textFaint, marginTop: 1 }}>{sub}</div>
+                    </div>
+                  ))}
+                  <div style={{
+                    padding: '7px 16px', borderRadius: 8,
+                    background: dark ? '#3a3a4a' : '#2a2a3a',
+                    color: '#fff', fontSize: 10, fontWeight: 800,
+                  }}>
+                    {lang === 'es' ? 'Dale' : 'Learn'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Topic chips */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 16 }}>
+                {(lang === 'es'
+                  ? ['Teorema de Pitágoras','Integrales','Distribución Normal','Ratios Financieros']
+                  : ['Pythagorean Theorem','Integrals','Normal Distribution','Financial Ratios']
+                ).map((chip, i) => (
+                  <div key={i} style={{
+                    padding: '3px 10px', borderRadius: 20, fontSize: 8, fontWeight: 500,
+                    border: '1px solid ' + TH.border, color: TH.textSecondary,
+                    background: TH.surface,
+                  }}>{chip}</div>
                 ))}
+              </div>
+
+              {/* Footer tag */}
+              <div style={{ marginTop: 14, fontSize: 8, color: TH.textFaint }}>
+                {lang === 'es' ? 'Aprendé desde los Principios Fundamentales' : 'Learn by First Principles'}
               </div>
             </div>
           </div>
+
           {/* Glow */}
           <div style={{
             position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)',
             width: 300, height: 60, borderRadius: '50%',
-            background: 'rgba(232,148,10,0.15)', filter: 'blur(30px)', pointerEvents: 'none',
+            background: 'rgba(232,148,10,0.12)', filter: 'blur(30px)', pointerEvents: 'none',
           }} />
         </div>
       </section>
@@ -366,12 +484,12 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
       {/* ── WHAT IS IT ── */}
       <section ref={whatRef} style={{ padding: '80px 20px', borderTop: '1px solid ' + TH.borderLight }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <div key={`hdr-what-${morphKey}`} className="lp-morph" style={{ textAlign: 'center', marginBottom: 48 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeIdea}</div>
             <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.whatTitle}</h2>
             <p style={{ fontSize: 14, color: TH.accent, fontWeight: 600 }}>{t.whatSub}</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 20 }}>
+          <div key={morphKey} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 20 }}>
             {[t.whatP1, t.whatP2].map((p, i) => (
               <div key={i} className="lp-card" style={{
                 background: TH.surface, borderRadius: 16, border: '1px solid ' + TH.border,
@@ -393,7 +511,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.modesTitle}</h2>
             <p style={{ fontSize: 13, color: TH.textMuted, maxWidth: 400, margin: '0 auto' }}>{t.modesSub}</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 16 }}>
+          <div key={morphKey} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 16 }}>
             {t.modes.map((m, i) => (
               <div key={i} className="lp-card" style={{
                 background: TH.surface, borderRadius: 14, border: '1px solid ' + TH.border,
@@ -416,7 +534,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.speedModesTitle}</h2>
             <p style={{ fontSize: 13, color: TH.textMuted, maxWidth: 440, margin: '0 auto' }}>{t.speedModesSub}</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 20 }}>
+          <div key={morphKey} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 20 }}>
             {t.speedModes.map((sm, i) => {
               const modeColors = [
                 { accent: '#059669', accentBg: 'rgba(5,150,105,0.07)', border: 'rgba(5,150,105,0.2)', tag: 'LITE' },
@@ -460,7 +578,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.howTitle}</h2>
             <p style={{ fontSize: 13, color: TH.textMuted }}>{t.howSub}</p>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div key={morphKey} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {t.steps.map((s, i) => (
               <div key={i} style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
                 <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 12, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: TH.accent, letterSpacing: 0.5, marginTop: 2 }}>
@@ -486,7 +604,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeTips}</div>
             <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text }}>{t.tipsTitle}</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 16 }}>
+          <div key={morphKey} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 16 }}>
             {t.tips.map((tip, i) => (
               <div key={i} className="lp-card" style={{
                 background: TH.surface, borderRadius: 14, border: '1px solid ' + TH.border,
