@@ -400,39 +400,50 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
                 }}>
                   <span style={{ fontSize: 11 }}>🔍</span>
                   <span style={{ flex: 1, fontSize: 10, color: TH.text, fontWeight: 500 }}>
-                    {lang === 'es' ? 'Interés Compuesto' : 'Compound Interest'}
+                    {lang === 'es' ? 'Derivadas' : 'Derivatives'}
                   </span>
-                  {/* Dice button */}
+                  {/* Upload icon — box with upward arrow */}
                   <div style={{
                     width: 22, height: 22, borderRadius: 6,
                     border: '1px solid ' + TH.border,
                     background: TH.surface,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, flexShrink: 0,
-                  }}>🎲</div>
-                  {/* Upload/document button */}
-                  <div style={{
-                    width: 22, height: 22, borderRadius: 6,
-                    border: '1px solid ' + TH.border,
-                    background: TH.surface,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 10, flexShrink: 0, color: TH.textSecondary, fontWeight: 700,
-                  }}>📄</div>
+                    flexShrink: 0,
+                  }}>
+                    <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke={TH.textMuted} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="2" width="10" height="10" rx="2"/>
+                      <path d="M7 9V5M5 7l2-2 2 2"/>
+                    </svg>
+                  </div>
                 </div>
 
                 {/* Interests input */}
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 6,
                   background: TH.bg, borderRadius: 10,
-                  border: '1px solid ' + TH.accentBg,
+                  border: '1px solid ' + TH.border,
                   padding: '7px 10px', marginBottom: 6,
                 }}>
                   <span style={{ fontSize: 10 }}>🎯</span>
-                  <span style={{ fontSize: 10 }}>🎮</span>
-                  <span style={{ flex: 1, fontSize: 10, color: TH.textMuted }}>
+                  <span style={{ flex: 1, fontSize: 10, color: TH.accent, fontWeight: 600 }}>
                     {lang === 'es' ? 'Fútbol' : 'Basketball'}
                   </span>
-                  <span style={{ fontSize: 9, color: TH.textFaint }}>✨</span>
+                  {/* Sparkle/dice icon */}
+                  <div style={{
+                    width: 20, height: 20, borderRadius: 5,
+                    border: '1px solid ' + TH.border,
+                    background: TH.surface,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0, fontSize: 10,
+                  }}>✦</div>
+                  {/* X button */}
+                  <div style={{
+                    width: 20, height: 20, borderRadius: 5,
+                    border: '1px solid ' + TH.border,
+                    background: TH.surface,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0, fontSize: 9, color: TH.textMuted, fontWeight: 700,
+                  }}>✕</div>
                 </div>
                 <div style={{ fontSize: 8, color: TH.textFaint, textAlign: 'center', marginBottom: 10 }}>
                   {lang === 'es' ? 'Opcional — personaliza las analogías y el quiz con lo que te gusta' : 'Optional — personalizes analogies & quiz with your interests'}
