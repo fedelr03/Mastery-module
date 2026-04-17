@@ -87,9 +87,32 @@ const T = {
         desc: 'When there\'s a specific problem you\'re stuck on, just type it into the search bar. This one goes deep: step by step, why each move, what to watch out for. Use it for the exercises that actually matter, the one on tomorrow\'s exam, the one your teacher said would be on it, the one that\'s been driving you crazy.',
       },
     ],
+    /* interests */
+    badgeInterests: 'INTERESTS',
+    interestsTitle: 'Tell it what you\'re into',
+    interestsSub: 'Drop a hobby, a sport, a band, a show, whatever. The explanations and quizzes get rewritten around it, and the concepts actually stick.',
+    interests: [
+      {
+        icon: '💡',
+        title: 'Analogies that click',
+        desc: 'Put "basketball" as your interest, and standard deviation gets explained through shooting consistency. Put "cooking", and it\'s about oven temperature variance. You\'re not forcing yourself to map the math onto something abstract, it\'s already in a world you understand.',
+      },
+      {
+        icon: '🎯',
+        title: 'Quiz questions in your world',
+        desc: 'Instead of a probability problem about balls in a jar, you get one about three-point attempts. Same math, but your brain stops fighting the setup. Concepts stick better when the context is something you actually care about.',
+      },
+    ],
     /* auth */
-    authTitle: 'Ready to start?',
-    authSub: 'Create your free account in seconds.',
+    authTitleSignup: 'Ready to start?',
+    authSubSignup: 'Create your free account in seconds.',
+    authTitleLogin: 'Log in to your account',
+    authSubLogin: 'Pick up where you left off.',
+    authTitleReturning: 'Welcome back',
+    authSubReturning: 'Just your password and you\'re in.',
+    authTitleForgot: 'Forgot your password?',
+    authSubForgot: 'We\'ll send you a reset link.',
+    notYou: 'Not you? Use a different account',
     welcomeBack: 'Welcome Back', createAccount: 'Create Account',
     loginSub: 'Log in to continue learning', signupSub: 'Sign up to start your journey',
     username: 'Username', usernamePH: 'How others will see you',
@@ -170,8 +193,31 @@ const T = {
         desc: 'Cuando hay un ejercicio específico que no te sale, escribilo directamente en la barra. Este va a fondo: paso por paso, por qué cada decisión, qué mirar. Usalo para los ejercicios que importan de verdad, el que cae en el parcial de mañana, el que dijo la profe que entra sí o sí, el que te viene volviendo loco.',
       },
     ],
-    authTitle: '¿Listo para empezar?',
-    authSub: 'Creá tu cuenta gratuita en segundos.',
+    /* intereses */
+    badgeInterests: 'INTERESES',
+    interestsTitle: 'Decile qué te gusta',
+    interestsSub: 'Poné un hobby, un deporte, una banda, una serie, lo que sea. Las explicaciones y los quizzes se reescriben alrededor de eso, y los conceptos te quedan de verdad.',
+    interests: [
+      {
+        icon: '💡',
+        title: 'Analogías que te hacen click',
+        desc: 'Poné "fútbol" como interés, y el desvío estándar te lo explica a través de la consistencia de un jugador tirando al arco. Poné "cocina", y pasa a ser la variación de temperatura del horno. No tenés que forzarte a mapear la mate sobre algo abstracto, ya viene en un mundo que entendés.',
+      },
+      {
+        icon: '🎯',
+        title: 'Preguntas en tu mundo',
+        desc: 'En vez de un problema de probabilidad con bolitas en un frasco, te cae uno sobre tiros libres. La mate es la misma, pero tu cabeza deja de pelear con el contexto. Los conceptos quedan mejor cuando lo que pasa en el problema te importa.',
+      },
+    ],
+    authTitleSignup: '¿Listo para empezar?',
+    authSubSignup: 'Creá tu cuenta gratuita en segundos.',
+    authTitleLogin: 'Iniciá sesión',
+    authSubLogin: 'Seguí donde lo dejaste.',
+    authTitleReturning: 'Bienvenido de vuelta',
+    authSubReturning: 'Solo tu contraseña y ya estás adentro.',
+    authTitleForgot: '¿Olvidaste tu contraseña?',
+    authSubForgot: 'Te mandamos un link para resetearla.',
+    notYou: '¿No sos vos? Usar otra cuenta',
     welcomeBack: 'Bienvenido de vuelta', createAccount: 'Crear cuenta',
     loginSub: 'Iniciá sesión para seguir aprendiendo', signupSub: 'Registrate y empezá a aprender',
     username: 'Nombre de usuario', usernamePH: 'Cómo te verán los demás',
@@ -198,6 +244,20 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
   const [scrolled, setScrolled] = useState(false);
   const [morphKey, setMorphKey] = useState(0);
 
+  // Returning user detection (signed in before, now cleared session / different device)
+  const [isReturning, setIsReturning] = useState(() => localStorage.getItem('mm_returning') === '1');
+  const [rememberedEmail, setRememberedEmail] = useState(() => localStorage.getItem('mm_last_email') || '');
+  const handleClearReturning = () => { setIsReturning(false); setRememberedEmail(''); };
+
+  // Auth mode state lifted up so the outer section header can react to it,
+  // and so the hero buttons can switch the form without custom events.
+  // Returning users default to login regardless of initialForm.
+  const [authMode, setAuthMode] = useState(() => {
+    if (isReturning && !initialForm) return 'login';
+    return initialForm || 'signup';
+  });
+  const [authForgot, setAuthForgot] = useState(false);
+
   const TH = getTheme(dark);
   const t = T[lang];
 
@@ -222,9 +282,10 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
 
   const scrollTo = (ref) => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   const goToAuth = (mode) => {
+    // set mode first so the form is already showing the right thing when scroll lands
+    setAuthForgot(false);
+    if (mode) setAuthMode(mode);
     scrollTo(authRef);
-    // slight delay so scroll lands first
-    setTimeout(() => authRef.current?.dispatchEvent(new CustomEvent('setmode', { detail: mode })), 350);
   };
 
   const navBtn = (label, onClick) => (
@@ -544,10 +605,34 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         <div style={{ maxWidth: 420, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.25)', borderRadius: 20, padding: '4px 12px', marginBottom: 14, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>&#x2211; MASTERY MODULE</div>
-            <h2 style={{ fontSize: 'clamp(24px,3.6vw,32px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 6 }}>{t.authTitle}</h2>
-            <p style={{ fontSize: 13, color: TH.textMuted }}>{t.authSub}</p>
+            {(() => {
+              const showingLogin = authMode === 'login' && !authForgot;
+              const showingSignup = authMode === 'signup' && !authForgot;
+              // Pick the right title/sub for the current mode
+              const title = authForgot ? t.authTitleForgot
+                : showingLogin && isReturning ? t.authTitleReturning
+                : showingLogin ? t.authTitleLogin
+                : t.authTitleSignup;
+              const sub = authForgot ? t.authSubForgot
+                : showingLogin && isReturning ? t.authSubReturning
+                : showingLogin ? t.authSubLogin
+                : t.authSubSignup;
+              return (
+                <>
+                  <h2 key={title} className="lp-morph" style={{ fontSize: 'clamp(24px,3.6vw,32px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 6 }}>{title}</h2>
+                  <p style={{ fontSize: 13, color: TH.textMuted }}>{sub}</p>
+                </>
+              );
+            })()}
           </div>
-          <AuthForm TH={TH} dark={dark} lang={lang} changeLang={changeLang} t={t} confirmedEmail={confirmedEmail} initialMode={initialForm || 'signup'} />
+          <AuthForm
+            TH={TH} dark={dark} lang={lang} changeLang={changeLang} t={t}
+            confirmedEmail={confirmedEmail}
+            mode={authMode} setMode={setAuthMode}
+            forgot={authForgot} setForgot={setAuthForgot}
+            isReturning={isReturning} rememberedEmail={rememberedEmail}
+            onClearReturning={handleClearReturning}
+          />
         </div>
       </section>
 
@@ -640,6 +725,29 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
+      {/* ── INTERESTS (personalization) ── */}
+      <section style={{ padding: '80px 20px', borderTop: '1px solid ' + TH.borderLight }}>
+        <div style={{ maxWidth: 860, margin: '0 auto' }}>
+          <div key={`hdr-int-${morphKey}`} className="lp-morph" style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeInterests}</div>
+            <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.interestsTitle}</h2>
+            <p style={{ fontSize: 13, color: TH.textMuted, maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>{t.interestsSub}</p>
+          </div>
+          <div key={morphKey} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(320px,1fr))', gap: 20 }}>
+            {t.interests.map((it, i) => (
+              <div key={i} className="lp-card" style={{
+                background: TH.surface, borderRadius: 16, border: '1px solid ' + TH.border,
+                padding: 26, boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.2)' : '0 4px 24px rgba(0,0,0,0.04)',
+              }}>
+                <div style={{ fontSize: 26, marginBottom: 14 }}>{it.icon}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: TH.text, marginBottom: 10, letterSpacing: '-0.01em' }}>{it.title}</div>
+                <p style={{ fontSize: 13, color: TH.textSecondary, lineHeight: 1.7 }}>{it.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── USE CASES (problem sets + single exercise) ── */}
       <section style={{ padding: '80px 20px', background: dark ? TH.surface : '#faf8f4', borderTop: '1px solid ' + TH.borderLight, borderBottom: '1px solid ' + TH.borderLight }}>
         <div style={{ maxWidth: 860, margin: '0 auto' }}>
@@ -725,20 +833,49 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
 }
 
 /* ═══════════ AUTH FORM (embedded, same as App.jsx logic) ═══════════ */
-function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, initialMode }) {
-  const [isLogin, setIsLogin] = useState(initialMode !== 'signup');
-  const [isForgot, setIsForgot] = useState(false);
+function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, mode, setMode, forgot, setForgot, isReturning, rememberedEmail, onClearReturning }) {
+  // mode and forgot are controlled by the parent now — derived booleans for readability
+  const isLogin = mode === 'login';
+  const isForgot = !!forgot;
+
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(rememberedEmail || '');
   const [password, setPassword] = useState('');
   const [confirmPW, setConfirmPW] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+
   useEffect(() => {
     if (confirmedEmail) setSuccess(t.emailConfirmed);
   }, [lang, confirmedEmail]);
+
+  // For returning users on landing: jump focus to password since email is already filled
+  useEffect(() => {
+    if (isReturning && isLogin && !isForgot && email && passwordRef.current) {
+      passwordRef.current.focus();
+    }
+    // run once on mount — intentionally no dep on state changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Clear transient errors/messages when switching modes
+  useEffect(() => {
+    setError(''); setSuccess('');
+  }, [mode, forgot]);
+
+  const handleNotYou = () => {
+    localStorage.removeItem('mm_returning');
+    localStorage.removeItem('mm_last_email');
+    setEmail('');
+    setPassword('');
+    onClearReturning?.();
+    // focus email so user can type a new one
+    setTimeout(() => emailRef.current?.focus(), 0);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -751,6 +888,9 @@ function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, initialMode }
       } else if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        // successful login — remember this user so next visit is faster
+        localStorage.setItem('mm_returning', '1');
+        localStorage.setItem('mm_last_email', email);
       } else {
         if (password !== confirmPW) { setError(t.pwMismatch); setLoading(false); return; }
         const { data, error } = await supabase.auth.signUp({ email, password });
@@ -759,6 +899,8 @@ function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, initialMode }
           setError(t.emailExists);
         } else {
           if (username.trim()) localStorage.setItem('mm_pending_username', username.trim());
+          // remember the email so when they come back to log in it's pre-filled
+          localStorage.setItem('mm_last_email', email);
           setSuccess(t.signupOk);
         }
       }
@@ -772,6 +914,10 @@ function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, initialMode }
     width: '100%', padding: '12px 14px', border: '1px solid ' + TH.border, borderRadius: 10,
     fontSize: 14, fontFamily: 'inherit', background: TH.bg, color: TH.text, outline: 'none', boxSizing: 'border-box',
   };
+
+  // Show the "Not you?" link only when: returning user, currently in login mode,
+  // email hasn't been manually changed from the remembered one
+  const showNotYou = isReturning && isLogin && !isForgot && email && email === rememberedEmail;
 
   return (
     <div style={{ background: TH.surface, borderRadius: 20, border: '1px solid ' + TH.border, padding: 28, boxShadow: dark ? '0 8px 40px rgba(0,0,0,0.35)' : '0 8px 40px rgba(0,0,0,0.06)' }}>
@@ -808,7 +954,7 @@ function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, initialMode }
         )}
         <div style={{ marginBottom: 14 }}>
           <label style={{ fontSize: 11, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>{t.email}</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
+          <input ref={emailRef} type="email" value={email} onChange={e => setEmail(e.target.value)} required
             placeholder="you@email.com" style={inputStyle}
             onFocus={e => e.target.style.borderColor = TH.accent}
             onBlur={e => e.target.style.borderColor = TH.border} />
@@ -816,7 +962,7 @@ function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, initialMode }
         {!isForgot && (
           <div style={{ marginBottom: 14 }}>
             <label style={{ fontSize: 11, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>{t.password}</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
+            <input ref={passwordRef} type="password" value={password} onChange={e => setPassword(e.target.value)} required
               placeholder={isLogin ? '••••••••' : t.pwPH} minLength={6} style={inputStyle}
               onFocus={e => e.target.style.borderColor = TH.accent}
               onBlur={e => e.target.style.borderColor = TH.border} />
@@ -847,17 +993,22 @@ function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, initialMode }
 
       <div style={{ textAlign: 'center', marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
         {isForgot ? (
-          <button onClick={() => { setIsForgot(false); setIsLogin(true); setError(''); setSuccess(''); }} style={{ background: 'none', border: 'none', color: TH.accent, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
+          <button type="button" onClick={() => { setForgot(false); setMode('login'); }} style={{ background: 'none', border: 'none', color: TH.accent, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
             {t.backToLogin}
           </button>
         ) : (
           <>
             {isLogin && (
-              <button onClick={() => { setIsForgot(true); setError(''); setSuccess(''); }} style={{ background: 'none', border: 'none', color: TH.textMuted, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500 }}>
+              <button type="button" onClick={() => setForgot(true)} style={{ background: 'none', border: 'none', color: TH.textMuted, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500 }}>
                 {t.forgotPW}
               </button>
             )}
-            <button onClick={() => { setIsLogin(!isLogin); setError(''); setSuccess(''); setUsername(''); setConfirmPW(''); }} style={{ background: 'none', border: 'none', color: TH.accent, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
+            {showNotYou && (
+              <button type="button" onClick={handleNotYou} style={{ background: 'none', border: 'none', color: TH.textMuted, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500 }}>
+                {t.notYou}
+              </button>
+            )}
+            <button type="button" onClick={() => { setMode(isLogin ? 'signup' : 'login'); setUsername(''); setConfirmPW(''); }} style={{ background: 'none', border: 'none', color: TH.accent, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
               {isLogin ? t.toSignup : t.toLogin}
             </button>
           </>
