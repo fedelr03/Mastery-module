@@ -30,21 +30,33 @@ function setCache(key, data) {
 }
 
 // ─── Per-user cooldown ───────────────────────────────────────────────────────
-const lastRequestTime = new Map();
-const COOLDOWN_MS = 3000; // 3 seconds between requests per user
-
+// ─── Per-user sliding-window burst allowance ────────────────────────────────
+// Each user may fire up to BURST_MAX requests within any BURST_WINDOW_MS window.
+// This allows the classifier+Sonnet+Haiku parallel fan-out from a single click
+// (3 requests) while still blocking rapid-fire abuse beyond that burst.
+const userRequestLog = new Map();     // userId → array of recent timestamps
+const BURST_MAX = 4;                   // enough for 3-call fan-out + 1 buffer
+const BURST_WINDOW_MS = 3000;          // 3-second sliding window
+ 
 function isOnCooldown(userId) {
   if (!userId) return false;
-  const last = lastRequestTime.get(userId);
-  return last && (Date.now() - last) < COOLDOWN_MS;
+  const now = Date.now();
+  const log = (userRequestLog.get(userId) || []).filter(t => now - t < BURST_WINDOW_MS);
+  userRequestLog.set(userId, log);     // prune old timestamps
+  return log.length >= BURST_MAX;
 }
-
+ 
 function stampRequest(userId) {
   if (!userId) return;
-  lastRequestTime.set(userId, Date.now());
-  if (lastRequestTime.size > 1000) {
-    for (const [k, v] of lastRequestTime)
-      if (Date.now() - v > COOLDOWN_MS * 2) lastRequestTime.delete(k);
+  const now = Date.now();
+  const log = (userRequestLog.get(userId) || []).filter(t => now - t < BURST_WINDOW_MS);
+  log.push(now);
+  userRequestLog.set(userId, log);
+  // Memory safety: evict users with no recent activity when map grows large.
+  if (userRequestLog.size > 1000) {
+    for (const [k, ts] of userRequestLog) {
+      if (!ts.some(t => now - t < BURST_WINDOW_MS * 2)) userRequestLog.delete(k);
+    }
   }
 }
 
