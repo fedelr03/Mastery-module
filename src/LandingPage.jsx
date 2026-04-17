@@ -43,7 +43,7 @@ const T = {
       { icon: '🚀', label: 'Fast', desc: 'Full explanation + quiz + 5-question exam. The everyday study loop.', when: 'Actively studying and want explanation + practice in one shot.', example: '"Black-Scholes model" when prepping for a finance exam.' },
       { icon: '🔬', label: 'Think', desc: 'Deep-dive + 10-question exam + challenge problems + full summary deck.', when: 'You want true mastery, not just to pass a test, but to own the concept.', example: '"Central Limit Theorem" when you want to explain it from scratch to someone else.' },
     ],
-    modesTitle: 'Six ways to learn',
+    modesTitle: 'Five ways to learn',
     modesSub: 'Every mode serves a different purpose in the learning cycle.',
     modes: [
       { icon: '💡', label: 'Explain', desc: 'A clear, layered explanation of any concept, from simple to deep, adjusted to your knowledge level.' },
@@ -70,6 +70,22 @@ const T = {
       { icon: '📝', title: 'Teach it back', desc: 'After reading an explanation, close it and try to explain the topic in your own words. If you get stuck, that\'s exactly where to focus.' },
       { icon: '🌙', title: 'Switch to Night Mode', desc: 'Long study sessions are easier on your eyes in dark mode. Set it once in your Profile and it sticks.' },
       { icon: '🌐', title: 'Use your language', desc: 'Content is generated in the language you select, English or Spanish. Set it in your Profile for a consistent experience.' },
+    ],
+    /* use cases */
+    badgeUseCases: 'BEYOND TOPICS',
+    useCasesTitle: 'It also handles your actual homework',
+    useCasesSub: 'Not just abstract concepts. Two ways to point it at real problems.',
+    useCases: [
+      {
+        icon: '📎',
+        title: 'Drop in a problem set',
+        desc: 'Got a PDF with 40 exercises? Upload it. The app reads through, figures out what kind of problems they are, and teaches you the method you need to solve that type. It won\'t hand you the answers to all of them, that defeats the point. The idea is you walk away knowing how to approach the next one on your own.',
+      },
+      {
+        icon: '✍️',
+        title: 'Paste one exercise, get the full walkthrough',
+        desc: 'When there\'s a specific problem you\'re stuck on, just type it into the search bar. This one goes deep: step by step, why each move, what to watch out for. Use it for the exercises that actually matter, the one on tomorrow\'s exam, the one your teacher said would be on it, the one that\'s been driving you crazy.',
+      },
     ],
     /* auth */
     authTitle: 'Ready to start?',
@@ -112,7 +128,7 @@ const T = {
       { icon: '🚀', label: 'Rápido', desc: 'Explicación completa + quiz + examen de 5 preguntas. El ciclo de estudio del día a día.', when: 'Estás estudiando y querés explicación + práctica en un solo paso.', example: '"Modelo Black-Scholes" cuando te preparás para un final de finanzas.' },
       { icon: '🔬', label: 'Profundo', desc: 'Análisis a fondo + examen de 10 preguntas + desafíos + slides de resumen.', when: 'Querés dominar el tema de verdad, no solo aprobar, sino poder explicarlo.', example: '"Teorema Central del Límite" cuando querés poder enseñárselo a alguien más.' },
     ],
-    modesTitle: 'Seis formas de aprender',
+    modesTitle: 'Cinco formas de aprender',
     modesSub: 'Cada modo cumple un propósito distinto en el ciclo de aprendizaje.',
     modes: [
       { icon: '💡', label: 'Explicar', desc: 'Una explicación clara y en capas de cualquier concepto, de lo simple a lo profundo, ajustada a tu nivel.' },
@@ -137,6 +153,22 @@ const T = {
       { icon: '📝', title: 'Enseñalo vos', desc: 'Después de leer una explicación, cerrala e intentá explicar el tema con tus propias palabras. Donde te trabes, ahí está el hueco.' },
       { icon: '🌙', title: 'Usá el Modo Noche', desc: 'Las sesiones largas son más cómodas para los ojos en modo oscuro. Configuralo en tu Perfil y queda guardado.' },
       { icon: '🌐', title: 'Usá tu idioma', desc: 'El contenido se genera en el idioma que elijas, inglés o español. Configuralo en tu Perfil para una experiencia consistente.' },
+    ],
+    /* casos de uso */
+    badgeUseCases: 'MÁS ALLÁ DE LOS TEMAS',
+    useCasesTitle: 'También te banca con la tarea real',
+    useCasesSub: 'No solo conceptos abstractos. Dos formas de apuntarlo a problemas concretos.',
+    useCases: [
+      {
+        icon: '📎',
+        title: 'Subí la guía de ejercicios',
+        desc: 'Tenés un PDF con 40 ejercicios? Subilo. La app lo lee, entiende de qué van esos problemas, y te enseña el método para resolver ese tipo de ejercicio. No te va a dar todas las respuestas, no tiene sentido. La idea es que quedes preparado para resolver el próximo vos solo.',
+      },
+      {
+        icon: '✍️',
+        title: 'Pegá un ejercicio y te lo explica al detalle',
+        desc: 'Cuando hay un ejercicio específico que no te sale, escribilo directamente en la barra. Este va a fondo: paso por paso, por qué cada decisión, qué mirar. Usalo para los ejercicios que importan de verdad, el que cae en el parcial de mañana, el que dijo la profe que entra sí o sí, el que te viene volviendo loco.',
+      },
     ],
     authTitle: '¿Listo para empezar?',
     authSub: 'Creá tu cuenta gratuita en segundos.',
@@ -507,6 +539,18 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
+      {/* ── AUTH SECTION (moved up — first stop after hero) ── */}
+      <section ref={authRef} style={{ padding: '20px 20px 80px' }}>
+        <div style={{ maxWidth: 420, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 28 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.25)', borderRadius: 20, padding: '4px 12px', marginBottom: 14, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>&#x2211; MASTERY MODULE</div>
+            <h2 style={{ fontSize: 'clamp(24px,3.6vw,32px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 6 }}>{t.authTitle}</h2>
+            <p style={{ fontSize: 13, color: TH.textMuted }}>{t.authSub}</p>
+          </div>
+          <AuthForm TH={TH} dark={dark} lang={lang} changeLang={changeLang} t={t} confirmedEmail={confirmedEmail} initialMode={initialForm || 'signup'} />
+        </div>
+      </section>
+
       {/* ── WHAT IS IT ── */}
       <section ref={whatRef} style={{ padding: '80px 20px', borderTop: '1px solid ' + TH.borderLight }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
@@ -529,7 +573,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
-      {/* ── SIX MODES ── */}
+      {/* ── FIVE MODES ── */}
       <section style={{ padding: '80px 20px', background: dark ? TH.surface : '#faf8f4', borderTop: '1px solid ' + TH.borderLight, borderBottom: '1px solid ' + TH.borderLight }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
@@ -596,6 +640,29 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
+      {/* ── USE CASES (problem sets + single exercise) ── */}
+      <section style={{ padding: '80px 20px', background: dark ? TH.surface : '#faf8f4', borderTop: '1px solid ' + TH.borderLight, borderBottom: '1px solid ' + TH.borderLight }}>
+        <div style={{ maxWidth: 860, margin: '0 auto' }}>
+          <div key={`hdr-uc-${morphKey}`} className="lp-morph" style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeUseCases}</div>
+            <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.useCasesTitle}</h2>
+            <p style={{ fontSize: 13, color: TH.textMuted, maxWidth: 480, margin: '0 auto' }}>{t.useCasesSub}</p>
+          </div>
+          <div key={morphKey} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(320px,1fr))', gap: 20 }}>
+            {t.useCases.map((uc, i) => (
+              <div key={i} className="lp-card" style={{
+                background: TH.surface, borderRadius: 16, border: '1px solid ' + TH.border,
+                padding: 26, boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.2)' : '0 4px 24px rgba(0,0,0,0.04)',
+              }}>
+                <div style={{ fontSize: 26, marginBottom: 14 }}>{uc.icon}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: TH.text, marginBottom: 10, letterSpacing: '-0.01em' }}>{uc.title}</div>
+                <p style={{ fontSize: 13, color: TH.textSecondary, lineHeight: 1.7 }}>{uc.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── HOW IT WORKS ── */}
       <section ref={howRef} style={{ padding: '80px 20px' }}>
         <div style={{ maxWidth: 680, margin: '0 auto' }}>
@@ -645,18 +712,6 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── AUTH SECTION ── */}
-      <section ref={authRef} style={{ padding: '80px 20px 100px' }}>
-        <div style={{ maxWidth: 420, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.25)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>&#x2211; MASTERY MODULE</div>
-            <h2 style={{ fontSize: 'clamp(26px,4vw,36px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 8 }}>{t.authTitle}</h2>
-            <p style={{ fontSize: 13, color: TH.textMuted }}>{t.authSub}</p>
-          </div>
-          <AuthForm TH={TH} dark={dark} lang={lang} changeLang={changeLang} t={t} confirmedEmail={confirmedEmail} initialMode={initialForm || 'login'} />
         </div>
       </section>
 
