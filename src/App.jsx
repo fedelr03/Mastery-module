@@ -743,22 +743,52 @@ function AdminDashboard({ dark }) {
         </table></div>
       </div>}
 
-      {tab === 'requests' && <div style={{ background: TH.surface, borderRadius: 12, border: '1px solid ' + TH.border, overflow: 'hidden' }}>
-        <div style={{ padding: '12px 16px', borderBottom: '1px solid ' + TH.border }}><span style={{ fontSize: 13, fontWeight: 700, color: TH.text }}>Recent Requests ({recent.length})</span></div>
-        {recent.length === 0 ? <div style={{ padding: 20, textAlign: 'center', color: TH.textMuted, fontSize: 12 }}>No requests yet</div> :
-        <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr><th style={th}>TIME</th><th style={th}>USER</th><th style={th}>TOPIC</th><th style={th}>MODULE</th><th style={th}>MODE</th><th style={th}>TOKENS</th><th style={th}>COST</th></tr></thead>
-          <tbody>{recent.map(r => <tr key={r.id}>
-            <td style={{ ...td, fontSize: 10, color: TH.textMuted, whiteSpace: 'nowrap' }}>{new Date(r.created_at).toLocaleString()}</td>
-            <td style={{ ...td, fontSize: 11 }}>{r.email}</td>
-            <td style={{ ...td, fontSize: 11, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.topic}</td>
-            <td style={td}><span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: TH.bg, fontWeight: 600 }}>{r.module}</span></td>
-            <td style={td}><span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: r.mode === 'fast' ? 'rgba(34,197,94,0.08)' : 'rgba(99,102,241,0.08)', fontWeight: 600, color: r.mode === 'fast' ? TH.green : TH.purple }}>{r.mode}</span></td>
-            <td style={{ ...td, fontSize: 11 }}>{((r.input_tokens || 0) + (r.output_tokens || 0)).toLocaleString()}</td>
-            <td style={{ ...td, color: TH.accent, fontWeight: 700, fontSize: 11 }}>${(parseFloat(r.estimated_cost) || 0).toFixed(4)}</td>
-          </tr>)}</tbody>
-        </table></div>}
-      </div>}
+      {tab === 'requests' && (() => {
+        // Group rows by request_group_id; ungrouped rows each become their own group
+        const groups = [];
+        const seen = {};
+        recent.forEach(r => {
+          const key = r.request_group_id || r.id;
+          if (!seen[key]) {
+            seen[key] = { rows: [], totalCost: 0, totalTokens: 0 };
+            groups.push(seen[key]);
+          }
+          seen[key].rows.push(r);
+          seen[key].totalCost += parseFloat(r.estimated_cost) || 0;
+          seen[key].totalTokens += (r.input_tokens || 0) + (r.output_tokens || 0);
+        });
+        return (
+          <div style={{ background: TH.surface, borderRadius: 12, border: '1px solid ' + TH.border, overflow: 'hidden' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid ' + TH.border }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: TH.text }}>Recent Requests ({groups.length} total)</span>
+              <span style={{ fontSize: 10, color: TH.textMuted, marginLeft: 8 }}>({recent.length} API calls)</span>
+            </div>
+            {groups.length === 0 ? <div style={{ padding: 20, textAlign: 'center', color: TH.textMuted, fontSize: 12 }}>No requests yet</div> :
+            <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead><tr>
+                <th style={th}>TIME</th><th style={th}>USER</th><th style={th}>TOPIC</th>
+                <th style={th}>MODULE</th><th style={th}>CALLS</th><th style={th}>TOKENS</th>
+                <th style={th}>TOTAL COST</th>
+              </tr></thead>
+              <tbody>{groups.map((g, i) => {
+                const first = g.rows[0];
+                const modules = [...new Set(g.rows.map(r => r.module).filter(Boolean))].join(', ');
+                return (
+                  <tr key={i}>
+                    <td style={{ ...td, fontSize: 10, color: TH.textMuted, whiteSpace: 'nowrap' }}>{new Date(first.created_at).toLocaleString()}</td>
+                    <td style={{ ...td, fontSize: 11 }}>{first.email}</td>
+                    <td style={{ ...td, fontSize: 11, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{first.topic}</td>
+                    <td style={td}><span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: TH.bg, fontWeight: 600 }}>{modules}</span></td>
+                    <td style={{ ...td, fontSize: 11, textAlign: 'center' }}>
+                      <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.08)', color: TH.purple, fontWeight: 700 }}>{g.rows.length}</span>
+                    </td>
+                    <td style={{ ...td, fontSize: 11 }}>{g.totalTokens.toLocaleString()}</td>
+                    <td style={{ ...td, color: TH.accent, fontWeight: 800, fontSize: 12 }}>${g.totalCost.toFixed(5)}</td>
+                  </tr>
+                );
+              })}</tbody>
+            </table></div>}
+          </div>
     </div>
   );
 }
