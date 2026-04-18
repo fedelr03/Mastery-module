@@ -114,8 +114,8 @@ const PROFILE_T = {
 
 /* ═══════════ TOP BAR TRANSLATIONS ═══════════ */
 const TOP_T = {
-  en: { module: 'Module', profile: 'Profile', dashboard: 'Dashboard', logout: 'Log Out' },
-  es: { module: 'Módulo', profile: 'Perfil', dashboard: 'Panel', logout: 'Salir' },
+  en: { module: 'Module', profile: 'Profile', dashboard: 'Dashboard', logout: 'Log Out', history: 'History' },
+  es: { module: 'Módulo', profile: 'Perfil', dashboard: 'Panel', logout: 'Salir', history: 'Historial' },
 };
 
 /* ═══════════ AUTH SCREEN ═══════════ */
@@ -795,6 +795,134 @@ function AdminDashboard({ dark }) {
   );
 }
 
+
+/* ═══════════ STUDY HISTORY ═══════════ */
+function StudyHistory({ dark, lang, session, onLoad }) {
+  const TH = getTheme(dark);
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const MOD_COLORS = {
+    math:    { color: '#e8940a', bg: 'rgba(232,148,10,0.08)',    label: 'Math' },
+    stats:   { color: '#6366f1', bg: 'rgba(99,102,241,0.08)',    label: 'Stats' },
+    econ:    { color: '#10b981', bg: 'rgba(16,185,129,0.08)',    label: 'Econ' },
+    finance: { color: '#06b6d4', bg: 'rgba(6,182,212,0.08)',     label: 'Finance' },
+    general: { color: '#8a8a96', bg: 'rgba(138,138,150,0.08)',   label: 'General' },
+  };
+
+  const t = lang === 'es' ? {
+    title: 'Historial de Estudio', sub: 'Tus temas estudiados anteriormente',
+    empty: 'Todavía no estudiaste ningún tema.', noHistory: 'Cuando estudies un tema, aparecerá acá.',
+    open: 'Abrir', refresh: 'Actualizar', loading: 'Cargando historial...',
+    today: 'Hoy', yesterday: 'Ayer', thisWeek: 'Esta semana', older: 'Anterior',
+  } : {
+    title: 'Study History', sub: 'Your past study sessions',
+    empty: 'No topics studied yet.', noHistory: 'Once you study a topic, it will appear here.',
+    open: 'Open', refresh: 'Refresh', loading: 'Loading history...',
+    today: 'Today', yesterday: 'Yesterday', thisWeek: 'This week', older: 'Older',
+  };
+
+  useEffect(() => { loadHistory(); }, []);
+
+  const loadHistory = async () => {
+    setLoading(true);
+    try {
+      const { data } = await supabase
+        .from('study_history')
+        .select('id, topic, module, mode, lang, level, created_at, content')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      setEntries(data || []);
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  };
+
+  const deleteEntry = async (id) => {
+    await supabase.from('study_history').delete().eq('id', id);
+    setEntries(e => e.filter(x => x.id !== id));
+  };
+
+  const now = new Date();
+  const todayStr = now.toDateString();
+  const yesterdayStr = new Date(now - 86400000).toDateString();
+  const weekAgo = new Date(now - 7 * 86400000);
+  const grouped = { today: [], yesterday: [], thisWeek: [], older: [] };
+  entries.forEach(e => {
+    const d = new Date(e.created_at);
+    if (d.toDateString() === todayStr) grouped.today.push(e);
+    else if (d.toDateString() === yesterdayStr) grouped.yesterday.push(e);
+    else if (d > weekAgo) grouped.thisWeek.push(e);
+    else grouped.older.push(e);
+  });
+
+  const renderGroup = (label, items) => {
+    if (!items.length) return null;
+    return (
+      <div key={label} style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: TH.textMuted, letterSpacing: 1.2, marginBottom: 10, textTransform: 'uppercase' }}>{label}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {items.map(entry => {
+            const mc = MOD_COLORS[entry.module] || MOD_COLORS.general;
+            const modeColor = entry.mode === 'think' ? TH.purple : entry.mode === 'lite' ? TH.cyan : TH.green;
+            const modeBg = entry.mode === 'think' ? 'rgba(99,102,241,0.08)' : entry.mode === 'lite' ? 'rgba(6,182,212,0.08)' : 'rgba(34,197,94,0.08)';
+            return (
+              <div key={entry.id} style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: mc.bg, border: '1px solid ' + mc.color + '40', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: 8, fontWeight: 800, color: mc.color, letterSpacing: 0.5 }}>{mc.label.toUpperCase()}</span>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: TH.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.topic}</div>
+                  <div style={{ display: 'flex', gap: 6, marginTop: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 9, padding: '1px 7px', borderRadius: 4, background: modeBg, color: modeColor, fontWeight: 700 }}>{(entry.mode || 'fast').toUpperCase()}</span>
+                    <span style={{ fontSize: 9, padding: '1px 7px', borderRadius: 4, background: TH.bg, color: TH.textMuted, fontWeight: 600 }}>{(entry.level || 'intermediate').toUpperCase()}</span>
+                    <span style={{ fontSize: 9, color: TH.textMuted }}>{new Date(entry.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span style={{ fontSize: 10 }}>{entry.lang === 'es' ? '🇦🇷' : '🇺🇸'}</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  <button onClick={() => onLoad({ content: entry.content, topic: entry.topic, mod: entry.module, mode: entry.mode })}
+                    style={{ fontSize: 11, fontWeight: 700, padding: '7px 16px', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', background: TH.accentBg, border: '1px solid ' + TH.accent + '50', color: TH.accent }}>{t.open}</button>
+                  <button onClick={() => deleteEntry(entry.id)}
+                    style={{ fontSize: 12, padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', background: 'transparent', border: '1px solid ' + TH.border, color: TH.textMuted, lineHeight: 1 }}>✕</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) return <div style={{ padding: 60, textAlign: 'center', color: TH.textMuted, fontSize: 13 }}>{t.loading}</div>;
+
+  return (
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 10 }}>
+        <div>
+          <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 24, fontWeight: 800, color: TH.text }}>{t.title}</h2>
+          <p style={{ color: TH.textMuted, fontSize: 11, marginTop: 2 }}>{t.sub} — {entries.length} {lang === 'es' ? 'sesiones' : 'sessions'}</p>
+        </div>
+        <button onClick={loadHistory} style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 8, padding: '7px 16px', fontSize: 11, color: TH.textSecondary, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>{t.refresh}</button>
+      </div>
+      {entries.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div style={{ fontSize: 36, marginBottom: 14 }}>📚</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: TH.textSecondary, marginBottom: 6 }}>{t.empty}</div>
+          <div style={{ fontSize: 12, color: TH.textMuted }}>{t.noHistory}</div>
+        </div>
+      ) : (
+        <>
+          {renderGroup(t.today, grouped.today)}
+          {renderGroup(t.yesterday, grouped.yesterday)}
+          {renderGroup(t.thisWeek, grouped.thisWeek)}
+          {renderGroup(t.older, grouped.older)}
+        </>
+      )}
+    </div>
+  );
+}
+
 /* ═══════════ TOP BAR ═══════════ */
 function TopBar({ session, profile, isAdmin, view, setView, onLogout, dark, lang }) {
   const TH = getTheme(dark);
@@ -835,6 +963,7 @@ function TopBar({ session, profile, isAdmin, view, setView, onLogout, dark, lang
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
           <button onClick={() => setView('module')} className="mm-topbar-btn" style={btnStyle(view === 'module')}>{t.module}</button>
+          <button onClick={() => setView('history')} className="mm-topbar-btn" style={btnStyle(view === 'history')}>{t.history}</button>
           <button onClick={() => setView('profile')} className="mm-topbar-btn" style={btnStyle(view === 'profile')}>{t.profile}</button>
           {isAdmin && <button onClick={() => setView('admin')} className="mm-topbar-btn" style={btnStyle(view === 'admin')}>{t.dashboard}</button>}
           <button onClick={onLogout} className="mm-topbar-logout" style={{
@@ -854,6 +983,7 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [view, setView] = useState('module');
+  const [pendingLoad, setPendingLoad] = useState(null);
   const [profile, setProfile] = useState(null);
   const [confirmedEmail, setConfirmedEmail] = useState(false);
   const [needsNewPassword, setNeedsNewPassword] = useState(false);
@@ -972,8 +1102,9 @@ export default function App() {
       <div style={{ paddingTop: 48 }}>
         {view === 'admin' && isAdmin && <AdminDashboard dark={dark} />}
         {view === 'profile' && <ProfileScreen session={session} profile={profile} onSave={handleProfileSave} lang={lang} setLang={setLang} dark={dark} setDark={setDark} />}
-        <div style={{ display: (view !== 'admin' && view !== 'profile') ? 'block' : 'none', maxWidth: 960, margin: '0 auto' }}>
-          <MasteryModule session={session} level={profile?.level || 'intermediate'} lang={lang} dark={dark} />
+        {view === 'history' && <StudyHistory dark={dark} lang={lang} session={session} onLoad={(item) => { setPendingLoad(item); setView('module'); }} />}
+        <div style={{ display: (view !== 'admin' && view !== 'profile' && view !== 'history') ? 'block' : 'none', maxWidth: 960, margin: '0 auto' }}>
+          <MasteryModule session={session} level={profile?.level || 'intermediate'} lang={lang} dark={dark} pendingLoad={pendingLoad} onLoadDone={() => setPendingLoad(null)} />
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { supabase } from "./supabase";
 
 /* ═══════════ THEME ═══════════ */
 const LIGHT_TH={bg:"#f7f5f0",bgAlt:"#efece5",surface:"#ffffff",border:"#e4ded4",borderLight:"#ece8e0",borderAccent:"rgba(232,148,10,0.25)",text:"#2a2a3a",textSecondary:"#5c5c6c",textMuted:"#8a8a96",textFaint:"#b0aeb8",accent:"#e8940a",accentLight:"#f5a623",accentBg:"rgba(245,166,35,0.07)",accentBgStrong:"rgba(245,166,35,0.13)",accentText:"#c47a00",purple:"#6366f1",green:"#22c55e",red:"#ef4444",pink:"#ec4899",cyan:"#06b6d4",greenBg:"rgba(34,197,94,0.06)",redBg:"rgba(239,68,68,0.06)",topBar:"rgba(247,245,240,0.95)",shadow:"0 1px 4px rgba(0,0,0,0.05)",cardShadow:"0 1px 8px rgba(0,0,0,0.04)"};
@@ -1731,7 +1732,7 @@ body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:#f7f5f0;-
 function FileUploadIcon({active}){return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={active?TH.accent:TH.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>;}
 
 /* ═══════════ MAIN APP ═══════════ */
-export default function MasteryModule({session, level, lang: langProp, dark}){
+export default function MasteryModule({session, level, lang: langProp, dark, pendingLoad, onLoadDone}){
   /* Apply theme immediately before any renders */
   TH=dark?DARK_TH:LIGHT_TH;
   const[lang,setLang]=useState(()=>langProp||localStorage.getItem('mm_lang')||'en');const t=T[lang];
@@ -1749,7 +1750,7 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
   const[simplifiedBlocks,setSimplifiedBlocks]=useState(null);const[simplifying,setSimplifying]=useState(false);
   const mc=MOD_CONF[mod]||MOD_CONF.general;
   const mt={accent:mc.accent,accentLight:mc.accentLight,accentBg:mc.accentBg,accentBgStrong:mc.accentBgStrong,accentText:mc.accentText,borderAccent:mc.borderAccent,btnShadow:mc.btnShadow};
-  const fileRef=useRef(null);const resultsRef=useRef(null);const usedRef=useRef(new Set());
+  const fileRef=useRef(null);const resultsRef=useRef(null);const usedRef=useRef(new Set());const classModRef=useRef("general");
   const[morphing,setMorphing]=useState(false);const prevLangRef=useRef(lang);const hasChangedLang=useRef(false);
   const switchLang=(newLang)=>{if(newLang===lang)return;hasChangedLang.current=true;prevLangRef.current=newLang;localStorage.setItem('mm_lang',newLang);setLang(newLang);};
   /* Sync when parent lang prop changes (e.g. changed in Profile) */
@@ -1763,7 +1764,39 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
 
   const reset=()=>{setPhase("idle");setContent(null);setTopic("");setFile(null);setFileContent("");setError(null);setValidationError(false);setQuizAnswers({});setQuizSubmitted(false);setExamAnswers({});setExamSubmitted(false);setChallengeAnswers({});setChallengeSubmitted(false);setActiveSection("explain");setFileError("");setMod("general");setMode("fast");setSimplifiedBlocks(null);setSimplifying(false);usedRef.current.clear();window.scrollTo({top:0,behavior:"smooth"});};
 
-  const go=async()=>{
+
+  /* ── Save session to study history ── */
+  const saveHistory=async(parsedContent,savedTopic)=>{
+    if(!session?.user?.id)return;
+    try{
+      await supabase.from("study_history").insert({
+        user_id:session.user.id,
+        email:session.user.email,
+        topic:savedTopic||topic||"Unknown",
+        module:classModRef.current,
+        mode,lang,level,
+        content:parsedContent,
+      });
+    }catch(e){console.error("History save failed:",e);}
+  };
+
+  /* ── Load a history entry back into the module ── */
+  useEffect(()=>{
+    if(!pendingLoad)return;
+    setContent(pendingLoad.content);
+    setTopic(pendingLoad.topic||"");
+    if(pendingLoad.mod&&["math","stats","econ","finance","general"].includes(pendingLoad.mod)){setMod(pendingLoad.mod);classModRef.current=pendingLoad.mod;}
+    if(pendingLoad.mode)setMode(pendingLoad.mode);
+    setPhase("complete");
+    setQuizAnswers({});setQuizSubmitted(false);
+    setExamAnswers({});setExamSubmitted(false);
+    setChallengeAnswers({});setChallengeSubmitted(false);
+    setSimplifiedBlocks(null);setActiveSection("explain");
+    onLoadDone?.();
+    setTimeout(()=>resultsRef.current?.scrollIntoView({behavior:"smooth"}),300);
+  },[pendingLoad]);
+
+    const go=async()=>{
     try{
     if(!topic.trim()&&!fileContent)return;
     if(!fileContent&&!isMathRelated(topic)){setValidationError(true);return;}
@@ -1784,7 +1817,7 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
           system:"Reply with ONLY one word — no punctuation, no explanation: math, stats, econ, or finance.",
           messages:[{role:"user",content:"Topic: "+classifyInput}]})})
       .then(r=>r.json())
-      .then(d=>{const m=(d.content||[]).map(b=>b.text||"").join("").trim().toLowerCase().replace(/[^a-z]/g,"");if(["math","stats","econ","finance"].includes(m))setMod(m);setClassifierReady(true);})
+      .then(d=>{const m=(d.content||[]).map(b=>b.text||"").join("").trim().toLowerCase().replace(/[^a-z]/g,"");if(["math","stats","econ","finance"].includes(m)){setMod(m);classModRef.current=m;}setClassifierReady(true);})
       .catch(()=>{setClassifierReady(true);});/* always reveal loading UI even on classifier failure */
     }
     const detectedMod=mod;/* snapshot for _meta logging only — real mod set async above */
@@ -1828,7 +1861,7 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
         if(!parsed.keyConcepts||!Array.isArray(parsed.keyConcepts))parsed.keyConcepts=[];
         if(!parsed.applications||!Array.isArray(parsed.applications))parsed.applications=[];
         if(!parsed.explanationBlocks||!Array.isArray(parsed.explanationBlocks))parsed.explanationBlocks=[];
-        setContent(shuffleMC(deepFmt(sanitizeAllMC(parsed))));setPhase("complete");playDing();
+        const finalLite=shuffleMC(deepFmt(sanitizeAllMC(parsed)));setContent(finalLite);setPhase("complete");playDing();saveHistory(finalLite,topic||"file");
         setTimeout(()=>resultsRef.current?.scrollIntoView({behavior:"smooth"}),200);
       }else{
         /* ── FAST / THINK: parallel Sonnet + Haiku calls ── */
@@ -1887,7 +1920,7 @@ export default function MasteryModule({session, level, lang: langProp, dark}){
         if(!parsed.keyConcepts||!Array.isArray(parsed.keyConcepts))parsed.keyConcepts=[];
         if(!parsed.applications||!Array.isArray(parsed.applications))parsed.applications=[];
         if(!parsed.explanationBlocks||!Array.isArray(parsed.explanationBlocks))parsed.explanationBlocks=[];
-        setContent(shuffleMC(deepFmt(sanitizeAllMC(parsed))));setPhase("complete");playDing();
+        const finalFull=shuffleMC(deepFmt(sanitizeAllMC(parsed)));setContent(finalFull);setPhase("complete");playDing();saveHistory(finalFull,topic||"file");
         setTimeout(()=>resultsRef.current?.scrollIntoView({behavior:"smooth"}),200);
       }/* end fast/think else */
     }catch(err){
