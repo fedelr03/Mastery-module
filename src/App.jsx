@@ -789,6 +789,8 @@ function AdminDashboard({ dark }) {
               })}</tbody>
             </table></div>}
           </div>
+        );
+      })()}
     </div>
   );
 }
