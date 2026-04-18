@@ -798,320 +798,328 @@ function AdminDashboard({ dark }) {
 
 
 /* ═══════════ KNOWLEDGE TREE ═══════════ */
+/* ═══════════ KNOWLEDGE TREE ═══════════ */
+function treeNodeW(label){ return Math.max(84, label.length * 7.4 + 28); }
+
 function KnowledgeTree({ dark, lang, session, onLoad }) {
   const TH = getTheme(dark);
-  const [nodes, setNodes] = useState([]);
-  const [edges, setEdges] = useState([]);
+  const canvasRef = useRef(null);
+  const layoutRef = useRef(null);
+  const hovIdRef  = useRef(null);
   const [loading, setLoading] = useState(true);
-  const [hovered, setHovered] = useState(null);
-  const [tooltip, setTooltip] = useState(null);
-  const svgRef = useRef(null);
+  const [hovInfo, setHovInfo] = useState(null);
+  const [hasData, setHasData] = useState(false);
 
-  const MOD_COL = { math:'#e8940a', stats:'#6366f1', econ:'#10b981', finance:'#06b6d4', general:'#8a8a96' };
+  const MOD_COL   = { math:'#e8940a', stats:'#6366f1', econ:'#10b981', finance:'#06b6d4', general:'#8a8a96' };
+  const MOD_LABEL = { math:'Math', stats:'Stats', econ:'Econ', finance:'Finance', general:'General' };
 
-  const t = lang === 'es' ? {
-    title: 'Mapa de Conocimiento', sub: 'Tus temas conectados por conceptos en común',
-    empty: 'Todavía no hay suficientes temas para armar el mapa.',
-    emptyHint: 'Estudiá al menos 2 temas y volvé acá.',
-    refresh: 'Actualizar', loading: 'Armando el mapa...',
-    studied: 'veces estudiado', shared: 'conceptos en común', open: 'Abrir',
-    connections: 'conexiones', topics: 'temas',
-    clickHint: 'Hacé clic en un nodo para abrir el tema',
+  const TR = lang === 'es' ? {
+    title:'Árbol de Conocimiento', sub:'Tus temas organizados por materia',
+    empty:'Todavía no estudiaste ningún tema.', emptyHint:'Estudiá al menos un tema para comenzar.',
+    refresh:'Actualizar', loading:'Cargando árbol...', root:'Mi Conocimiento',
+    hint:'Pasá el cursor por un tema · Hacé clic para abrirlo',
+    studied:'× estudiado', connections:'conexiones entre materias',
   } : {
-    title: 'Knowledge Map', sub: 'Your topics connected by shared concepts',
-    empty: 'Not enough topics to build the map yet.',
-    emptyHint: 'Study at least 2 topics and come back here.',
-    refresh: 'Refresh', loading: 'Building the map...',
-    studied: 'times studied', shared: 'shared concepts', open: 'Open',
-    connections: 'connections', topics: 'topics',
-    clickHint: 'Click a node to open that topic',
+    title:'Knowledge Tree', sub:'Your topics organized by subject',
+    empty:'No topics studied yet.', emptyHint:'Study a topic to get started.',
+    refresh:'Refresh', loading:'Loading tree...', root:'My Knowledge',
+    hint:'Hover a topic to see connections · Click to open it',
+    studied:'× studied', connections:'cross-subject connections',
   };
 
   useEffect(() => { loadAndBuild(); }, []);
+  useEffect(() => { if (layoutRef.current) renderTree(hovIdRef.current); }, [dark]);
 
   const loadAndBuild = async () => {
     setLoading(true);
+    hovIdRef.current = null; setHovInfo(null);
     try {
       const { data } = await supabase
         .from('study_history')
         .select('id, topic, module, created_at, content')
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
-
-      if (!data || data.length === 0) { setLoading(false); return; }
-
-      /* ── Build node map: deduplicate by topic (case-insensitive) ── */
-      const topicMap = {};
-      data.forEach(entry => {
-        const key = entry.topic.toLowerCase().trim();
-        if (!topicMap[key]) {
-          topicMap[key] = {
-            key, label: entry.topic,
-            module: entry.module || 'general',
-            count: 0, lastEntry: entry,
-            keywords: new Set(),
-          };
-        }
-        topicMap[key].count++;
-        /* Extract keywords from keyConcepts titles (words > 3 chars, accent-normalized) */
-        const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-        const kc = entry.content?.keyConcepts || [];
-        kc.forEach(concept => {
-          (concept.title || '').split(/[\s\-_/,]+/).forEach(w => {
-            const nw = norm(w).replace(/[^a-z0-9]/g,'');
-            if (nw.length > 3) topicMap[key].keywords.add(nw);
-          });
-        });
-      });
-
-      const nodeArr = Object.values(topicMap).map((n, i) => ({
-        ...n, id: i, keywords: [...n.keywords],
-        x: 0, y: 0, vx: 0, vy: 0,
-      }));
-
-      /* ── Build edges from keyword overlap ── */
-      const edgeArr = [];
-      for (let i = 0; i < nodeArr.length; i++) {
-        const setA = new Set(nodeArr[i].keywords);
-        for (let j = i + 1; j < nodeArr.length; j++) {
-          const shared = nodeArr[j].keywords.filter(k => setA.has(k));
-          if (shared.length > 0) edgeArr.push({ s: i, t: j, w: shared.length, shared });
-        }
-      }
-
-      /* ── Force simulation (synchronous, ~400 iters) ── */
-      const W = 700, H = 420;
-      /* Seed positions: distribute evenly by module to avoid total chaos */
-      const modGroups = {};
-      nodeArr.forEach(n => { (modGroups[n.module] = modGroups[n.module] || []).push(n); });
-      const modKeys = Object.keys(modGroups);
-      modKeys.forEach((mod, mi) => {
-        const cx = W/2 + Math.cos(mi/modKeys.length*2*Math.PI)*180;
-        const cy = H/2 + Math.sin(mi/modKeys.length*2*Math.PI)*110;
-        modGroups[mod].forEach((n, ni) => {
-          n.x = cx + (Math.random()-0.5)*80;
-          n.y = cy + (Math.random()-0.5)*60;
-        });
-      });
-
-      for (let iter = 0; iter < 400; iter++) {
-        const alpha = Math.max(0.02, 1 - iter/350);
-        nodeArr.forEach(n => { n.fx = 0; n.fy = 0; });
-
-        /* Repulsion */
-        for (let i = 0; i < nodeArr.length; i++) {
-          for (let j = i+1; j < nodeArr.length; j++) {
-            const dx = nodeArr[j].x - nodeArr[i].x || 0.01;
-            const dy = nodeArr[j].y - nodeArr[i].y || 0.01;
-            const d2 = dx*dx + dy*dy;
-            const d = Math.sqrt(d2) || 0.01;
-            const f = Math.min(3000/d2, 50);
-            nodeArr[i].fx -= f*dx/d; nodeArr[i].fy -= f*dy/d;
-            nodeArr[j].fx += f*dx/d; nodeArr[j].fy += f*dy/d;
-          }
-        }
-        /* Spring attraction for edges */
-        edgeArr.forEach(e => {
-          const a = nodeArr[e.s], b = nodeArr[e.t];
-          const dx = b.x-a.x, dy = b.y-a.y;
-          const d = Math.sqrt(dx*dx+dy*dy) || 0.01;
-          const ideal = Math.max(100, 180 - e.w*15);
-          const f = (d - ideal) * 0.04 * (1 + e.w*0.1);
-          a.fx += f*dx/d; a.fy += f*dy/d;
-          b.fx -= f*dx/d; b.fy -= f*dy/d;
-        });
-        /* Center gravity */
-        nodeArr.forEach(n => {
-          n.fx += (W/2 - n.x) * 0.015;
-          n.fy += (H/2 - n.y) * 0.015;
-        });
-        /* Integrate */
-        nodeArr.forEach(n => {
-          n.vx = (n.vx + n.fx*alpha) * 0.75;
-          n.vy = (n.vy + n.fy*alpha) * 0.75;
-          n.x = Math.max(50, Math.min(W-50, n.x + n.vx));
-          n.y = Math.max(36, Math.min(H-36, n.y + n.vy));
-        });
-      }
-
-      setNodes(nodeArr);
-      setEdges(edgeArr);
-    } catch(e) { console.error(e); }
+      if (data && data.length > 0) { buildLayout(data); setHasData(true); }
+      else setHasData(false);
+    } catch(e) { console.error(e); setHasData(false); }
     setLoading(false);
   };
 
-  const W = 700, H = 420;
+  const buildLayout = (data) => {
+    /* Deduplicate by topic */
+    const topicMap = {};
+    data.forEach(entry => {
+      const key = entry.topic.toLowerCase().trim();
+      if (!topicMap[key]) topicMap[key] = { id:key, label:entry.topic, module:entry.module||'general', count:0, lastEntry:entry, keywords:new Set() };
+      topicMap[key].count++;
+      const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+      (entry.content?.keyConcepts||[]).forEach(kc => {
+        (kc.title||'').split(/[\s\-_/,]+/).forEach(w => {
+          const nw = norm(w).replace(/[^a-z0-9]/g,'');
+          if (nw.length > 3) topicMap[key].keywords.add(nw);
+        });
+      });
+    });
+    const topics = Object.values(topicMap).map(n => ({ ...n, keywords:[...n.keywords] }));
 
-  if (loading) return (
-    <div style={{ padding: 60, textAlign: 'center', color: TH.textMuted, fontSize: 13 }}>
-      <div style={{ fontSize: 28, marginBottom: 10 }}>🌐</div>{t.loading}
-    </div>
-  );
+    /* Group by module, sort most-studied first */
+    const byMod = {};
+    topics.forEach(tp => {
+      if (!byMod[tp.module]) byMod[tp.module] = [];
+      byMod[tp.module].push(tp);
+    });
+    Object.values(byMod).forEach(arr => arr.sort((a,b) => b.count - a.count));
+    const mods = Object.keys(byMod);
+
+    /* Cross-subject keyword edges */
+    const edges = [];
+    for (let i = 0; i < topics.length; i++) {
+      const setA = new Set(topics[i].keywords);
+      for (let j = i+1; j < topics.length; j++) {
+        if (topics[i].module === topics[j].module) continue;
+        const shared = topics[j].keywords.filter(k => setA.has(k));
+        if (shared.length > 1) edges.push({ a:i, b:j, w:shared.length, shared });
+      }
+    }
+
+    /* Layout constants */
+    const W = 700, TOPIC_GAP = 54, TOPIC_START_Y = 240, MOD_Y = 142;
+    const modSpacing = W / (mods.length + 1);
+    const modPositions = {};
+    mods.forEach((m, i) => { modPositions[m] = Math.round(modSpacing * (i + 1)); });
+    const maxTopics = Math.max(...mods.map(m => byMod[m].length));
+    const H = TOPIC_START_Y + maxTopics * TOPIC_GAP + 50;
+
+    mods.forEach(m => {
+      byMod[m].forEach((tp, i) => {
+        tp.x = modPositions[m];
+        tp.y = TOPIC_START_Y + i * TOPIC_GAP;
+      });
+    });
+
+    layoutRef.current = { topics, byMod, mods, edges, W, H, MOD_Y, modPositions };
+    requestAnimationFrame(() => renderTree(null));
+  };
+
+  const renderTree = (hovId) => {
+    const canvas = canvasRef.current;
+    const L = layoutRef.current;
+    if (!canvas || !L) return;
+    const { topics, byMod, mods, edges, W, H, MOD_Y, modPositions } = L;
+
+    canvas.width  = W * 2;
+    canvas.height = H * 2;
+    canvas.style.height = H + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(2, 2);
+    ctx.clearRect(0, 0, W, H);
+
+    const dk = dark;
+    const textPrimary   = dk ? 'rgba(226,226,236,0.92)' : 'rgba(42,42,58,0.88)';
+    const textSecondary = dk ? 'rgba(152,152,176,0.85)' : 'rgba(92,92,108,0.80)';
+    const surfaceBg     = dk ? '#2a2a36' : '#ffffff';
+    const surfaceBorder = dk ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.10)';
+    const ROOT = { x: W/2, y: 46 };
+
+    /* Smooth bezier from (x1,y1) to (x2,y2) */
+    const bz = (x1,y1,x2,y2,col,lw,alpha) => {
+      ctx.save(); ctx.globalAlpha=alpha; ctx.strokeStyle=col; ctx.lineWidth=lw;
+      ctx.lineJoin='round'; ctx.lineCap='round';
+      ctx.beginPath();
+      ctx.moveTo(x1,y1);
+      ctx.bezierCurveTo(x1, y1+(y2-y1)*.5, x2, y2-(y2-y1)*.5, x2, y2);
+      ctx.stroke(); ctx.restore();
+    };
+
+    /* Root → module trunk lines */
+    mods.forEach(m => bz(ROOT.x, ROOT.y+14, modPositions[m], MOD_Y-20, MOD_COL[m]||'#8a8a96', 1.6, 0.3));
+
+    /* Module → topic branch lines */
+    mods.forEach(m => {
+      const col = MOD_COL[m] || '#8a8a96';
+      byMod[m].forEach(tp => {
+        const isHov = hovId === tp.id;
+        bz(modPositions[m], MOD_Y+20, tp.x, tp.y-15, col, isHov?2:1.1, isHov?0.65:0.25);
+      });
+    });
+
+    /* Cross-subject arcs — only shown on hover */
+    if (hovId) {
+      const hi = topics.findIndex(tp => tp.id === hovId);
+      if (hi >= 0) {
+        edges.forEach(e => {
+          if (e.a !== hi && e.b !== hi) return;
+          const ta = topics[e.a], tb = topics[e.b];
+          const col = MOD_COL[ta.module] || '#8a8a96';
+          /* Arc curves through mid-space between columns */
+          const mx = (ta.x + tb.x) / 2;
+          const my = Math.min(ta.y, tb.y) - Math.abs(ta.x - tb.x) * 0.18 - 20;
+          ctx.save();
+          ctx.globalAlpha = 0.42;
+          ctx.strokeStyle = col;
+          ctx.lineWidth = Math.min(e.w * 0.65 + 0.6, 2.4);
+          ctx.lineCap = 'round';
+          if (e.w <= 2) ctx.setLineDash([5,4]);
+          ctx.beginPath();
+          ctx.moveTo(ta.x, ta.y);
+          ctx.quadraticCurveTo(mx, my, tb.x, tb.y);
+          ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+          /* Accent dot on the OTHER node */
+          const other = e.a === hi ? tb : ta;
+          ctx.beginPath(); ctx.arc(other.x, other.y, 5.5, 0, Math.PI*2);
+          ctx.fillStyle = MOD_COL[other.module]||'#8a8a96';
+          ctx.globalAlpha = 0.65; ctx.fill(); ctx.globalAlpha = 1;
+        });
+      }
+    }
+
+    /* ── ROOT NODE ── */
+    ctx.beginPath(); ctx.roundRect(ROOT.x-56, ROOT.y-15, 112, 30, 8);
+    ctx.fillStyle = surfaceBg; ctx.strokeStyle = surfaceBorder; ctx.lineWidth = 1.5;
+    ctx.fill(); ctx.stroke();
+    ctx.font = '600 11px system-ui,sans-serif';
+    ctx.fillStyle = textPrimary; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(TR.root, ROOT.x, ROOT.y);
+
+    /* ── MODULE NODES (circles) ── */
+    mods.forEach(m => {
+      const col = MOD_COL[m]||'#8a8a96', mx = modPositions[m];
+      /* Shadow ring */
+      ctx.beginPath(); ctx.arc(mx, MOD_Y, 33, 0, Math.PI*2);
+      ctx.fillStyle = col + '14'; ctx.fill();
+      /* Main circle */
+      ctx.beginPath(); ctx.arc(mx, MOD_Y, 28, 0, Math.PI*2);
+      ctx.fillStyle = col + '1e'; ctx.fill();
+      ctx.strokeStyle = col; ctx.lineWidth = 1.8; ctx.stroke();
+      ctx.font = '700 11px system-ui,sans-serif';
+      ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(MOD_LABEL[m]||m, mx, MOD_Y);
+    });
+
+    /* ── TOPIC LEAF NODES ── */
+    topics.forEach(tp => {
+      const col = MOD_COL[tp.module]||'#8a8a96';
+      const isHov = hovId === tp.id;
+      /* Determine fade: if something else is hovered and this topic isn't connected */
+      const hi = hovId ? topics.findIndex(x=>x.id===hovId) : -1;
+      const connected = hi >= 0 && edges.some(e =>
+        (e.a===hi||e.b===hi) && (topics[e.a].id===tp.id||topics[e.b].id===tp.id)
+      );
+      const faded = hovId && hovId !== tp.id && !connected;
+
+      const tw = treeNodeW(tp.label), th = 30;
+      ctx.globalAlpha = faded ? 0.15 : 1;
+
+      /* Node pill */
+      ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
+      ctx.fillStyle   = isHov ? col+'2a' : (tp.count > 1 ? col+'16' : col+'0c');
+      ctx.strokeStyle = isHov ? col      : (tp.count > 1 ? col+'55' : col+'2e');
+      ctx.lineWidth   = isHov ? 1.8 : 1;
+      ctx.fill(); ctx.stroke();
+
+      /* Label — ensure it stays inside pill */
+      const maxLabelW = tw - 20;
+      ctx.font      = isHov ? '600 10.5px system-ui,sans-serif' : '400 10.5px system-ui,sans-serif';
+      ctx.fillStyle = isHov ? col : textPrimary;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      /* Truncate if needed */
+      let lbl = tp.label;
+      while (lbl.length > 4 && ctx.measureText(lbl).width > maxLabelW) {
+        lbl = lbl.slice(0, -2) + '…';
+      }
+      ctx.fillText(lbl, tp.x, tp.y);
+
+      /* Study count badge (top-right corner of node) */
+      if (tp.count > 1) {
+        const bx = tp.x + tw/2 - 4, by = tp.y - th/2 + 4;
+        ctx.font = '700 8px system-ui,sans-serif';
+        ctx.fillStyle = col;
+        ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+        ctx.fillText(tp.count + '×', bx, by);
+      }
+      ctx.globalAlpha = 1;
+    });
+  };
+
+  const getHit = (clientX, clientY) => {
+    const canvas = canvasRef.current, L = layoutRef.current;
+    if (!canvas || !L) return null;
+    const rect  = canvas.getBoundingClientRect();
+    const sx    = (clientX - rect.left) * (L.W / rect.width);
+    const sy    = (clientY - rect.top)  * (L.H / rect.height);
+    for (const tp of L.topics) {
+      const tw = treeNodeW(tp.label), th = 32;
+      if (sx >= tp.x-tw/2-4 && sx <= tp.x+tw/2+4 && sy >= tp.y-th/2-4 && sy <= tp.y+th/2+4) return tp;
+    }
+    return null;
+  };
+
+  const handleMouseMove = (e) => {
+    const tp = getHit(e.clientX, e.clientY);
+    const newHov = tp ? tp.id : null;
+    if (newHov !== hovIdRef.current) {
+      hovIdRef.current = newHov;
+      renderTree(newHov);
+      if (tp) {
+        const L = layoutRef.current;
+        const hi = L.topics.findIndex(x => x.id === tp.id);
+        const connCount = L.edges.filter(e => e.a===hi||e.b===hi).length;
+        setHovInfo({ id:tp.id, label:tp.label, mod:tp.module, count:tp.count, connCount });
+      } else { setHovInfo(null); }
+      e.currentTarget.style.cursor = tp ? 'pointer' : 'default';
+    }
+  };
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20, flexWrap:'wrap', gap:10 }}>
         <div>
-          <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 24, fontWeight: 800, color: TH.text }}>{t.title}</h2>
-          <p style={{ color: TH.textMuted, fontSize: 11, marginTop: 2 }}>{t.sub}</p>
+          <h2 style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:24, fontWeight:800, color:TH.text }}>{TR.title}</h2>
+          <p style={{ color:TH.textMuted, fontSize:11, marginTop:2 }}>{TR.sub}</p>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* Module legend */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {Object.entries(MOD_COL).filter(([m]) => nodes.some(n => n.module === m)).map(([mod, col]) => (
-              <span key={mod} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 700, color: TH.textMuted }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: col, display: 'inline-block' }}/>
-                {mod.toUpperCase()}
-              </span>
-            ))}
-          </div>
-          <button onClick={loadAndBuild} style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 8, padding: '7px 16px', fontSize: 11, color: TH.textSecondary, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>{t.refresh}</button>
-        </div>
+        <button onClick={loadAndBuild} style={{ background:TH.surface, border:'1px solid '+TH.border, borderRadius:8, padding:'7px 16px', fontSize:11, color:TH.textSecondary, cursor:'pointer', fontFamily:'inherit', fontWeight:600 }}>{TR.refresh}</button>
       </div>
 
-      {/* Stats bar */}
-      {nodes.length > 0 && (
-        <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
-          {[
-            { label: t.topics, value: nodes.length },
-            { label: t.connections, value: edges.length },
-          ].map(({ label, value }) => (
-            <div key={label} style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 8, padding: '8px 16px', display: 'flex', gap: 8, alignItems: 'baseline' }}>
-              <span style={{ fontSize: 20, fontWeight: 800, color: TH.text, fontFamily: "'Bricolage Grotesque',sans-serif" }}>{value}</span>
-              <span style={{ fontSize: 10, color: TH.textMuted, fontWeight: 600 }}>{label}</span>
-            </div>
-          ))}
+      {loading ? (
+        <div style={{ padding:60, textAlign:'center', color:TH.textMuted, fontSize:13 }}>
+          <div style={{ fontSize:28, marginBottom:10 }}>🌳</div>{TR.loading}
         </div>
-      )}
-
-      {nodes.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div style={{ fontSize: 36, marginBottom: 14 }}>🌱</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: TH.textSecondary, marginBottom: 6 }}>{t.empty}</div>
-          <div style={{ fontSize: 12, color: TH.textMuted }}>{t.emptyHint}</div>
+      ) : !hasData ? (
+        <div style={{ textAlign:'center', padding:'60px 20px' }}>
+          <div style={{ fontSize:36, marginBottom:14 }}>🌱</div>
+          <div style={{ fontSize:14, fontWeight:600, color:TH.textSecondary, marginBottom:6 }}>{TR.empty}</div>
+          <div style={{ fontSize:12, color:TH.textMuted }}>{TR.emptyHint}</div>
         </div>
       ) : (
         <>
-          {/* SVG Graph */}
-          <div style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 16, overflow: 'hidden', position: 'relative', boxShadow: TH.cardShadow }}>
-            <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block' }}>
-              <defs>
-                {Object.entries(MOD_COL).map(([mod, col]) => (
-                  <radialGradient key={mod} id={'grad-'+mod} cx="40%" cy="35%" r="65%">
-                    <stop offset="0%" stopColor={col} stopOpacity="0.9"/>
-                    <stop offset="100%" stopColor={col} stopOpacity="0.6"/>
-                  </radialGradient>
-                ))}
-              </defs>
-              {/* Edges */}
-              {edges.map((e, i) => {
-                const a = nodes[e.s], b = nodes[e.t];
-                if (!a || !b) return null;
-                const isHov = hovered === e.s || hovered === e.t;
-                return (
-                  <line key={i}
-                    x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-                    stroke={isHov ? MOD_COL[a.module] || '#8a8a96' : (dark ? '#ffffff' : '#000000')}
-                    strokeWidth={isHov ? Math.min(e.w * 0.8 + 1, 3.5) : Math.min(e.w * 0.4 + 0.5, 2)}
-                    strokeOpacity={isHov ? 0.55 : (dark ? 0.1 : 0.08)}
-                    style={{ transition: 'stroke-opacity 0.2s, stroke-width 0.2s' }}
-                  />
-                );
-              })}
-              {/* Nodes */}
-              {nodes.map((n, i) => {
-                const r = Math.min(10 + n.count * 3, 22);
-                const col = MOD_COL[n.module] || '#8a8a96';
-                const isHov = hovered === i;
-                const connCount = edges.filter(e => e.s === i || e.t === i).length;
-                const labelLen = n.label.length;
-                const truncLabel = labelLen > 18 ? n.label.slice(0, 16) + '…' : n.label;
-                return (
-                  <g key={i} style={{ cursor: 'pointer' }}
-                    onMouseEnter={(ev) => {
-                      setHovered(i);
-                      const svgRect = svgRef.current?.getBoundingClientRect();
-                      if (svgRect) {
-                        const scaleX = W / svgRect.width;
-                        const scaleY = H / svgRect.height;
-                        setTooltip({ node: n, x: n.x, y: n.y, connections: connCount,
-                          shared: edges.filter(e => e.s===i||e.t===i).flatMap(e=>e.shared).filter((v,j,a)=>a.indexOf(v)===j).slice(0,4) });
-                      }
-                    }}
-                    onMouseLeave={() => { setHovered(null); setTooltip(null); }}
-                    onClick={() => onLoad({ content: n.lastEntry.content, topic: n.lastEntry.topic, mod: n.module, mode: n.lastEntry.mode })}
-                  >
-                    {/* Glow ring on hover */}
-                    {isHov && <circle cx={n.x} cy={n.y} r={r+6} fill={col} fillOpacity={0.15} />}
-                    <circle cx={n.x} cy={n.y} r={r}
-                      fill={`url(#grad-${n.module})`}
-                      stroke={col} strokeWidth={isHov ? 2.5 : 1.5}
-                      strokeOpacity={0.8}
-                      style={{ filter: isHov ? `drop-shadow(0 0 6px ${col}80)` : 'none', transition: 'all 0.15s' }}
-                    />
-                    {/* Study count badge */}
-                    {n.count > 1 && (
-                      <text x={n.x + r*0.65} y={n.y - r*0.65} textAnchor="middle"
-                        fontSize={8} fontWeight={800} fill={col} fontFamily="inherit">
-                        {n.count}×
-                      </text>
-                    )}
-                    {/* Label below node */}
-                    <text x={n.x} y={n.y + r + 13} textAnchor="middle"
-                      fontSize={isHov ? 11 : 9.5} fontWeight={isHov ? 700 : 500}
-                      fill={dark ? 'rgba(226,226,236,0.85)' : 'rgba(42,42,58,0.75)'}
-                      style={{ transition: 'font-size 0.15s, font-weight 0.15s', pointerEvents: 'none',
-                        paintOrder: 'stroke', stroke: dark ? '#111114' : '#f7f5f0', strokeWidth: 3, strokeLinejoin: 'round' }}>
-                      {truncLabel}
-                    </text>
-                  </g>
-                );
-              })}
-              {/* Tooltip */}
-              {tooltip && (() => {
-                const n = tooltip.node;
-                const col = MOD_COL[n.module] || '#8a8a96';
-                const r = Math.min(10 + n.count * 3, 22);
-                const tx = Math.min(Math.max(tooltip.x - 80, 8), W - 175);
-                const ty = tooltip.y - r - 14 > 80 ? tooltip.y - r - 14 : tooltip.y + r + 22;
-                const lines = [
-                  n.label,
-                  `${n.count} ${t.studied}`,
-                  tooltip.connections > 0 ? `${tooltip.connections} ${t.connections}` : null,
-                  tooltip.shared.length > 0 ? tooltip.shared.slice(0,3).join(', ') : null,
-                ].filter(Boolean);
-                const bh = 16 + lines.length * 14;
-                return (
-                  <g style={{ pointerEvents: 'none' }}>
-                    <rect x={tx} y={ty - 14} width={170} height={bh}
-                      rx={7} fill={dark ? '#1c1c21' : '#ffffff'}
-                      stroke={col} strokeWidth={1.5} strokeOpacity={0.6}
-                      style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.18))' }} />
-                    {lines.map((line, li) => (
-                      <text key={li} x={tx + 10} y={ty - 14 + 14 + li*14}
-                        fontSize={li === 0 ? 10.5 : 9} fontWeight={li === 0 ? 700 : 400}
-                        fill={li === 0 ? col : (dark ? 'rgba(152,152,176,0.9)' : 'rgba(92,92,108,0.9)')}
-                        fontFamily="inherit">
-                        {line}
-                      </text>
-                    ))}
-                  </g>
-                );
-              })()}
-            </svg>
+          <div style={{ background:TH.surface, border:'1px solid '+TH.border, borderRadius:16, overflow:'hidden', boxShadow:TH.cardShadow }}>
+            <canvas
+              ref={canvasRef}
+              style={{ width:'100%', display:'block' }}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={() => { hovIdRef.current=null; renderTree(null); setHovInfo(null); if(canvasRef.current) canvasRef.current.style.cursor='default'; }}
+              onClick={e => { const tp=getHit(e.clientX,e.clientY); if(tp) onLoad({ content:tp.lastEntry.content, topic:tp.lastEntry.topic, mod:tp.module, mode:tp.lastEntry.mode }); }}
+            />
           </div>
-          {/* Hint */}
-          <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 10, marginTop: 10, fontWeight: 500 }}>
-            {t.clickHint}
-          </p>
+          {/* Info bar */}
+          <div style={{ textAlign:'center', padding:'10px 0 0', minHeight:30 }}>
+            {hovInfo ? (
+              <span style={{ fontSize:12 }}>
+                <strong style={{ color:MOD_COL[hovInfo.mod]||'#8a8a96' }}>{hovInfo.label}</strong>
+                <span style={{ color:TH.textMuted }}> — {hovInfo.count}{TR.studied}{hovInfo.connCount>0?' · '+hovInfo.connCount+' '+TR.connections:''}</span>
+              </span>
+            ) : (
+              <span style={{ fontSize:11, color:TH.textMuted, fontWeight:500 }}>{TR.hint}</span>
+            )}
+          </div>
         </>
       )}
     </div>
   );
 }
 
-/* ═══════════ STUDY HISTORY ═══════════ */
+
 function StudyHistory({ dark, lang, session, onLoad }) {
   const TH = getTheme(dark);
   const [entries, setEntries] = useState([]);
