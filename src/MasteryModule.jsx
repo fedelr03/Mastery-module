@@ -28,7 +28,7 @@ function formatMath(text){
   s=s.replace(/\^{([^}]+)}/g,(_,i)=>i.split("").map(c=>SUP[c]||SUP[c.toLowerCase()]||c).join(""));
   s=s.replace(/\^([0-9a-zA-Z+\-()])/g,(_,c)=>SUP[c]||SUP[c.toLowerCase()]||c);
   s=s.replace(/_{([^}]+)}/g,(_,i)=>i.split("").map(c=>SUB_MAP[c]||SUB_MAP[c.toLowerCase()]||c).join(""));
-  s=s.replace(/_([0-9a-zA-Z+\-()=])/g,(_,c)=>SUB_MAP[c]||SUB_MAP[c.toLowerCase()]||c);
+  s=s.replace(/_([0-9a-zA-Z+\-()=])(?![a-zA-Z0-9])/g,(_,c)=>SUB_MAP[c]||SUB_MAP[c.toLowerCase()]||c);
   s=s.replace(/sqrt\{([^}]+)\}/gi,"\u221A{$1}");
   s=s.replace(/sqrt\(([^)]+)\)/gi,"\u221A{$1}");
   /* Convert bare √ followed by number/token into √{token} for MathText rendering */
@@ -167,7 +167,7 @@ function formatMath(text){
   s=s.replace(/([a-zA-Z]\u2032)\((?!\u2060)/g,"$1\u2060(");
   s=s.replace(/([a-zA-Z]\u2033)\((?!\u2060)/g,"$1\u2060(");
   /* Final cleanup: catch any remaining _X or ^X patterns the API might send */
-  s=s.replace(/_([a-zA-Z0-9])/g,(_,c)=>SUB_MAP[c]||SUB_MAP[c.toLowerCase()]||c);
+  s=s.replace(/_([a-zA-Z0-9])(?![a-zA-Z0-9])/g,(_,c)=>SUB_MAP[c]||SUB_MAP[c.toLowerCase()]||c);
   s=s.replace(/\^([a-zA-Z0-9])/g,(_,c)=>SUP[c]||SUP[c.toLowerCase()]||c);
   /* Strip any truly orphaned underscores between math tokens */
   s=s.replace(/([a-zA-Z0-9\u03B1-\u03C9])_(?=[a-zA-Z0-9\u03B1-\u03C9])/g,"$1");
@@ -181,6 +181,13 @@ function formatMath(text){
   s=s.replace(/ ([+\-]) (?=[\d\w\u03B1-\u03C9(])/g,"\u00A0$1\u00A0");/* space+space before math token */
   s=s.replace(/([=\u2212+\-\u00D7]) \(/g,"$1\u00A0(");/* = ( → =nbsp( */
   s=s.replace(/\) ([=\u2212+\-\u00D7\u00F7])/g,")\u00A0$1");/* ) = → )nbsp= */
+  /* Normalize spaces around / in fraction contexts so processFractions can match.
+     Haiku often outputs "(a + b) / (c - d)" with spaces — collapse them to "(a+b)/(c-d)". */
+  s=s.replace(/\)\s+\/\s+\(/g,")/(");
+  s=s.replace(/\)\s+\/\s+([a-zA-Z0-9\u03B1-\u03C9\u221A\u03A3\u2211])/g,")/$1");
+  s=s.replace(/([a-zA-Z0-9\u03B1-\u03C9])\s+\/\s+\(/g,"$1/(");
+  s=s.replace(/([a-zA-Z0-9\u03B1-\u03C9])\s+\/\s+([a-zA-Z0-9\u03B1-\u03C9])(?=\s|[^a-zA-Z0-9]|$)/g,"$1/$2");
+
   /* Collapse mid-sentence newlines: if a line ends with a regular letter, comma, or quote
      AND the next line starts with a lowercase letter, it's a prose wrap — join with a space.
      Lines ending with ), digits, Greek, or superscripts are formula newlines → keep the gap. */
@@ -477,7 +484,7 @@ function MathText({children}){
   /* Split newlines into <br/> */
   function processNewlines(input){
     if(typeof input!=="string"||!input.includes("\n"))return input;
-    return input.split("\n").flatMap((line,i,arr)=>i<arr.length-1?[line,<div key={"nl"+i} style={{height:8}}/>]:[line]).filter(x=>x!=="");
+    return input.split("\n").flatMap((line,i,arr)=>i<arr.length-1?[line,<span key={"nl"+i} style={{display:"block",height:8}}/>]:[line]).filter(x=>x!=="");
   }
 
   /* Step 1: Bold/underline (before anything splits the string) */
@@ -565,8 +572,22 @@ function sanitizeMCQuestion(q){
     }
   }
 
+  /* Heuristic 4: look for a percentage or numeric value in the explanation that matches an option */
+  if(intendedIdx===null){
+    const pctM=origExpl.match(/\b(\d+(?:[.,]\d+)?)\s*%/);
+    if(pctM){
+      const normStr=(s)=>String(s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+      const needle=normStr(pctM[0]);
+      const hit=q.options.map((opt,i)=>({i,v:normStr(opt)})).find(c=>c.v.includes(needle)||needle.includes(c.v.replace(/[^0-9.%]/g,"")));
+      if(hit)intendedIdx=hit.i;
+    }
+  }
+
   /* Strip the reasoning trail regardless (even if no index hint was found) */
   let cleaned=origExpl.replace(REASONING_TRAIL_RE,"").trim();
+  /* Also strip lone trailing "pero" / "but" that marks an abruptly cut reasoning trail */
+  cleaned=cleaned.replace(/,?\s*\bpero\b\s*\.?\s*$/i,"").trim();
+  cleaned=cleaned.replace(/,?\s*\bbut\b\s*\.?\s*$/i,"").trim();
   /* Safety: never blank out the explanation — if cleaning ate everything, restore */
   if(!cleaned||cleaned.length<3)cleaned=origExpl;
 
