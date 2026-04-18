@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import LandingPage from './LandingPage';
 import { supabase } from './supabase';
 import MasteryModule from './MasteryModule';
@@ -800,7 +800,6 @@ function AdminDashboard({ dark }) {
 /* ═══════════ KNOWLEDGE TREE ═══════════ */
 function KnowledgeTree({ dark, lang, session, onLoad }) {
   const TH = getTheme(dark);
-  const { useState: useS, useEffect: useE, useRef: useR } = { useState, useEffect, useRef };
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [loading, setLoading] = useState(true);
