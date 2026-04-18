@@ -135,16 +135,17 @@ module.exports = async function handler(req, res) {
       try {
         const sb = createClient(SB_URL, SB_SERVICE_KEY);
         await sb.from('usage_logs').insert({
-          user_id: user.id,
-          email: user.email,
-          topic: meta.topic || '',
-          module: meta.module || '',
-          mode: 'cached',
-          lang: meta.lang || '',
-          input_tokens: 0,
-          output_tokens: 0,
-          estimated_cost: 0,
-        });
+            user_id: user.id,
+            email: user.email,
+            topic: meta.topic || '',
+            module: meta.module || '',
+            mode: 'cached',
+            lang: meta.lang || '',
+            input_tokens: 0,
+            output_tokens: 0,
+            estimated_cost: 0,
+            request_group_id: meta.request_group_id || null,
+          });
       } catch (logErr) {
         console.error('Usage log (cache) failed:', logErr);
       }
@@ -192,6 +193,7 @@ module.exports = async function handler(req, res) {
           input_tokens: inputTokens,
           output_tokens: outputTokens,
           estimated_cost: cost,
+          request_group_id: meta.request_group_id || null,
         });
       } catch (logErr) {
         console.error('Usage log failed:', logErr);
