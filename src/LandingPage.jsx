@@ -128,6 +128,24 @@ const T = {
     signupOk: 'Account created! Check your email to confirm, then log in.',
     pwMismatch: 'Passwords do not match.',
     emailConfirmed: '✓ Email confirmed! You can now sign in.',
+    badgeReview: 'RETENTION',
+    reviewTitle: 'Study once. Remember forever.',
+    reviewSub: 'Re-reading feels productive but the knowledge fades fast. Active recall — being tested on what you studied — is what actually makes it stick. The review system handles the scheduling automatically.',
+    reviewSteps: [
+      { n: '01', title: 'A question is generated', desc: 'When you open a review card, the app generates one focused recall question on the spot — tailored to the exact topic you studied.' },
+      { n: '02', title: 'You write your answer', desc: 'No multiple choice. You retrieve the answer from memory and type it out. The struggle to recall is exactly what locks it in.' },
+      { n: '03', title: 'You see the model answer and rate yourself', desc: 'Compare your answer to the model answer, then rate honestly: Blackout, Hard, Good, or Easy. The app uses your rating to schedule the next review.' },
+    ],
+    reviewSrsNote: 'Your rating controls the schedule. Rate it Easy and it comes back in weeks. Rate it Blackout and it's back tomorrow. Every correct answer pushes the interval further out.',
+    badgeKt: 'KNOWLEDGE MAP',
+    ktTitle: 'See everything you know.',
+    ktSub: 'Every topic you study gets mapped onto your Knowledge Tree — organized by subject, color-coded by mastery, and connected across fields.',
+    ktFeatures: [
+      { icon: '🌿', title: 'Organized by subject', desc: 'Topics branch under Math, Statistics, Economics, and Finance. The tree grows with every study session.' },
+      { icon: '🎨', title: 'Mastery at a glance', desc: 'Each node shows where you stand: due for review (red), still learning (orange), reviewing (purple), mastered (green).' },
+      { icon: '🔗', title: 'Cross-subject connections', desc: 'Hover any topic to see which concepts link it to topics in other subjects. When the same idea spans multiple fields, it's worth knowing deeply.' },
+      { icon: '🔄', title: 'One click to reload', desc: 'Click any node to instantly reload that topic in the module. Resume a concept or go deeper from exactly where you left off.' },
+    ],
     footer: 'Learn by First Principles',
   },
   es: {
@@ -233,6 +251,24 @@ const T = {
     signupOk: '¡Cuenta creada! Revisá tu email para confirmar y luego iniciá sesión.',
     pwMismatch: 'Las contraseñas no coinciden.',
     emailConfirmed: '✓ ¡Email confirmado! Ya podés iniciar sesión.',
+    badgeReview: 'RETENCIÓN',
+    reviewTitle: 'Estudiás una vez. Lo recordás para siempre.',
+    reviewSub: 'Releer se siente productivo pero el conocimiento se esfuma rápido. El repaso activo — que te pongan a prueba sobre lo que estudiaste — es lo que realmente lo fija. El sistema de repaso maneja los tiempos automáticamente.',
+    reviewSteps: [
+      { n: '01', title: 'Se genera una pregunta', desc: 'Cuando abrís una tarjeta de repaso, la app genera en el momento una pregunta enfocada sobre ese tema — adaptada exactamente a lo que estudiaste.' },
+      { n: '02', title: 'Escribís tu respuesta', desc: 'Sin opciones múltiples. Recuperás la respuesta de memoria y la escribís. El esfuerzo de recordar es exactamente lo que la fija.' },
+      { n: '03', title: 'Ves la respuesta modelo y te calificás', desc: 'Comparás tu respuesta con la modelo y calificás con honestidad: Olvidé, Difícil, Bien o Fácil. La app usa tu calificación para programar el próximo repaso.' },
+    ],
+    reviewSrsNote: 'Tu calificación controla el calendario. Calificás Fácil y vuelve en semanas. Calificás Olvidé y vuelve mañana. Cada acierto empuja el intervalo más lejos.',
+    badgeKt: 'MAPA DE CONOCIMIENTO',
+    ktTitle: 'Mirá todo lo que sabés.',
+    ktSub: 'Cada tema que estudiás queda mapeado en tu Árbol de Conocimiento — organizado por materia, con código de color por nivel de dominio, y conectado entre áreas.',
+    ktFeatures: [
+      { icon: '🌿', title: 'Organizado por materia', desc: 'Los temas se ramifican bajo Matemática, Estadística, Economía y Finanzas. El árbol crece con cada sesión de estudio.' },
+      { icon: '🎨', title: 'Dominio de un vistazo', desc: 'Cada nodo muestra dónde estás: para repasar (rojo), aprendiendo (naranja), repasando (violeta), dominado (verde).' },
+      { icon: '🔗', title: 'Conexiones entre materias', desc: 'Pasá el cursor por un tema para ver qué conceptos lo conectan con otras materias. Cuando la misma idea aparece en varios campos, vale la pena dominarla a fondo.' },
+      { icon: '🔄', title: 'Un clic para volver', desc: 'Hacé clic en cualquier nodo para recargar ese tema en el módulo al instante. Retomá un concepto o profundizá desde donde lo dejaste.' },
+    ],
     footer: 'Aprendé desde los Principios Fundamentales',
   },
 };
@@ -445,15 +481,19 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             }}>
               {[
                 { label: lang === 'es' ? 'Módulo' : 'Module', accent: true },
+                { label: lang === 'es' ? 'Mapa' : 'Map', accent: false },
+                { label: lang === 'es' ? 'Repasar' : 'Review', accent: false, dot: true },
                 { label: lang === 'es' ? 'Perfil' : 'Profile', accent: false },
-                { label: lang === 'es' ? 'Salir' : 'Log Out', accent: false },
               ].map((b, i) => (
                 <div key={i} style={{
                   padding: '3px 10px', borderRadius: 6, fontSize: 9, fontWeight: 700,
                   border: '1px solid ' + (b.accent ? TH.accent : TH.border),
                   color: b.accent ? TH.accent : TH.textSecondary,
-                  background: 'transparent',
-                }}>{b.label}</div>
+                  background: 'transparent', display: 'flex', alignItems: 'center', gap: 3,
+                }}>
+                  {b.label}
+                  {b.dot && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#f5a623', flexShrink: 0 }} />}
+                </div>
               ))}
             </div>
 
@@ -725,6 +765,84 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
+      {/* ── REVIEW & RETAIN ── */}
+      <section style={{ padding: '80px 20px', background: dark ? TH.surface : '#faf8f4', borderTop: '1px solid ' + TH.borderLight, borderBottom: '1px solid ' + TH.borderLight }}>
+        <div style={{ maxWidth: 960, margin: '0 auto' }}>
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: 52 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeReview}</div>
+            <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.reviewTitle}</h2>
+            <p style={{ fontSize: 14, color: TH.textMuted, maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>{t.reviewSub}</p>
+          </div>
+
+          {/* Two-column: steps + mockup */}
+          <div key={morphKey} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 40, alignItems: 'center', marginBottom: 36 }}>
+
+            {/* Steps */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {t.reviewSteps.map((s, i) => (
+                <div key={i} style={{ display: 'flex', gap: 18, alignItems: 'flex-start' }}>
+                  <div style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 11, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: TH.accent, letterSpacing: 0.5 }}>{s.n}</div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: TH.text, marginBottom: 4 }}>{s.title}</div>
+                    <p style={{ fontSize: 13, color: TH.textMuted, lineHeight: 1.65 }}>{s.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Card mockup — revealed state */}
+            <div style={{ background: TH.bg, borderRadius: 16, border: '1px solid ' + TH.border, padding: 16, boxShadow: dark ? '0 8px 40px rgba(0,0,0,0.3)' : '0 8px 40px rgba(0,0,0,0.07)', maxWidth: 360, margin: '0 auto', width: '100%' }}>
+              {/* Card */}
+              <div style={{ background: TH.surface, borderRadius: 14, border: '1px solid ' + TH.border, overflow: 'hidden', marginBottom: 10 }}>
+                {/* Topic */}
+                <div style={{ padding: '18px 18px 14px', textAlign: 'center', borderBottom: '1px solid ' + TH.borderLight }}>
+                  <div style={{ display: 'inline-block', background: '#e8940a18', border: '1px solid #e8940a44', borderRadius: 6, padding: '2px 8px', marginBottom: 8, fontSize: 8, color: '#e8940a', fontWeight: 700, letterSpacing: 1 }}>MATH</div>
+                  <div style={{ fontSize: 17, fontWeight: 800, color: TH.text, letterSpacing: '-0.02em' }}>
+                    {lang === 'es' ? 'Derivadas' : 'Derivatives'}
+                  </div>
+                </div>
+                {/* Question + answers */}
+                <div style={{ padding: '14px 18px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: TH.textSecondary, lineHeight: 1.5, margin: 0 }}>
+                    {lang === 'es' ? '¿Qué representa geométricamente la derivada?' : 'What does the derivative represent geometrically?'}
+                  </p>
+                  <div>
+                    <div style={{ fontSize: 8, fontWeight: 700, color: TH.textMuted, letterSpacing: 1, marginBottom: 4 }}>{lang === 'es' ? 'TU RESPUESTA' : 'YOUR ANSWER'}</div>
+                    <div style={{ padding: '7px 10px', borderRadius: 7, background: dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: '1px solid ' + TH.borderLight, fontSize: 11, color: TH.textSecondary, lineHeight: 1.5 }}>
+                      {lang === 'es' ? 'La pendiente de la tangente en ese punto...' : 'The slope of the tangent line at that point...'}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 8, fontWeight: 700, color: '#e8940a', letterSpacing: 1, marginBottom: 4 }}>{lang === 'es' ? 'RESPUESTA MODELO' : 'MODEL ANSWER'}</div>
+                    <div style={{ padding: '7px 10px', borderRadius: 7, background: '#e8940a0f', border: '1px solid #e8940a30', fontSize: 11, color: TH.text, fontWeight: 500, lineHeight: 1.5 }}>
+                      {lang === 'es' ? 'La tasa de cambio instantánea — la pendiente de la recta tangente a la curva en ese punto.' : 'The instantaneous rate of change — the slope of the tangent line to the curve at that point.'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Rating buttons */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 5 }}>
+                {(lang === 'es'
+                  ? [['😶','Olvidé','#ef4444',false],['😓','Difícil','#f97316',false],['🙂','Bien','#e8940a',false],['😎','Fácil','#22c55e',true]]
+                  : [['😶','Blackout','#ef4444',false],['😓','Hard','#f97316',false],['🙂','Good','#e8940a',false],['😎','Easy','#22c55e',true]]
+                ).map(([em, label, col, active], i) => (
+                  <div key={i} style={{ padding: '8px 3px', borderRadius: 9, border: '1px solid ' + (active ? col + '55' : TH.border), background: active ? col + '12' : TH.surface, textAlign: 'center' }}>
+                    <div style={{ fontSize: 15, marginBottom: 3 }}>{em}</div>
+                    <div style={{ fontSize: 8, fontWeight: 700, color: active ? col : TH.textSecondary }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* SRS callout */}
+          <div style={{ maxWidth: 600, margin: '0 auto', background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 12, padding: '14px 20px', textAlign: 'center' }}>
+            <span style={{ fontSize: 13, color: TH.accent, fontWeight: 600, lineHeight: 1.6 }}>{t.reviewSrsNote}</span>
+          </div>
+        </div>
+      </section>
+
       {/* ── INTERESTS (personalization) ── */}
       <section style={{ padding: '80px 20px', borderTop: '1px solid ' + TH.borderLight }}>
         <div style={{ maxWidth: 860, margin: '0 auto' }}>
@@ -744,6 +862,89 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
                 <p style={{ fontSize: 13, color: TH.textSecondary, lineHeight: 1.7 }}>{it.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── KNOWLEDGE TREE ── */}
+      <section style={{ padding: '80px 20px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto' }}>
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: 52 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeKt}</div>
+            <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.ktTitle}</h2>
+            <p style={{ fontSize: 14, color: TH.textMuted, maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>{t.ktSub}</p>
+          </div>
+
+          {/* Two-column: features + tree mockup */}
+          <div key={morphKey} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 40, alignItems: 'center' }}>
+
+            {/* Feature list */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
+              {t.ktFeatures.map((f, i) => (
+                <div key={i} className="lp-card" style={{ background: TH.surface, borderRadius: 14, border: '1px solid ' + TH.border, padding: '18px 20px', boxShadow: dark ? '0 2px 16px rgba(0,0,0,0.2)' : '0 2px 16px rgba(0,0,0,0.03)', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                  <div style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>{f.icon}</div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: TH.text, marginBottom: 5 }}>{f.title}</div>
+                    <p style={{ fontSize: 12, color: TH.textMuted, lineHeight: 1.65 }}>{f.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Tree mockup */}
+            <div style={{ background: TH.bg, borderRadius: 16, border: '1px solid ' + TH.border, padding: '28px 20px 24px', boxShadow: dark ? '0 8px 40px rgba(0,0,0,0.3)' : '0 8px 40px rgba(0,0,0,0.07)', maxWidth: 380, margin: '0 auto', width: '100%' }}>
+              {/* Root */}
+              <div style={{ textAlign: 'center', marginBottom: 6 }}>
+                <div style={{ display: 'inline-block', padding: '6px 18px', borderRadius: 8, background: TH.surface, border: '1.5px solid ' + TH.border, fontSize: 11, fontWeight: 700, color: TH.text }}>
+                  {lang === 'es' ? 'Mi Conocimiento' : 'My Knowledge'}
+                </div>
+              </div>
+              {/* Root → branch connector row */}
+              <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 0, paddingBottom: 0 }}>
+                {[0,1,2].map(i => <div key={i} style={{ width: 1, height: 14, background: TH.border }} />)}
+              </div>
+              {/* Branches */}
+              <div style={{ display: 'flex', justifyContent: 'space-around', gap: 8 }}>
+                {[
+                  { label: lang === 'es' ? 'Mate' : 'Math', col: '#e8940a', topics: [
+                    { label: lang === 'es' ? 'Derivadas' : 'Derivatives', col: '#22c55e' },
+                    { label: lang === 'es' ? 'Integrales' : 'Integrals', col: '#6366f1' },
+                  ]},
+                  { label: 'Stats', col: '#6366f1', topics: [
+                    { label: lang === 'es' ? 'Dist. Normal' : 'Normal Dist.', col: '#f5a623' },
+                    { label: 'Regression', col: '#ef4444' },
+                  ]},
+                  { label: lang === 'es' ? 'Econ' : 'Econ', col: '#10b981', topics: [
+                    { label: lang === 'es' ? 'Oferta y Dem.' : 'Supply & Dem.', col: '#22c55e' },
+                  ]},
+                ].map(({ label, col, topics }) => (
+                  <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: col + '1e', border: '2px solid ' + col, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: col }}>{label}</div>
+                    <div style={{ width: 1, height: 8, background: col + '60' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center', width: '100%' }}>
+                      {topics.map(tp => (
+                        <div key={tp.label} style={{ padding: '4px 6px', borderRadius: 6, border: '1.5px solid ' + tp.col + '80', background: tp.col + '10', fontSize: 8.5, fontWeight: 600, color: TH.text, textAlign: 'center', width: '100%', boxSizing: 'border-box', lineHeight: 1.4 }}>
+                          {tp.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Legend */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
+                {(lang === 'es'
+                  ? [['#ef4444','Repasar'],['#f5a623','Aprendiendo'],['#6366f1','Repasando'],['#22c55e','Dominado']]
+                  : [['#ef4444','Due'],['#f5a623','Learning'],['#6366f1','Reviewing'],['#22c55e','Mastered']]
+                ).map(([col, label]) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, color: TH.textSecondary }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 2, border: '2px solid ' + col, flexShrink: 0 }} />
+                    {label}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
