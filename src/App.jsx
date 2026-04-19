@@ -1113,14 +1113,25 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
             : surfaceBorder);
       const borderWidth = masteryCol ? (isHov ? 2 : 1.5) : (isHov ? 1.5 : 1);
 
-      /* Node pill */
+      /* Node pill — opaque base first so underlying lines are hidden */
       ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
-      ctx.fillStyle = masteryCol
-        ? (isHov ? masteryCol + '28' : masteryCol + '12')
-        : (isHov ? (dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.03)') : surfaceBg);
+      ctx.fillStyle = surfaceBg;
+      ctx.fill();
+      /* Mastery tint layer */
+      if (masteryCol) {
+        ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
+        ctx.fillStyle = isHov ? masteryCol + '28' : masteryCol + '12';
+        ctx.fill();
+      } else if (isHov) {
+        ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
+        ctx.fillStyle = dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.03)';
+        ctx.fill();
+      }
+      /* Border */
+      ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
       ctx.strokeStyle = borderCol;
       ctx.lineWidth   = borderWidth;
-      ctx.fill(); ctx.stroke();
+      ctx.stroke();
 
       /* Mastery glow on hover */
       if (isHov && masteryCol) {
