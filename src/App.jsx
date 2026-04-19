@@ -879,7 +879,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
     try {
       const [{ data }, { data: cardData }] = await Promise.all([
         supabase.from('study_history').select('id, topic, module, created_at, content').eq('user_id', session.user.id).order('created_at', { ascending: false }),
-        supabase.from('review_cards').select('topic, ease_factor, interval, next_review_at, status').eq('user_id', session.user.id).neq('status', 'suspended'),
+        supabase.from('review_cards').select('topic, easiness_factor, interval, next_review_at, status').eq('user_id', session.user.id).neq('status', 'suspended'),
       ]);
       if (data && data.length > 0) { buildLayout(data, cardData || []); setHasData(true); }
       else setHasData(false);
@@ -901,7 +901,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
       if (!card) return 'none';
       const isDue = new Date(card.next_review_at) <= new Date();
       if (isDue) return 'due';
-      const ef = parseFloat(card.ease_factor) || 2.5;
+      const ef = parseFloat(card.easiness_factor) || 2.5;
       const iv = parseInt(card.interval) || 0;
       if (iv >= 21 && ef >= 2.4) return 'mastered';
       if (iv >= 7) return 'reviewing';
@@ -954,14 +954,13 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
     mods.forEach(m => {
       const N = byMod[m].length;
       byMod[m].forEach((tp, i) => {
-        /* Stagger topics slightly left/right so branch lines fan out from the module node
-           instead of stacking on the same vertical and passing through sibling boxes */
-        tp.x = modPositions[m] + (N <= 1 ? 0 : (i - (N - 1) / 2) * 18);
+        /* Spread topics horizontally so fork drops are visually distinct */
+        tp.x = modPositions[m] + (N <= 1 ? 0 : (i - (N - 1) / 2) * 50);
         tp.y = TOPIC_START_Y + i * TOPIC_GAP;
       });
     });
 
-    layoutRef.current = { topics, byMod, mods, edges, W, H, MOD_Y, modPositions };
+    layoutRef.current = { topics, byMod, mods, edges, W, H, MOD_Y, modPositions, TOPIC_START_Y };
     requestAnimationFrame(() => renderTree(null));
   };
 
@@ -969,7 +968,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
     const canvas = canvasRef.current;
     const L = layoutRef.current;
     if (!canvas || !L) return;
-    const { topics, byMod, mods, edges, W, H, MOD_Y, modPositions } = L;
+    const { topics, byMod, mods, edges, W, H, MOD_Y, modPositions, TOPIC_START_Y } = L;
 
     canvas.width  = W * 2;
     canvas.height = H * 2;
@@ -998,13 +997,42 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
     /* Root → module trunk lines */
     mods.forEach(m => bz(ROOT.x, ROOT.y+14, modPositions[m], MOD_Y-20, MOD_COL[m]||'#8a8a96', 1.6, 0.3));
 
-    /* Module → topic branch lines */
+    /* Module → topic branch lines (fork/trunk layout)
+       Trunk goes to a fork point ABOVE all topic boxes → horizontal bar → straight drops.
+       Lines never pass through any topic box. */
+    const FORK_Y = TOPIC_START_Y - 32;
     mods.forEach(m => {
       const col = MOD_COL[m] || '#8a8a96';
-      byMod[m].forEach(tp => {
-        const isHov = hovId === tp.id;
-        bz(modPositions[m], MOD_Y+20, tp.x, tp.y-15, col, isHov?2:1.1, isHov?0.65:0.25);
-      });
+      const tps = byMod[m];
+      if (!tps.length) return;
+
+      if (tps.length === 1) {
+        /* Single topic — simple bezier, no crossing risk */
+        const isHov = hovId === tps[0].id;
+        bz(modPositions[m], MOD_Y + 20, tps[0].x, tps[0].y - 15, col, isHov ? 2 : 1.1, isHov ? 0.65 : 0.25);
+      } else {
+        /* Trunk from module node bottom to fork point */
+        ctx.save();
+        ctx.strokeStyle = col; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        ctx.globalAlpha = 0.28; ctx.lineWidth = 1.1;
+        ctx.beginPath(); ctx.moveTo(modPositions[m], MOD_Y + 20); ctx.lineTo(modPositions[m], FORK_Y);
+        ctx.stroke();
+
+        /* Horizontal bar spanning all topic X positions */
+        const xs = tps.map(tp => tp.x);
+        ctx.beginPath(); ctx.moveTo(Math.min(...xs), FORK_Y); ctx.lineTo(Math.max(...xs), FORK_Y);
+        ctx.stroke();
+
+        /* Straight drop from fork bar to top of each topic box */
+        tps.forEach(tp => {
+          const isHov = hovId === tp.id;
+          ctx.globalAlpha = isHov ? 0.65 : 0.28;
+          ctx.lineWidth   = isHov ? 2 : 1.1;
+          ctx.beginPath(); ctx.moveTo(tp.x, FORK_Y); ctx.lineTo(tp.x, tp.y - 15);
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
     });
 
     /* Cross-subject arcs — only shown on hover */
