@@ -847,6 +847,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
   const TR = lang === 'es' ? {
     title:'Árbol de Conocimiento', sub:'Tus temas organizados por materia',
     empty:'Todavía no estudiaste ningún tema.', emptyHint:'Estudiá al menos un tema para comenzar.',
+    mDue:'Para repasar', mLearning:'Aprendiendo', mReviewing:'Repasando', mMastered:'Dominado', mNone:'Sin tarjeta',
     refresh:'Actualizar', loading:'Cargando árbol...', root:'Mi Conocimiento',
     hint:'Pasá el cursor por un tema · Hacé clic para abrirlo',
     studied:'× estudiado', connections:'conexiones entre materias',
@@ -856,6 +857,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
     refresh:'Refresh', loading:'Loading tree...', root:'My Knowledge',
     hint:'Hover a topic to see connections · Click to open it',
     studied:'× studied', connections:'cross-subject connections',
+    mDue:'Due for review', mLearning:'Learning', mReviewing:'Reviewing', mMastered:'Mastered', mNone:'No card',
   };
 
   useEffect(() => { loadAndBuild(); }, []);
@@ -865,25 +867,43 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
     setLoading(true);
     hovIdRef.current = null; setHovInfo(null);
     try {
-      const { data } = await supabase
-        .from('study_history')
-        .select('id, topic, module, created_at, content')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
-      if (data && data.length > 0) { buildLayout(data); setHasData(true); }
+      const [{ data }, { data: cardData }] = await Promise.all([
+        supabase.from('study_history').select('id, topic, module, created_at, content').eq('user_id', session.user.id).order('created_at', { ascending: false }),
+        supabase.from('review_cards').select('topic, easiness_factor, interval, next_review_at, status').eq('user_id', session.user.id).neq('status', 'suspended'),
+      ]);
+      if (data && data.length > 0) { buildLayout(data, cardData || []); setHasData(true); }
       else setHasData(false);
     } catch(e) { console.error(e); setHasData(false); }
     setLoading(false);
   };
 
-  const buildLayout = (data) => {
+  const buildLayout = (data, cardData) => {
+    /* Build SRS lookup: normalize topic → best card */
+    const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    const srsMap = {};
+    (cardData || []).forEach(card => {
+      const key = norm(card.topic);
+      if (!srsMap[key]) srsMap[key] = card;
+    });
+
+    const getMastery = (topicKey) => {
+      const card = srsMap[topicKey];
+      if (!card) return 'none';
+      const isDue = new Date(card.next_review_at) <= new Date();
+      if (isDue) return 'due';
+      const ef = parseFloat(card.easiness_factor) || 2.5;
+      const iv = parseInt(card.interval) || 0;
+      if (iv >= 21 && ef >= 2.4) return 'mastered';
+      if (iv >= 7) return 'reviewing';
+      return 'learning';
+    };
+
     /* Deduplicate by topic */
     const topicMap = {};
     data.forEach(entry => {
       const key = entry.topic.toLowerCase().trim();
-      if (!topicMap[key]) topicMap[key] = { id:key, label:entry.topic, module:entry.module||'general', count:0, lastEntry:entry, keywords:new Set() };
+      if (!topicMap[key]) topicMap[key] = { id:key, label:entry.topic, module:entry.module||'general', count:0, lastEntry:entry, keywords:new Set(), masteryLevel: getMastery(norm(entry.topic)) };
       topicMap[key].count++;
-      const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
       (entry.content?.keyConcepts||[]).forEach(kc => {
         (kc.title||'').split(/[\s\-_/,]+/).forEach(w => {
           const nw = norm(w).replace(/[^a-z0-9]/g,'');
@@ -1028,6 +1048,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
     });
 
     /* ── TOPIC LEAF NODES ── */
+    const MASTERY_COL = { due:'#ef4444', learning:'#f5a623', reviewing:'#6366f1', mastered:'#22c55e', none: null };
     topics.forEach(tp => {
       const col = MOD_COL[tp.module]||'#8a8a96';
       const isHov = hovId === tp.id;
@@ -1041,12 +1062,28 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
       const tw = treeNodeW(tp.label), th = 30;
       ctx.globalAlpha = faded ? 0.15 : 1;
 
+      const masteryCol = MASTERY_COL[tp.masteryLevel];
+      const borderCol = isHov ? col : (masteryCol || col + (tp.count > 1 ? '55' : '2e'));
+      const borderWidth = masteryCol ? (isHov ? 2 : 1.6) : (isHov ? 1.8 : 1);
+
       /* Node pill */
       ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
       ctx.fillStyle   = isHov ? col+'2a' : (tp.count > 1 ? col+'16' : col+'0c');
-      ctx.strokeStyle = isHov ? col      : (tp.count > 1 ? col+'55' : col+'2e');
-      ctx.lineWidth   = isHov ? 1.8 : 1;
+      ctx.strokeStyle = borderCol;
+      ctx.lineWidth   = borderWidth;
       ctx.fill(); ctx.stroke();
+
+      /* Mastery glow on hover */
+      if (isHov && masteryCol) {
+        ctx.save();
+        ctx.globalAlpha = 0.18;
+        ctx.shadowColor = masteryCol;
+        ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
+        ctx.strokeStyle = masteryCol; ctx.lineWidth = 2.5; ctx.stroke();
+        ctx.restore();
+        ctx.globalAlpha = faded ? 0.15 : 1;
+      }
 
       /* Label — ensure it stays inside pill */
       const maxLabelW = tw - 20;
@@ -1095,7 +1132,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
         const L = layoutRef.current;
         const hi = L.topics.findIndex(x => x.id === tp.id);
         const connCount = L.edges.filter(e => e.a===hi||e.b===hi).length;
-        setHovInfo({ id:tp.id, label:tp.label, mod:tp.module, count:tp.count, connCount });
+        setHovInfo({ id:tp.id, label:tp.label, mod:tp.module, count:tp.count, connCount, masteryLevel: tp.masteryLevel });
       } else { setHovInfo(null); }
       e.currentTarget.style.cursor = tp ? 'pointer' : 'default';
     }
@@ -1139,10 +1176,33 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
               <span style={{ fontSize:12 }}>
                 <strong style={{ color:MOD_COL[hovInfo.mod]||'#8a8a96' }}>{hovInfo.label}</strong>
                 <span style={{ color:TH.textMuted }}> — {hovInfo.count}{TR.studied}{hovInfo.connCount>0?' · '+hovInfo.connCount+' '+TR.connections:''}</span>
+                {hovInfo.masteryLevel && hovInfo.masteryLevel !== 'none' && (() => {
+                  const mCol = { due:'#ef4444', learning:'#f5a623', reviewing:'#6366f1', mastered:'#22c55e' };
+                  const mLabel = { due: TR.mDue, learning: TR.mLearning, reviewing: TR.mReviewing, mastered: TR.mMastered };
+                  return (
+                    <span style={{ marginLeft:8, fontSize:10, fontWeight:700, color: mCol[hovInfo.masteryLevel], background: mCol[hovInfo.masteryLevel]+'18', border:'1px solid '+mCol[hovInfo.masteryLevel]+'30', borderRadius:5, padding:'1px 7px' }}>
+                      {mLabel[hovInfo.masteryLevel]}
+                    </span>
+                  );
+                })()}
               </span>
             ) : (
               <span style={{ fontSize:11, color:TH.textMuted, fontWeight:500 }}>{TR.hint}</span>
             )}
+          </div>
+          {/* Mastery legend */}
+          <div style={{ display:'flex', justifyContent:'center', gap:14, paddingTop:10, flexWrap:'wrap' }}>
+            {[
+              { col:'#ef4444', label: TR.mDue },
+              { col:'#f5a623', label: TR.mLearning },
+              { col:'#6366f1', label: TR.mReviewing },
+              { col:'#22c55e', label: TR.mMastered },
+            ].map(({ col, label }) => (
+              <span key={label} style={{ display:'flex', alignItems:'center', gap:5, fontSize:10, color:TH.textSecondary }}>
+                <span style={{ width:10, height:10, borderRadius:3, border:'2px solid '+col, display:'inline-block', flexShrink:0 }} />
+                {label}
+              </span>
+            ))}
           </div>
         </>
       )}
