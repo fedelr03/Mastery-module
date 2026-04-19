@@ -130,16 +130,16 @@ const T = {
     emailConfirmed: '✓ Email confirmed! You can now sign in.',
     badgeReview: 'RETENTION',
     reviewTitle: 'Study once. Remember forever.',
-    reviewSub: 'Re-reading feels productive but the knowledge fades fast. Active recall — being tested on what you studied — is what actually makes it stick. The review system handles the scheduling automatically.',
+    reviewSub: 'Re-reading feels productive but the knowledge fades fast. Getting tested on what you studied is what actually makes it stick. The review system takes care of the scheduling for you.',
     reviewSteps: [
-      { n: '01', title: 'A question is generated', desc: 'When you open a review card, the app generates one focused recall question on the spot — tailored to the exact topic you studied.' },
+      { n: '01', title: 'A question is generated', desc: 'When you open a review card, a recall question gets generated on the spot, based on what you studied.' },
       { n: '02', title: 'You write your answer', desc: 'No multiple choice. You retrieve the answer from memory and type it out. The struggle to recall is exactly what locks it in.' },
       { n: '03', title: 'You see the model answer and rate yourself', desc: 'Compare your answer to the model answer, then rate honestly: Blackout, Hard, Good, or Easy. The app uses your rating to schedule the next review.' },
     ],
     reviewSrsNote: 'Your rating controls the schedule. Rate it Easy and it comes back in weeks. Rate it Blackout and it\'s back tomorrow. Every correct answer pushes the interval further out.',
     badgeKt: 'KNOWLEDGE MAP',
     ktTitle: 'See everything you know.',
-    ktSub: 'Every topic you study gets mapped onto your Knowledge Tree — organized by subject, color-coded by mastery, and connected across fields.',
+    ktSub: 'Every topic you study gets added to your Knowledge Tree, organized by subject, color-coded by mastery level, and linked across fields.',
     ktFeatures: [
       { icon: '🌿', title: 'Organized by subject', desc: 'Topics branch under Math, Statistics, Economics, and Finance. The tree grows with every study session.' },
       { icon: '🎨', title: 'Mastery at a glance', desc: 'Each node shows where you stand: due for review (red), still learning (orange), reviewing (purple), mastered (green).' },
@@ -253,16 +253,16 @@ const T = {
     emailConfirmed: '✓ ¡Email confirmado! Ya podés iniciar sesión.',
     badgeReview: 'RETENCIÓN',
     reviewTitle: 'Estudiás una vez. Lo recordás para siempre.',
-    reviewSub: 'Releer se siente productivo pero el conocimiento se esfuma rápido. El repaso activo — que te pongan a prueba sobre lo que estudiaste — es lo que realmente lo fija. El sistema de repaso maneja los tiempos automáticamente.',
+    reviewSub: 'Releer se siente productivo pero el conocimiento se esfuma rápido. Que te pongan a prueba sobre lo que estudiaste es lo que realmente lo fija. El sistema de repaso maneja los tiempos por vos.',
     reviewSteps: [
-      { n: '01', title: 'Se genera una pregunta', desc: 'Cuando abrís una tarjeta de repaso, la app genera en el momento una pregunta enfocada sobre ese tema — adaptada exactamente a lo que estudiaste.' },
+      { n: '01', title: 'Se genera una pregunta', desc: 'Cuando abrís una tarjeta de repaso, se genera una pregunta en el momento, basada en lo que estudiaste.' },
       { n: '02', title: 'Escribís tu respuesta', desc: 'Sin opciones múltiples. Recuperás la respuesta de memoria y la escribís. El esfuerzo de recordar es exactamente lo que la fija.' },
       { n: '03', title: 'Ves la respuesta modelo y te calificás', desc: 'Comparás tu respuesta con la modelo y calificás con honestidad: Olvidé, Difícil, Bien o Fácil. La app usa tu calificación para programar el próximo repaso.' },
     ],
     reviewSrsNote: 'Tu calificación controla el calendario. Calificás Fácil y vuelve en semanas. Calificás Olvidé y vuelve mañana. Cada acierto empuja el intervalo más lejos.',
     badgeKt: 'MAPA DE CONOCIMIENTO',
     ktTitle: 'Mirá todo lo que sabés.',
-    ktSub: 'Cada tema que estudiás queda mapeado en tu Árbol de Conocimiento — organizado por materia, con código de color por nivel de dominio, y conectado entre áreas.',
+    ktSub: 'Cada tema que estudiás queda en tu Árbol de Conocimiento, organizado por materia, con colores según el nivel de dominio, y conectado entre áreas.',
     ktFeatures: [
       { icon: '🌿', title: 'Organizado por materia', desc: 'Los temas se ramifican bajo Matemática, Estadística, Economía y Finanzas. El árbol crece con cada sesión de estudio.' },
       { icon: '🎨', title: 'Dominio de un vistazo', desc: 'Cada nodo muestra dónde estás: para repasar (rojo), aprendiendo (naranja), repasando (violeta), dominado (verde).' },
@@ -816,7 +816,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
                   <div>
                     <div style={{ fontSize: 8, fontWeight: 700, color: '#e8940a', letterSpacing: 1, marginBottom: 4 }}>{lang === 'es' ? 'RESPUESTA MODELO' : 'MODEL ANSWER'}</div>
                     <div style={{ padding: '7px 10px', borderRadius: 7, background: '#e8940a0f', border: '1px solid #e8940a30', fontSize: 11, color: TH.text, fontWeight: 500, lineHeight: 1.5 }}>
-                      {lang === 'es' ? 'La tasa de cambio instantánea — la pendiente de la recta tangente a la curva en ese punto.' : 'The instantaneous rate of change — the slope of the tangent line to the curve at that point.'}
+                      {lang === 'es' ? 'La tasa de cambio instantánea: la pendiente de la recta tangente a la curva en ese punto.' : 'The instantaneous rate of change: the slope of the tangent line to the curve at that point.'}
                     </div>
                   </div>
                 </div>
