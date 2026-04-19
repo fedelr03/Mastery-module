@@ -2220,18 +2220,10 @@ export default function MasteryModule({session, level, lang: langProp, dark, pen
           </div>
           {validationError&&<div style={{marginTop:7,padding:"8px 12px",background:TH.redBg,border:"1px solid rgba(239,68,68,0.15)",borderRadius:8,color:TH.red,fontSize:11,animation:"fadeUp 0.3s ease"}}>{"\u26A0\uFE0F"} {t.invalidInput}</div>}
           {fileError&&<div style={{marginTop:7,padding:"8px 12px",background:TH.redBg,border:"1px solid rgba(239,68,68,0.15)",borderRadius:8,color:TH.red,fontSize:11,animation:"fadeUp 0.3s ease"}}>{"\u26A0\uFE0F"} {fileError}</div>}
-          {/* ── Module recognition pill + topic type pill ── */}
-          {!validationError&&!fileError&&topic.trim().length>=2&&<div style={{display:"flex",alignItems:"center",gap:6,marginTop:7,flexWrap:"wrap"}}>
-            {mod!=="general"&&<div key={mod} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"3px 10px",background:mt.accentBg,border:"1px solid "+mt.borderAccent,borderRadius:20,animation:"moduleReveal 0.35s cubic-bezier(0.22,1,0.36,1)",transition:"background 0.4s ease, border-color 0.4s ease"}}>
-              <span style={{fontSize:11}}>{mc.icon}</span>
-              <span style={{fontSize:9,fontWeight:700,color:mt.accent,letterSpacing:1,transition:"color 0.4s ease"}}>{lang==="es"?mc.badgeEs:mc.badgeEn}</span>
-            </div>}
-            {/* topic type pill — tappable to override */}
-            <button key={topicType} onClick={()=>setTopicType(p=>p==="concept"?"problem":"concept")}
-              style={{display:"inline-flex",alignItems:"center",gap:4,padding:"3px 10px",background:topicType==="problem"?"rgba(99,102,241,0.08)":TH.bgAlt,border:"1px solid "+(topicType==="problem"?"rgba(99,102,241,0.25)":TH.border),borderRadius:20,cursor:"pointer",fontFamily:"inherit",animation:"moduleReveal 0.35s cubic-bezier(0.22,1,0.36,1)",transition:"all 0.25s ease"}}>
-              <span style={{fontSize:10}}>{topicType==="problem"?"🔢":"📘"}</span>
-              <span style={{fontSize:9,fontWeight:700,color:topicType==="problem"?TH.purple:TH.textMuted,letterSpacing:1}}>{topicType==="problem"?t.topicTypeProblemLabel:t.topicTypeConceptLabel}</span>
-            </button>
+          {/* ── Module recognition pill ── */}
+          {!validationError&&!fileError&&topic.trim().length>=2&&mod!=="general"&&<div key={mod} style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:7,padding:"3px 10px",background:mt.accentBg,border:"1px solid "+mt.borderAccent,borderRadius:20,animation:"moduleReveal 0.35s cubic-bezier(0.22,1,0.36,1)",transition:"background 0.4s ease, border-color 0.4s ease"}}>
+            <span style={{fontSize:11}}>{mc.icon}</span>
+            <span style={{fontSize:9,fontWeight:700,color:mt.accent,letterSpacing:1,transition:"color 0.4s ease"}}>{lang==="es"?mc.badgeEs:mc.badgeEn}</span>
           </div>}
           {file&&<div style={{display:"flex",alignItems:"center",gap:6,marginTop:6}}><span style={{fontSize:10,color:mt.accent}}>{"\uD83D\uDCC4"}</span><span style={{fontSize:10,color:TH.textSecondary}}>{file.name}</span><button onClick={()=>{setFile(null);setFileContent("");setFileError("");}} style={{background:"none",border:"none",color:TH.red,cursor:"pointer",fontSize:9,fontFamily:"inherit"}}>{t.remove}</button></div>}
           {/* Interest bar */}
@@ -2253,14 +2245,14 @@ export default function MasteryModule({session, level, lang: langProp, dark, pen
                 <span style={{fontSize:7.5,color:mode===m?mt.accentText:TH.textFaint,marginTop:1}}>{m==="fast"?t.modeFastDesc:m==="think"?t.modeThinkDesc:t.modeLiteDesc}</span>
               </button>)}
             </div>
-            <button onClick={go} disabled={phase==="loading"||(!topic.trim()&&!fileContent)} style={{background:phase==="loading"?TH.bgAlt:"linear-gradient(135deg, "+mt.accentLight+", "+mt.accent+")",border:"none",borderRadius:10,padding:"14px 28px",color:phase==="loading"?TH.textMuted:"#fff",fontWeight:700,fontSize:13,cursor:phase==="loading"?"wait":"pointer",fontFamily:"inherit",opacity:(!topic.trim()&&!fileContent)?0.35:1,boxShadow:phase==="loading"?"none":"0 2px 12px "+mt.btnShadow,transition:"all 0.2s",letterSpacing:0.3}}>{phase==="loading"?t.generating:t.learn}</button>
+            <button onClick={()=>go()} disabled={phase==="loading"||(!topic.trim()&&!fileContent)} style={{background:phase==="loading"?TH.bgAlt:"linear-gradient(135deg, "+mt.accentLight+", "+mt.accent+")",border:"none",borderRadius:10,padding:"14px 28px",color:phase==="loading"?TH.textMuted:"#fff",fontWeight:700,fontSize:13,cursor:phase==="loading"?"wait":"pointer",fontFamily:"inherit",opacity:(!topic.trim()&&!fileContent)?0.35:1,boxShadow:phase==="loading"?"none":"0 2px 12px "+mt.btnShadow,transition:"all 0.2s",letterSpacing:0.3}}>{phase==="loading"?t.generating:t.learn}</button>
           </div>
         </div>}
         {/* Non-idle: compact search bar */}
         {phase!=="idle"&&<div style={{display:"flex",alignItems:"center",background:TH.surface,borderRadius:10,border:"1px solid "+TH.border,padding:"2px 2px 2px 13px",boxShadow:"0 2px 12px rgba(0,0,0,0.04)"}}>
           <span style={{fontSize:13,marginRight:7,opacity:0.35}}>{"\uD83D\uDD0D"}</span>
           <input type="text" className="mm-topic-input" placeholder={t.placeholder} value={topic} onChange={e=>{setTopic(e.target.value);setValidationError(false);}} onKeyDown={e=>e.key==="Enter"&&phase!=="loading"&&go()} style={{flex:1,background:"transparent",border:"none",outline:"none",color:TH.text,fontSize:13,fontFamily:"inherit",padding:"10px 0"}}/>
-          <button onClick={go} disabled={phase==="loading"||(!topic.trim()&&!fileContent)} style={{background:phase==="loading"?TH.bgAlt:"linear-gradient(135deg, "+mt.accentLight+", "+mt.accent+")",border:"none",borderRadius:8,padding:"9px 18px",color:phase==="loading"?TH.textMuted:"#fff",fontWeight:700,fontSize:12,cursor:phase==="loading"?"wait":"pointer",fontFamily:"inherit",opacity:(!topic.trim()&&!fileContent)?0.35:1,boxShadow:phase==="loading"?"none":"0 2px 8px "+mt.btnShadow}}>{phase==="loading"?t.generating:t.learn}</button>
+          <button onClick={()=>go()} disabled={phase==="loading"||(!topic.trim()&&!fileContent)} style={{background:phase==="loading"?TH.bgAlt:"linear-gradient(135deg, "+mt.accentLight+", "+mt.accent+")",border:"none",borderRadius:8,padding:"9px 18px",color:phase==="loading"?TH.textMuted:"#fff",fontWeight:700,fontSize:12,cursor:phase==="loading"?"wait":"pointer",fontFamily:"inherit",opacity:(!topic.trim()&&!fileContent)?0.35:1,boxShadow:phase==="loading"?"none":"0 2px 8px "+mt.btnShadow}}>{phase==="loading"?t.generating:t.learn}</button>
         </div>}
       </div>
       {/* ─── TOPIC CHIPS ─── */}
@@ -2300,7 +2292,14 @@ export default function MasteryModule({session, level, lang: langProp, dark, pen
 
       {activeSection==="explain"&&<div style={{animation:"fadeUp 0.3s ease"}}>
         <h2 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:22,fontWeight:700,color:TH.text,marginBottom:3}}>{content.title}</h2>
-        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:14,flexWrap:"wrap"}}><span style={{display:"inline-block",background:mt.accentBg,borderRadius:4,padding:"2px 8px",fontSize:8,color:mt.accent,fontWeight:700,letterSpacing:1.5}}>{t.feynman}</span>{interest&&<span style={{display:"inline-flex",alignItems:"center",gap:3,background:"rgba(99,102,241,0.07)",borderRadius:4,padding:"2px 8px",fontSize:8,color:TH.purple,fontWeight:700,letterSpacing:0.5}}>{"\uD83C\uDFAF"} {interest}</span>}
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:14,flexWrap:"wrap"}}>
+          <span style={{display:"inline-block",background:mt.accentBg,borderRadius:4,padding:"2px 8px",fontSize:8,color:mt.accent,fontWeight:700,letterSpacing:1.5}}>{t.feynman}</span>
+          {/* topicType badge — shows after AI detection, tappable to override */}
+          <button onClick={()=>setTopicType(p=>p==="concept"?"problem":"concept")} style={{display:"inline-flex",alignItems:"center",gap:3,background:topicType==="problem"?"rgba(99,102,241,0.08)":TH.bgAlt,border:"1px solid "+(topicType==="problem"?"rgba(99,102,241,0.2)":TH.border),borderRadius:4,padding:"2px 8px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
+            <span style={{fontSize:9}}>{topicType==="problem"?"🔢":"📘"}</span>
+            <span style={{fontSize:8,fontWeight:700,color:topicType==="problem"?TH.purple:TH.textMuted,letterSpacing:1}}>{topicType==="problem"?t.topicTypeProblemLabel:t.topicTypeConceptLabel}</span>
+          </button>
+          {interest&&<span style={{display:"inline-flex",alignItems:"center",gap:3,background:"rgba(99,102,241,0.07)",borderRadius:4,padding:"2px 8px",fontSize:8,color:TH.purple,fontWeight:700,letterSpacing:0.5}}>{"\uD83C\uDFAF"} {interest}</span>}
           <button onClick={handleAddToReview} disabled={cardStatus==="adding"||cardStatus==="added"||cardStatus==="exists"} style={{marginLeft:"auto",padding:"4px 12px",borderRadius:6,fontSize:10,fontWeight:700,cursor:(cardStatus==="adding"||cardStatus==="added"||cardStatus==="exists")?"default":"pointer",fontFamily:"inherit",border:"1px solid "+(cardStatus==="added"||cardStatus==="exists"?TH.green:mt.borderAccent),background:(cardStatus==="added"||cardStatus==="exists")?"rgba(34,197,94,0.08)":mt.accentBg,color:(cardStatus==="added"||cardStatus==="exists")?TH.green:mt.accent,transition:"all 0.2s",opacity:cardStatus==="adding"?0.6:1}}>
             {cardStatus==="adding"?"…":cardStatus==="added"?t.addedToReview:cardStatus==="exists"?t.alreadyInReview:t.addToReview}
           </button>
