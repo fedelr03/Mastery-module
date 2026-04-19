@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import LandingPage from './LandingPage';
 import { supabase } from './supabase';
 import MasteryModule from './MasteryModule';
+import { reviewCard } from './srs';
 
 /* ═══════════ THEMES ═══════════ */
 const LIGHT = {
@@ -114,8 +115,38 @@ const PROFILE_T = {
 
 /* ═══════════ TOP BAR TRANSLATIONS ═══════════ */
 const TOP_T = {
-  en: { module: 'Module', profile: 'Profile', dashboard: 'Dashboard', logout: 'Log Out', knowledge: 'Map' },
-  es: { module: 'Módulo', profile: 'Perfil', dashboard: 'Panel', logout: 'Salir', knowledge: 'Mapa' },
+  en: { module: 'Module', profile: 'Profile', dashboard: 'Dashboard', logout: 'Log Out', knowledge: 'Map', review: 'Review' },
+  es: { module: 'Módulo', profile: 'Perfil', dashboard: 'Panel', logout: 'Salir', knowledge: 'Mapa', review: 'Repasar' },
+};
+
+/* ═══════════ REVIEW TRANSLATIONS ═══════════ */
+const REVIEW_T = {
+  en: {
+    title: 'Review Deck', of: 'of', exit: 'Exit',
+    loading: 'Loading cards...',
+    allDone: 'All caught up!',
+    noCards: 'No cards are due for review right now. Check back later.',
+    backToModule: 'Back to Module',
+    sessionDone: 'Session Complete!',
+    passedLabel: 'cards remembered',
+    recallPrompt: 'Take a moment to recall everything you know about this topic.',
+    rateLabel: 'HOW WELL DID YOU REMEMBER?',
+    r1: 'Blackout', r2: 'Hard', r3: 'Good', r4: 'Easy',
+    intervalHint: 'Your rating determines when this card comes back.',
+  },
+  es: {
+    title: 'Mazo de Repaso', of: 'de', exit: 'Salir',
+    loading: 'Cargando tarjetas...',
+    allDone: '¡Todo al día!',
+    noCards: 'No tenés tarjetas para repasar ahora. Volvé más tarde.',
+    backToModule: 'Volver al Módulo',
+    sessionDone: '¡Sesión Completada!',
+    passedLabel: 'tarjetas recordadas',
+    recallPrompt: 'Tomate un momento para recordar todo lo que sabés sobre este tema.',
+    rateLabel: '¿QUÉ TAN BIEN LO RECORDASTE?',
+    r1: 'Olvidé', r2: 'Difícil', r3: 'Bien', r4: 'Fácil',
+    intervalHint: 'Tu respuesta determina cuándo vuelve a aparecer esta tarjeta.',
+  },
 };
 
 /* ═══════════ AUTH SCREEN ═══════════ */
@@ -1120,8 +1151,158 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
 }
 
 
+/* ═══════════ REVIEW MODE ═══════════ */
+function ReviewMode({ dark, lang, session, onDone }) {
+  const TH = getTheme(dark);
+  const t = REVIEW_T[lang] || REVIEW_T.en;
+  const MOD_COL = { math: '#e8940a', stats: '#6366f1', econ: '#10b981', finance: '#06b6d4', general: '#8a8a96' };
+
+  const [cards, setCards] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [lastRating, setLastRating] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [results, setResults] = useState([]);
+
+  useEffect(() => { loadDue(); }, []);
+
+  const loadDue = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('review_cards')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .neq('status', 'suspended')
+      .lte('next_review_at', new Date().toISOString())
+      .order('next_review_at', { ascending: true });
+    setCards(data || []);
+    setLoading(false);
+  };
+
+  const ratingBtns = [
+    { r: 1, label: t.r1, emoji: '😶', color: TH.red,    bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.2)'   },
+    { r: 2, label: t.r2, emoji: '😓', color: '#f97316', bg: 'rgba(249,115,22,0.08)',  border: 'rgba(249,115,22,0.2)'  },
+    { r: 3, label: t.r3, emoji: '🙂', color: TH.accent, bg: TH.accentBg,             border: 'rgba(245,166,35,0.25)' },
+    { r: 4, label: t.r4, emoji: '😎', color: TH.green,  bg: 'rgba(34,197,94,0.08)',   border: 'rgba(34,197,94,0.2)'   },
+  ];
+
+  const handleRate = async (rating) => {
+    if (submitting) return;
+    setLastRating(rating);
+    setSubmitting(true);
+    const card = cards[current];
+    await reviewCard(supabase, card.id, rating, card);
+    setResults(prev => [...prev, { rating, topic: card.topic, module: card.module }]);
+    setSubmitting(false);
+    setTimeout(() => {
+      setLastRating(null);
+      if (current + 1 >= cards.length) setDone(true);
+      else setCurrent(prev => prev + 1);
+    }, 380);
+  };
+
+  if (loading) return (
+    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TH.textMuted, fontSize: 13 }}>
+      {t.loading}
+    </div>
+  );
+
+  if (cards.length === 0) return (
+    <div style={{ maxWidth: 520, margin: '0 auto', padding: '60px 20px', textAlign: 'center', animation: 'fadeUp 0.3s ease' }}>
+      <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
+      <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 24, fontWeight: 800, color: TH.text, marginBottom: 8 }}>{t.allDone}</h2>
+      <p style={{ color: TH.textMuted, fontSize: 13, marginBottom: 28 }}>{t.noCards}</p>
+      <button onClick={onDone} style={{ padding: '11px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,' + TH.accentLight + ',' + TH.accent + ')', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{t.backToModule}</button>
+    </div>
+  );
+
+  if (done) {
+    const passed = results.filter(r => r.rating >= 3).length;
+    return (
+      <div style={{ maxWidth: 520, margin: '0 auto', padding: '60px 20px', textAlign: 'center', animation: 'fadeUp 0.3s ease' }}>
+        <div style={{ fontSize: 52, marginBottom: 16 }}>✅</div>
+        <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 26, fontWeight: 800, color: TH.text, marginBottom: 8 }}>{t.sessionDone}</h2>
+        <p style={{ color: TH.textMuted, fontSize: 13, marginBottom: 24 }}>{passed}/{results.length} {t.passedLabel}</p>
+        <div style={{ background: TH.surface, borderRadius: 14, border: '1px solid ' + TH.border, padding: '12px 20px', marginBottom: 28, textAlign: 'left' }}>
+          {results.map((r, i) => {
+            const btn = ratingBtns.find(b => b.r === r.rating);
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < results.length - 1 ? '1px solid ' + TH.borderLight : 'none' }}>
+                <span style={{ fontSize: 12, color: TH.text, fontWeight: 500 }}>{r.topic}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: btn?.bg, color: btn?.color, border: '1px solid ' + btn?.border }}>{btn?.label}</span>
+              </div>
+            );
+          })}
+        </div>
+        <button onClick={onDone} style={{ padding: '11px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,' + TH.accentLight + ',' + TH.accent + ')', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{t.backToModule}</button>
+      </div>
+    );
+  }
+
+  const card = cards[current];
+  const col = MOD_COL[card.module] || MOD_COL.general;
+  const progress = (current / cards.length) * 100;
+
+  return (
+    <div style={{ maxWidth: 520, margin: '0 auto', padding: '32px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div>
+          <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 22, fontWeight: 800, color: TH.text }}>{t.title}</h2>
+          <p style={{ color: TH.textMuted, fontSize: 11, marginTop: 2 }}>{current + 1} {t.of} {cards.length}</p>
+        </div>
+        <button onClick={onDone} style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 8, padding: '6px 14px', fontSize: 11, color: TH.textMuted, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>{t.exit}</button>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ height: 4, borderRadius: 2, background: TH.borderLight, marginBottom: 28, overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: progress + '%', background: TH.accent, borderRadius: 2, transition: 'width 0.4s ease' }} />
+      </div>
+
+      {/* Card */}
+      <div style={{
+        background: TH.surface, borderRadius: 20, border: '1px solid ' + TH.border,
+        padding: '40px 28px', textAlign: 'center',
+        boxShadow: dark ? '0 4px 32px rgba(0,0,0,0.25)' : '0 4px 24px rgba(0,0,0,0.06)',
+        marginBottom: 24, opacity: submitting ? 0.55 : 1, transition: 'opacity 0.2s',
+      }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', background: col + '18', border: '1px solid ' + col + '44', borderRadius: 8, padding: '3px 10px', marginBottom: 22, fontSize: 9, color: col, fontWeight: 700, letterSpacing: 1 }}>
+          {(card.module || 'general').toUpperCase()}
+        </div>
+        <div style={{ fontSize: 30, fontWeight: 800, color: TH.text, fontFamily: "'Bricolage Grotesque',sans-serif", letterSpacing: '-0.02em', marginBottom: 18, lineHeight: 1.2 }}>
+          {card.topic}
+        </div>
+        <p style={{ color: TH.textMuted, fontSize: 13, lineHeight: 1.6 }}>{t.recallPrompt}</p>
+      </div>
+
+      {/* Rate label */}
+      <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>{t.rateLabel}</p>
+
+      {/* Rating buttons */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+        {ratingBtns.map(btn => (
+          <button key={btn.r} onClick={() => handleRate(btn.r)} disabled={submitting} style={{
+            padding: '14px 4px', borderRadius: 12,
+            border: '1px solid ' + (lastRating === btn.r ? btn.border : TH.border),
+            background: lastRating === btn.r ? btn.bg : TH.surface,
+            color: lastRating === btn.r ? btn.color : TH.textSecondary,
+            fontWeight: 700, fontSize: 11, cursor: submitting ? 'wait' : 'pointer',
+            fontFamily: 'inherit', transition: 'all 0.15s',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+          }}>
+            <span style={{ fontSize: 20 }}>{btn.emoji}</span>
+            <span>{btn.label}</span>
+          </button>
+        ))}
+      </div>
+      <p style={{ textAlign: 'center', color: TH.textFaint, fontSize: 10, marginTop: 14 }}>{t.intervalHint}</p>
+    </div>
+  );
+}
+
 /* ═══════════ TOP BAR ═══════════ */
-function TopBar({ session, profile, isAdmin, view, setView, onLogout, dark, lang }) {
+function TopBar({ session, profile, isAdmin, view, setView, onLogout, dark, lang, dueCount }) {
   const TH = getTheme(dark);
   const t = TOP_T[lang] || TOP_T.en;
   const displayName = profile?.username || session.user.email;
@@ -1161,6 +1342,12 @@ function TopBar({ session, profile, isAdmin, view, setView, onLogout, dark, lang
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
           <button onClick={() => setView('module')} className="mm-topbar-btn" style={btnStyle(view === 'module')}>{t.module}</button>
           <button onClick={() => setView('knowledge')} className="mm-topbar-btn" style={btnStyle(view === 'knowledge')}>{t.knowledge}</button>
+          <button onClick={() => setView('review')} className="mm-topbar-btn" style={{ ...btnStyle(view === 'review'), display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            {t.review}
+            {dueCount > 0 && (
+              <span style={{ background: view === 'review' ? TH.accent : 'rgba(245,166,35,0.9)', color: '#fff', borderRadius: 8, fontSize: 8, fontWeight: 800, padding: '1px 5px', lineHeight: 1.4 }}>{dueCount}</span>
+            )}
+          </button>
           <button onClick={() => setView('profile')} className="mm-topbar-btn" style={btnStyle(view === 'profile')}>{t.profile}</button>
           {isAdmin && <button onClick={() => setView('admin')} className="mm-topbar-btn" style={btnStyle(view === 'admin')}>{t.dashboard}</button>}
           <button onClick={onLogout} className="mm-topbar-logout" style={{
@@ -1184,6 +1371,7 @@ export default function App() {
   const [profile, setProfile] = useState(null);
   const [confirmedEmail, setConfirmedEmail] = useState(false);
   const [needsNewPassword, setNeedsNewPassword] = useState(false);
+  const [dueCount, setDueCount] = useState(0);
 
   // ── Persistent preferences ──
   const [lang, setLang] = useState(() => localStorage.getItem('mm_lang') || 'es');
@@ -1213,6 +1401,7 @@ export default function App() {
         applyPendingUsername(session.user.id);
         checkRole(session.user.id);
         loadProfile(session.user.id);
+        loadDueCount(session.user.id);
       }
       setLoading(false);
     });
@@ -1231,8 +1420,9 @@ export default function App() {
         applyPendingUsername(session.user.id);
         checkRole(session.user.id);
         loadProfile(session.user.id);
+        loadDueCount(session.user.id);
       } else {
-        setIsAdmin(false); setIsBlocked(false); setView('module'); setProfile(null);
+        setIsAdmin(false); setIsBlocked(false); setView('module'); setProfile(null); setDueCount(0);
       }
     });
     return () => subscription.unsubscribe();
@@ -1255,6 +1445,18 @@ export default function App() {
   const loadProfile = async (userId) => {
     const { data } = await supabase.from('profiles').select('username, level').eq('id', userId).single();
     setProfile(data || {});
+  };
+
+  const loadDueCount = async (userId) => {
+    try {
+      const { data } = await supabase
+        .from('review_cards')
+        .select('id')
+        .eq('user_id', userId)
+        .neq('status', 'suspended')
+        .lte('next_review_at', new Date().toISOString());
+      setDueCount(data?.length || 0);
+    } catch (_) { /* table may not exist yet — fail silently */ }
   };
 
   const handleLogout = async () => {
@@ -1295,12 +1497,13 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: TH.bg, transition: 'background 0.3s' }}>
-      <TopBar session={session} profile={profile} isAdmin={isAdmin} view={view} setView={setView} onLogout={handleLogout} dark={dark} lang={lang} />
+      <TopBar session={session} profile={profile} isAdmin={isAdmin} view={view} setView={setView} onLogout={handleLogout} dark={dark} lang={lang} dueCount={dueCount} />
       <div style={{ paddingTop: 48 }}>
         {view === 'admin' && isAdmin && <AdminDashboard dark={dark} />}
         {view === 'profile' && <ProfileScreen session={session} profile={profile} onSave={handleProfileSave} lang={lang} setLang={setLang} dark={dark} setDark={setDark} />}
         {view === 'knowledge' && <KnowledgeTree dark={dark} lang={lang} session={session} onLoad={(item) => { setPendingLoad(item); setView('module'); }} />}
-        <div style={{ display: (view !== 'admin' && view !== 'profile' && view !== 'knowledge') ? 'block' : 'none', maxWidth: 960, margin: '0 auto' }}>
+        {view === 'review' && <ReviewMode dark={dark} lang={lang} session={session} onDone={() => { loadDueCount(session.user.id); setView('module'); }} />}
+        <div style={{ display: (view !== 'admin' && view !== 'profile' && view !== 'knowledge' && view !== 'review') ? 'block' : 'none', maxWidth: 960, margin: '0 auto' }}>
           <MasteryModule session={session} level={profile?.level || 'intermediate'} lang={lang} dark={dark} pendingLoad={pendingLoad} onLoadDone={() => setPendingLoad(null)} />
         </div>
       </div>
