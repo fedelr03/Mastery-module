@@ -321,7 +321,14 @@ function MathText({children}){
               if(j<input.length&&input[j]==="\u221A"&&j+1<input.length&&input[j+1]==="{"){
                 const cb=findBalanced(input,j+1,"{","}");
                 if(cb>j+2){j=cb+1;}else{while(j<input.length&&tokChars.test(input[j]))j++;}
-              }else{while(j<input.length&&(tokChars.test(input[j])||input[j]==="\u221A"||input[j]==="{"))j++;}
+              }else{
+                while(j<input.length&&(tokChars.test(input[j])||input[j]==="\u221A"||input[j]==="{"))j++;
+                /* Also consume a following (…) so P(B), f(x), P(A|B) are treated as one token */
+                if(j>slashPos+1&&j<input.length&&input[j]==="("){
+                  const cb=findBalanced(input,j,"(",")");
+                  if(cb>j){j=cb+1;}
+                }
+              }
               if(j>slashPos+1){den=input.slice(slashPos+1,j);denEnd=j;}
             }
             if(den&&!FRAC_SKIP.test(num)&&!FRAC_SKIP.test(den)){
@@ -364,7 +371,14 @@ function MathText({children}){
               let j=slashPos+1;
               if(j<input.length&&input[j]==="\u221A"&&j+1<input.length&&input[j+1]==="{"){
                 const cb=findBalanced(input,j+1,"{","}");if(cb>j+2)j=cb+1;else while(j<input.length&&tokChars.test(input[j]))j++;
-              }else{while(j<input.length&&tokChars.test(input[j]))j++;}
+              }else{
+                while(j<input.length&&tokChars.test(input[j]))j++;
+                /* Also consume a following (…) so P(B), f(x), P(A|B) are treated as one token */
+                if(j>slashPos+1&&j<input.length&&input[j]==="("){
+                  const cb=findBalanced(input,j,"(",")");
+                  if(cb>j){j=cb+1;}
+                }
+              }
               if(j>slashPos+1){den=input.slice(slashPos+1,j);denEnd=j;}
             }
             if(den&&!FRAC_SKIP.test(den)&&!(PURE_NUM.test(tok1)&&PURE_NUM.test(den))){
@@ -1567,6 +1581,11 @@ function InlineDeck({content,t,lang,mt:_mt}){
               let j=slash+1;
               const tokRe=/[\w\u00B2\u00B3\u03B1-\u03C9\u0394\u03A3\u03A9\u03C0\u221A\u00B9\u2074-\u2079\u207F\u2070\u2080-\u2089\u2099\u0304\u0302\u00D7.\u2032\u2033\u2212,]/;
               while(j<s.length&&tokRe.test(s[j]))j++;
+              /* Also consume a following (…) so P(B), f(x), P(A|B) are treated as one token */
+              if(j>slash+1&&j<s.length&&s[j]==="("){
+                const cd=fb(s,j);
+                if(cd>j){j=cd+1;}
+              }
               if(j>slash+1){denStr=s.slice(slash+1,j);denEnd=j;}
             }
             if(denStr){

@@ -1262,7 +1262,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
           ? `Tema: "${card.topic}" (materia: ${card.module || 'general'})\n\nGenerá UNA pregunta corta de repaso activo y su respuesta modelo. Respondé SOLO con JSON válido, sin backticks ni texto extra:\n{"question":"...","modelAnswer":"..."}\n\nLa pregunta debe testear comprensión central (1 oración directa). La respuesta modelo debe ser clara y concisa (1-2 oraciones). Usá español rioplatense.`
           : `Topic: "${card.topic}" (subject: ${card.module || 'general'})\n\nGenerate ONE short active recall question and its model answer. Respond ONLY with valid JSON, no backticks or extra text:\n{"question":"...","modelAnswer":"..."}\n\nThe question tests core understanding (1 direct sentence). The model answer is clear and concise (1-2 sentences).`;
 
-        const res = await fetch('/api/generate', {
+        const res = await fetch('/api/claude', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
           body: JSON.stringify({
@@ -1273,14 +1273,18 @@ function ReviewMode({ dark, lang, session, onDone }) {
           }),
         });
         const data = await res.json();
-        const text = data.content?.[0]?.text || '';
+        const text = (data.content || []).map(b => b.text || '').join('');
         const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
         setQuestion(parsed.question || '');
         setModelAnswer(parsed.modelAnswer || '');
         setPhase('answering');
       } catch (_) {
-        // Fallback: skip question, show rating directly
-        setPhase('revealed');
+        // Fallback: show a generic recall prompt so the card still works
+        setQuestion(lang === 'es'
+          ? `¿Qué recordás sobre "${card.topic}"? Explicalo con tus palabras.`
+          : `What do you remember about "${card.topic}"? Explain it in your own words.`);
+        setModelAnswer('');
+        setPhase('answering');
       }
     })();
   }, [current, cards.length, loading]);
