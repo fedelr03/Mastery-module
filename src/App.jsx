@@ -840,7 +840,7 @@ function AdminDashboard({ dark }) {
 
 /* ═══════════ KNOWLEDGE TREE ═══════════ */
 /* ═══════════ KNOWLEDGE TREE ═══════════ */
-function treeNodeW(label){ return Math.max(84, label.length * 7.4 + 28); }
+function treeNodeW(label){ return Math.min(150, Math.max(84, label.length * 7.4 + 28)); }
 
 function KnowledgeTree({ dark, lang, session, onLoad }) {
   const TH = getTheme(dark);
@@ -944,7 +944,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
     }
 
     /* Layout constants */
-    const W = 700, TOPIC_GAP = 54, TOPIC_START_Y = 240, MOD_Y = 142;
+    const W = Math.max(760, mods.length * 240), TOPIC_GAP = 54, TOPIC_START_Y = 240, MOD_Y = 142;
     const modSpacing = W / (mods.length + 1);
     const modPositions = {};
     mods.forEach((m, i) => { modPositions[m] = Math.round(modSpacing * (i + 1)); });
@@ -952,8 +952,11 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
     const H = TOPIC_START_Y + maxTopics * TOPIC_GAP + 50;
 
     mods.forEach(m => {
+      const N = byMod[m].length;
       byMod[m].forEach((tp, i) => {
-        tp.x = modPositions[m];
+        /* Stagger topics slightly left/right so branch lines fan out from the module node
+           instead of stacking on the same vertical and passing through sibling boxes */
+        tp.x = modPositions[m] + (N <= 1 ? 0 : (i - (N - 1) / 2) * 18);
         tp.y = TOPIC_START_Y + i * TOPIC_GAP;
       });
     });
@@ -1060,7 +1063,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
     /* ── TOPIC LEAF NODES ── */
     const MASTERY_COL = { due:'#ef4444', learning:'#f5a623', reviewing:'#6366f1', mastered:'#22c55e', none: null };
     topics.forEach(tp => {
-      const col = MOD_COL[tp.module]||'#8a8a96';
+      const col = MOD_COL[tp.module]||'#8a8a96';   // kept for badge + hover glow only
       const isHov = hovId === tp.id;
       /* Determine fade: if something else is hovered and this topic isn't connected */
       const hi = hovId ? topics.findIndex(x=>x.id===hovId) : -1;
@@ -1073,12 +1076,20 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
       ctx.globalAlpha = faded ? 0.15 : 1;
 
       const masteryCol = MASTERY_COL[tp.masteryLevel];
-      const borderCol = isHov ? col : (masteryCol || col + (tp.count > 1 ? '55' : '2e'));
-      const borderWidth = masteryCol ? (isHov ? 2 : 1.6) : (isHov ? 1.8 : 1);
+
+      /* Border driven by mastery status; neutral when no card */
+      const borderCol = masteryCol
+        ? (isHov ? masteryCol : masteryCol + 'cc')
+        : (isHov
+            ? (dk ? 'rgba(200,200,220,0.65)' : 'rgba(60,60,80,0.38)')
+            : surfaceBorder);
+      const borderWidth = masteryCol ? (isHov ? 2 : 1.5) : (isHov ? 1.5 : 1);
 
       /* Node pill */
       ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
-      ctx.fillStyle   = isHov ? col+'2a' : (tp.count > 1 ? col+'16' : col+'0c');
+      ctx.fillStyle = masteryCol
+        ? (isHov ? masteryCol + '28' : masteryCol + '12')
+        : (isHov ? (dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.03)') : surfaceBg);
       ctx.strokeStyle = borderCol;
       ctx.lineWidth   = borderWidth;
       ctx.fill(); ctx.stroke();
@@ -1098,7 +1109,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
       /* Label — ensure it stays inside pill */
       const maxLabelW = tw - 20;
       ctx.font      = isHov ? '600 10.5px system-ui,sans-serif' : '400 10.5px system-ui,sans-serif';
-      ctx.fillStyle = isHov ? col : textPrimary;
+      ctx.fillStyle = isHov ? (masteryCol || (dk ? '#e2e2ec' : '#2a2a3a')) : textPrimary;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       /* Truncate if needed */
       let lbl = tp.label;
