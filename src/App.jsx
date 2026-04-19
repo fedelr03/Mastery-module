@@ -879,7 +879,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
     try {
       const [{ data }, { data: cardData }] = await Promise.all([
         supabase.from('study_history').select('id, topic, module, created_at, content').eq('user_id', session.user.id).order('created_at', { ascending: false }),
-        supabase.from('review_cards').select('topic, easiness_factor, interval, next_review_at, status').eq('user_id', session.user.id).neq('status', 'suspended'),
+        supabase.from('review_cards').select('topic, ease_factor, interval, next_review_at, status').eq('user_id', session.user.id).neq('status', 'suspended'),
       ]);
       if (data && data.length > 0) { buildLayout(data, cardData || []); setHasData(true); }
       else setHasData(false);
@@ -901,7 +901,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
       if (!card) return 'none';
       const isDue = new Date(card.next_review_at) <= new Date();
       if (isDue) return 'due';
-      const ef = parseFloat(card.easiness_factor) || 2.5;
+      const ef = parseFloat(card.ease_factor) || 2.5;
       const iv = parseInt(card.interval) || 0;
       if (iv >= 21 && ef >= 2.4) return 'mastered';
       if (iv >= 7) return 'reviewing';
