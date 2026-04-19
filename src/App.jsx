@@ -133,6 +133,11 @@ const REVIEW_T = {
     rateLabel: 'HOW WELL DID YOU REMEMBER?',
     r1: 'Blackout', r2: 'Hard', r3: 'Good', r4: 'Easy',
     intervalHint: 'Your rating determines when this card comes back.',
+    generatingQ: 'Generating question...',
+    answerPH: 'Type your answer here...',
+    checkAnswer: 'Check Answer',
+    yourAnswerLabel: 'YOUR ANSWER',
+    modelAnswerLabel: 'MODEL ANSWER',
   },
   es: {
     title: 'Mazo de Repaso', of: 'de', exit: 'Salir',
@@ -146,6 +151,11 @@ const REVIEW_T = {
     rateLabel: '¿QUÉ TAN BIEN LO RECORDASTE?',
     r1: 'Olvidé', r2: 'Difícil', r3: 'Bien', r4: 'Fácil',
     intervalHint: 'Tu respuesta determina cuándo vuelve a aparecer esta tarjeta.',
+    generatingQ: 'Generando pregunta...',
+    answerPH: 'Escribí tu respuesta acá...',
+    checkAnswer: 'Ver Respuesta',
+    yourAnswerLabel: 'TU RESPUESTA',
+    modelAnswerLabel: 'RESPUESTA MODELO',
   },
 };
 
@@ -1225,7 +1235,55 @@ function ReviewMode({ dark, lang, session, onDone }) {
   const [done, setDone] = useState(false);
   const [results, setResults] = useState([]);
 
+  // ── Phase 2: active recall state ──
+  const [phase, setPhase] = useState('loading_q'); // 'loading_q' | 'answering' | 'revealed'
+  const [question, setQuestion] = useState('');
+  const [modelAnswer, setModelAnswer] = useState('');
+  const [userAnswer, setUserAnswer] = useState('');
+
   useEffect(() => { loadDue(); }, []);
+
+  // Fire a Haiku question whenever the active card changes
+  useEffect(() => {
+    if (loading || done || cards.length === 0) return;
+    const card = cards[current];
+    if (!card) return;
+    setPhase('loading_q');
+    setQuestion('');
+    setModelAnswer('');
+    setUserAnswer('');
+
+    (async () => {
+      try {
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        const token = authSession?.access_token;
+
+        const prompt = lang === 'es'
+          ? `Tema: "${card.topic}" (materia: ${card.module || 'general'})\n\nGenerá UNA pregunta corta de repaso activo y su respuesta modelo. Respondé SOLO con JSON válido, sin backticks ni texto extra:\n{"question":"...","modelAnswer":"..."}\n\nLa pregunta debe testear comprensión central (1 oración directa). La respuesta modelo debe ser clara y concisa (1-2 oraciones). Usá español rioplatense.`
+          : `Topic: "${card.topic}" (subject: ${card.module || 'general'})\n\nGenerate ONE short active recall question and its model answer. Respond ONLY with valid JSON, no backticks or extra text:\n{"question":"...","modelAnswer":"..."}\n\nThe question tests core understanding (1 direct sentence). The model answer is clear and concise (1-2 sentences).`;
+
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 256,
+            messages: [{ role: 'user', content: prompt }],
+            _meta: { topic: card.topic, module: 'recall', mode: 'recall', lang },
+          }),
+        });
+        const data = await res.json();
+        const text = data.content?.[0]?.text || '';
+        const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+        setQuestion(parsed.question || '');
+        setModelAnswer(parsed.modelAnswer || '');
+        setPhase('answering');
+      } catch (_) {
+        // Fallback: skip question, show rating directly
+        setPhase('revealed');
+      }
+    })();
+  }, [current, cards.length, loading]);
 
   const loadDue = async () => {
     setLoading(true);
@@ -1306,6 +1364,8 @@ function ReviewMode({ dark, lang, session, onDone }) {
 
   return (
     <div style={{ maxWidth: 520, margin: '0 auto', padding: '32px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
+      <style>{`@keyframes mm-spin { to { transform: rotate(360deg); } }`}</style>
+
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
@@ -1320,43 +1380,119 @@ function ReviewMode({ dark, lang, session, onDone }) {
         <div style={{ height: '100%', width: progress + '%', background: TH.accent, borderRadius: 2, transition: 'width 0.4s ease' }} />
       </div>
 
-      {/* Card */}
+      {/* Card — phase-aware */}
       <div style={{
         background: TH.surface, borderRadius: 20, border: '1px solid ' + TH.border,
-        padding: '40px 28px', textAlign: 'center',
         boxShadow: dark ? '0 4px 32px rgba(0,0,0,0.25)' : '0 4px 24px rgba(0,0,0,0.06)',
         marginBottom: 24, opacity: submitting ? 0.55 : 1, transition: 'opacity 0.2s',
+        overflow: 'hidden',
       }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', background: col + '18', border: '1px solid ' + col + '44', borderRadius: 8, padding: '3px 10px', marginBottom: 22, fontSize: 9, color: col, fontWeight: 700, letterSpacing: 1 }}>
-          {(card.module || 'general').toUpperCase()}
+
+        {/* Module badge + topic (always visible) */}
+        <div style={{ padding: '28px 28px 20px', textAlign: 'center', borderBottom: phase !== 'loading_q' ? '1px solid ' + TH.borderLight : 'none' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', background: col + '18', border: '1px solid ' + col + '44', borderRadius: 8, padding: '3px 10px', marginBottom: 14, fontSize: 9, color: col, fontWeight: 700, letterSpacing: 1 }}>
+            {(card.module || 'general').toUpperCase()}
+          </div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: TH.text, fontFamily: "'Bricolage Grotesque',sans-serif", letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+            {card.topic}
+          </div>
+          {phase === 'loading_q' && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20, marginBottom: 8, color: TH.textMuted, fontSize: 12 }}>
+              <span style={{ display: 'inline-block', width: 13, height: 13, border: '2px solid ' + col + '55', borderTopColor: col, borderRadius: '50%', animation: 'mm-spin 0.75s linear infinite', flexShrink: 0 }} />
+              {t.generatingQ}
+            </div>
+          )}
         </div>
-        <div style={{ fontSize: 30, fontWeight: 800, color: TH.text, fontFamily: "'Bricolage Grotesque',sans-serif", letterSpacing: '-0.02em', marginBottom: 18, lineHeight: 1.2 }}>
-          {card.topic}
-        </div>
-        <p style={{ color: TH.textMuted, fontSize: 13, lineHeight: 1.6 }}>{t.recallPrompt}</p>
+
+        {/* Answering phase: question + textarea */}
+        {phase === 'answering' && (
+          <div style={{ padding: '20px 28px 24px' }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: TH.text, lineHeight: 1.5, marginBottom: 16, marginTop: 0 }}>
+              {question}
+            </p>
+            <textarea
+              value={userAnswer}
+              onChange={e => setUserAnswer(e.target.value)}
+              placeholder={t.answerPH}
+              rows={3}
+              style={{
+                width: '100%', boxSizing: 'border-box', padding: '11px 13px',
+                border: '1px solid ' + TH.border, borderRadius: 10,
+                fontSize: 13, fontFamily: 'inherit', background: TH.bg,
+                color: TH.text, resize: 'vertical', outline: 'none', lineHeight: 1.5,
+              }}
+              onFocus={e => e.target.style.borderColor = col}
+              onBlur={e => e.target.style.borderColor = TH.border}
+            />
+            <button
+              onClick={() => setPhase('revealed')}
+              style={{
+                marginTop: 12, width: '100%', padding: '12px', border: 'none', borderRadius: 10,
+                background: 'linear-gradient(135deg,' + col + 'cc,' + col + ')',
+                color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              {t.checkAnswer}
+            </button>
+          </div>
+        )}
+
+        {/* Revealed phase: question recap + answers */}
+        {phase === 'revealed' && question && (
+          <div style={{ padding: '20px 28px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: TH.textSecondary, lineHeight: 1.5, margin: 0 }}>
+              {question}
+            </p>
+            {userAnswer ? (
+              <div>
+                <div style={{ fontSize: 9, fontWeight: 700, color: TH.textMuted, letterSpacing: 1, marginBottom: 5 }}>{t.yourAnswerLabel}</div>
+                <div style={{
+                  padding: '10px 13px', borderRadius: 9,
+                  background: dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                  border: '1px solid ' + TH.borderLight,
+                  fontSize: 13, color: TH.textSecondary, lineHeight: 1.55,
+                }}>
+                  {userAnswer}
+                </div>
+              </div>
+            ) : null}
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: col, letterSpacing: 1, marginBottom: 5 }}>{t.modelAnswerLabel}</div>
+              <div style={{
+                padding: '10px 13px', borderRadius: 9,
+                background: col + '0f', border: '1px solid ' + col + '30',
+                fontSize: 13, color: TH.text, lineHeight: 1.55, fontWeight: 500,
+              }}>
+                {modelAnswer}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Rate label */}
-      <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>{t.rateLabel}</p>
-
-      {/* Rating buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-        {ratingBtns.map(btn => (
-          <button key={btn.r} onClick={() => handleRate(btn.r)} disabled={submitting} style={{
-            padding: '14px 4px', borderRadius: 12,
-            border: '1px solid ' + (lastRating === btn.r ? btn.border : TH.border),
-            background: lastRating === btn.r ? btn.bg : TH.surface,
-            color: lastRating === btn.r ? btn.color : TH.textSecondary,
-            fontWeight: 700, fontSize: 11, cursor: submitting ? 'wait' : 'pointer',
-            fontFamily: 'inherit', transition: 'all 0.15s',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-          }}>
-            <span style={{ fontSize: 20 }}>{btn.emoji}</span>
-            <span>{btn.label}</span>
-          </button>
-        ))}
-      </div>
-      <p style={{ textAlign: 'center', color: TH.textFaint, fontSize: 10, marginTop: 14 }}>{t.intervalHint}</p>
+      {/* Rating — only after reveal */}
+      {phase === 'revealed' && (
+        <>
+          <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>{t.rateLabel}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+            {ratingBtns.map(btn => (
+              <button key={btn.r} onClick={() => handleRate(btn.r)} disabled={submitting} style={{
+                padding: '14px 4px', borderRadius: 12,
+                border: '1px solid ' + (lastRating === btn.r ? btn.border : TH.border),
+                background: lastRating === btn.r ? btn.bg : TH.surface,
+                color: lastRating === btn.r ? btn.color : TH.textSecondary,
+                fontWeight: 700, fontSize: 11, cursor: submitting ? 'wait' : 'pointer',
+                fontFamily: 'inherit', transition: 'all 0.15s',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+              }}>
+                <span style={{ fontSize: 20 }}>{btn.emoji}</span>
+                <span>{btn.label}</span>
+              </button>
+            ))}
+          </div>
+          <p style={{ textAlign: 'center', color: TH.textFaint, fontSize: 10, marginTop: 14 }}>{t.intervalHint}</p>
+        </>
+      )}
     </div>
   );
 }
