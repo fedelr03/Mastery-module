@@ -20,19 +20,30 @@ const getTheme = (dark) => dark ? DARK : LIGHT;
 const T = {
   en: {
     /* nav */
-    navWhat: 'What is it', navHow: 'How it works', navTips: 'Tips', navGetStarted: 'Get Started',
+    navIdea: 'The Idea', navEngine: 'How it works', navRetain: 'Retention', navGetStarted: 'Get Started',
     /* hero */
     heroEyebrow: 'THE FEYNMAN TECHNIQUE',
     heroTitle: 'Master anything.',
     heroTitleAccent: 'From first principles.',
     heroSub: 'Mastery Module turns any topic into a structured learning engine: explanations, quizzes, and challenges, all built around one idea. You only truly understand something when you can explain it simply.',
     heroLogin: 'Log In', heroSignup: 'Sign Up Free',
+    heroFeatures: ['5 Learning Modes', 'Spaced Repetition', 'Knowledge Tree', 'Interest Personalization', 'EN / ES'],
+    /* chapter dividers */
+    chap1Title: 'The Idea',
+    chap1Sub: 'Why you can\'t shortcut your way to understanding something.',
+    chap2Title: 'The Learning Engine',
+    chap2Sub: 'Five modes. Three depths. One loop that builds real understanding.',
+    chap3Title: 'Never Forget',
+    chap3Sub: 'The review system that schedules itself and the map that tracks everything.',
+    chap4Title: 'Built Around You',
+    chap4Sub: 'Your interests, your homework, your pace.',
+    chapCta: 'Ready to Start',
+    chapCtaSub: 'Pick a topic. See for yourself.',
     /* what */
     whatTitle: 'What is Mastery Module?',
     whatSub: 'Part explanation engine, part study partner. Built around one idea: you don\'t really know something until you can teach it.',
     whatP1: 'Mastery Module is built on one idea: you only truly understand something when you can explain it simply. That\'s the Feynman Technique, and it\'s the engine behind everything here.',
     whatP2: 'Enter any topic. Get a first-principles explanation tailored to your level, then get challenged to prove you understood it.',
-    /* modes */
     /* section badge labels */
     badgeIdea: 'THE IDEA', badgeModes: 'MODES', badgeWorkflow: 'WORKFLOW', badgeTips: 'TIPS',
     /* speed/depth modes */
@@ -60,6 +71,7 @@ const T = {
       { n: '02', title: 'Start with Explain', desc: 'Read the explanation carefully. Don\'t skim. This is your foundation. If something is unclear, hit Simplify.' },
       { n: '03', title: 'Quiz yourself immediately', desc: 'Knowledge fades fast without retrieval practice. Run the Quiz right after reading to lock concepts in.' },
       { n: '04', title: 'Go deeper with Exam or Challenge', desc: 'When you feel confident, stress-test it. Exams score you. Challenges push you beyond recall into real application.' },
+      { n: '05', title: 'Add it to your review deck', desc: 'Once you\'ve studied a topic, add it. The app generates a recall question and schedules the next review based on how well you know it.' },
     ],
     /* tips */
     tipsTitle: 'Tips to get the most out of it',
@@ -128,6 +140,7 @@ const T = {
     signupOk: 'Account created! Check your email to confirm, then log in.',
     pwMismatch: 'Passwords do not match.',
     emailConfirmed: '✓ Email confirmed! You can now sign in.',
+    /* review */
     badgeReview: 'RETENTION',
     reviewTitle: 'Study once. Remember forever.',
     reviewSub: 'Re-reading feels productive but the knowledge fades fast. Getting tested on what you studied is what actually makes it stick. The review system takes care of the scheduling for you.',
@@ -137,6 +150,7 @@ const T = {
       { n: '03', title: 'You see the model answer and rate yourself', desc: 'Compare your answer to the model answer, then rate honestly: Blackout, Hard, Good, or Easy. The app uses your rating to schedule the next review.' },
     ],
     reviewSrsNote: 'Your rating controls the schedule. Rate it Easy and it comes back in weeks. Rate it Blackout and it\'s back tomorrow. Every correct answer pushes the interval further out.',
+    /* knowledge tree */
     badgeKt: 'KNOWLEDGE MAP',
     ktTitle: 'See everything you know.',
     ktSub: 'Every topic you study gets added to your Knowledge Tree, organized by subject, color-coded by mastery level, and linked across fields.',
@@ -149,19 +163,29 @@ const T = {
     footer: 'Learn by First Principles',
   },
   es: {
-    navWhat: 'Qué es', navHow: 'Cómo funciona', navTips: 'Tips', navGetStarted: 'Empezar',
+    navIdea: 'La Idea', navEngine: 'Cómo funciona', navRetain: 'Retención', navGetStarted: 'Empezar',
     heroEyebrow: 'LA TÉCNICA FEYNMAN',
     heroTitle: 'Dominá cualquier tema.',
     heroTitleAccent: 'Desde los principios.',
     heroSub: 'Mastery Module convierte cualquier tema en un motor de aprendizaje: explicaciones, quizzes y desafíos, construidos alrededor de una sola idea. Solo entendés algo de verdad cuando podés explicarlo simple.',
     heroLogin: 'Iniciar sesión', heroSignup: 'Registrarse gratis',
+    heroFeatures: ['5 Modos de Estudio', 'Repaso Espaciado', 'Árbol de Conocimiento', 'Personalización', 'ES / EN'],
+    /* capítulos */
+    chap1Title: 'La Idea',
+    chap1Sub: 'Por qué no podés saltarte la comprensión real.',
+    chap2Title: 'El Motor de Aprendizaje',
+    chap2Sub: 'Cinco modos. Tres profundidades. Un ciclo que construye comprensión real.',
+    chap3Title: 'No Te Olvidés',
+    chap3Sub: 'El sistema de repaso que se organiza solo y el mapa que lo muestra todo.',
+    chap4Title: 'Hecho Para Vos',
+    chap4Sub: 'Tus intereses, tu tarea, tu ritmo.',
+    chapCta: 'Listo para empezar',
+    chapCtaSub: 'Elegí un tema. Comprobalo vos mismo.',
     whatTitle: '¿Qué es Mastery Module?',
     whatSub: 'Parte motor de explicación, parte compañero de estudio. Todo alrededor de una sola idea: no entendés algo de verdad hasta que podés enseñarlo.',
     whatP1: 'Mastery Module se basa en una idea: solo entendés algo de verdad cuando podés explicarlo de forma simple. Eso es la Técnica Feynman, y es el motor de todo lo que hacemos acá.',
     whatP2: 'Ingresá cualquier tema. Recibís una explicación desde los principios fundamentales, adaptada a tu nivel, y luego te desafía a demostrar que lo entendiste.',
-    /* etiquetas de sección */
     badgeIdea: 'LA IDEA', badgeModes: 'MODOS', badgeWorkflow: 'FLUJO', badgeTips: 'TIPS',
-    /* modos de velocidad/profundidad */
     speedModesTitle: 'Elegí la profundidad',
     speedModesSub: 'Tres modos. Elegí el que se adapta a tu situación ahora.',
     speedModes: [
@@ -185,6 +209,7 @@ const T = {
       { n: '02', title: 'Empezá con Explicar', desc: 'Leé la explicación con atención. No la escanees. Es tu base. Si algo no queda claro, usá Simplificar.' },
       { n: '03', title: 'Hacé el Quiz de inmediato', desc: 'El conocimiento se desvanece rápido sin práctica de recuperación. Hacé el Quiz justo después de leer para fijar los conceptos.' },
       { n: '04', title: 'Profundizá con Examen o Desafío', desc: 'Cuando te sentís seguro, poné a prueba ese conocimiento. Los exámenes te puntúan. Los desafíos te llevan más allá del recuerdo a la aplicación real.' },
+      { n: '05', title: 'Agregalo al mazo de repaso', desc: 'Una vez que estudiaste un tema, lo agregás. La app genera una pregunta de recuperación y programa el próximo repaso según qué tan bien lo sabés.' },
     ],
     tipsTitle: 'Tips para sacarle el máximo',
     tips: [
@@ -195,7 +220,6 @@ const T = {
       { icon: '🌙', title: 'Usá el Modo Noche', desc: 'Las sesiones largas son más cómodas para los ojos en modo oscuro. Configuralo en tu Perfil y queda guardado.' },
       { icon: '🌐', title: 'Usá tu idioma', desc: 'El contenido se genera en el idioma que elijas, inglés o español. Configuralo en tu Perfil para una experiencia consistente.' },
     ],
-    /* casos de uso */
     badgeUseCases: 'MÁS ALLÁ DE LOS TEMAS',
     useCasesTitle: 'También te banca con la tarea real',
     useCasesSub: 'No solo conceptos abstractos. Dos formas de apuntarlo a problemas concretos.',
@@ -211,7 +235,6 @@ const T = {
         desc: 'Cuando hay un ejercicio específico que no te sale, escribilo directamente en la barra. Este va a fondo: paso por paso, por qué cada decisión, qué mirar. Usalo para los ejercicios que importan de verdad, el que cae en el parcial de mañana, el que dijo la profe que entra sí o sí, el que te viene volviendo loco.',
       },
     ],
-    /* intereses */
     badgeInterests: 'INTERESES',
     interestsTitle: 'Decile qué te gusta',
     interestsSub: 'Poné un hobby, un deporte, una banda, una serie, lo que sea. Las explicaciones y los quizzes se reescriben alrededor de eso, y los conceptos te quedan de verdad.',
@@ -273,6 +296,42 @@ const T = {
   },
 };
 
+/* ═══════════ CHAPTER DIVIDER ═══════════ */
+function ChapterDivider({ number, title, sub }) {
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #0f0f15 0%, #1a1624 100%)',
+      padding: '72px 20px',
+      textAlign: 'center',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Ghost number */}
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%',
+        transform: 'translate(-50%,-50%)',
+        fontSize: 'clamp(120px, 22vw, 200px)', fontWeight: 800,
+        color: 'rgba(255,255,255,0.025)', letterSpacing: '-0.05em',
+        userSelect: 'none', pointerEvents: 'none', lineHeight: 1,
+        fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
+      }}>{number}</div>
+      {/* Accent line */}
+      <div style={{ width: 40, height: 3, background: '#f5a623', borderRadius: 2, margin: '0 auto 20px' }} />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(245,166,35,0.65)', letterSpacing: 3, textTransform: 'uppercase', marginBottom: 12 }}>
+          {number}
+        </div>
+        <h2 style={{
+          fontSize: 'clamp(30px, 5.5vw, 58px)', fontWeight: 800, color: '#f0eef8',
+          letterSpacing: '-0.03em', lineHeight: 1.05, marginBottom: 14,
+          fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
+        }}>{title}</h2>
+        {sub && <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.38)', maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }}>{sub}</p>}
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════ LANDING PAGE ═══════════ */
 export default function LandingPage({ confirmedEmail, initialForm }) {
   const [lang, setLang] = useState(() => localStorage.getItem('mm_lang') || 'es');
@@ -280,14 +339,10 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
   const [scrolled, setScrolled] = useState(false);
   const [morphKey, setMorphKey] = useState(0);
 
-  // Returning user detection (signed in before, now cleared session / different device)
   const [isReturning, setIsReturning] = useState(() => localStorage.getItem('mm_returning') === '1');
   const [rememberedEmail, setRememberedEmail] = useState(() => localStorage.getItem('mm_last_email') || '');
   const handleClearReturning = () => { setIsReturning(false); setRememberedEmail(''); };
 
-  // Auth mode state lifted up so the outer section header can react to it,
-  // and so the hero buttons can switch the form without custom events.
-  // Returning users default to login regardless of initialForm.
   const [authMode, setAuthMode] = useState(() => {
     if (isReturning && !initialForm) return 'login';
     return initialForm || 'signup';
@@ -297,10 +352,12 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
   const TH = getTheme(dark);
   const t = T[lang];
 
-  const authRef = useRef(null);
-  const whatRef = useRef(null);
-  const howRef = useRef(null);
-  const tipsRef = useRef(null);
+  /* Section refs */
+  const authRef  = useRef(null);
+  const chap1Ref = useRef(null); // The Idea
+  const chap2Ref = useRef(null); // Learning Engine
+  const chap3Ref = useRef(null); // Never Forget
+  const chap4Ref = useRef(null); // Built Around You
 
   const changeLang = (l) => { setLang(l); localStorage.setItem('mm_lang', l); setMorphKey(k => k + 1); };
   const toggleDark = () => { const n = !dark; setDark(n); localStorage.setItem('mm_dark', String(n)); };
@@ -318,19 +375,10 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
 
   const scrollTo = (ref) => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   const goToAuth = (mode) => {
-    // set mode first so the form is already showing the right thing when scroll lands
     setAuthForgot(false);
     if (mode) setAuthMode(mode);
     scrollTo(authRef);
   };
-
-  const navBtn = (label, onClick) => (
-    <button onClick={onClick} style={{
-      background: 'none', border: 'none', color: TH.textSecondary, fontSize: 12,
-      fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: '4px 0',
-      letterSpacing: 0.3,
-    }}>{label}</button>
-  );
 
   return (
     <div style={{ minHeight: '100vh', background: TH.bg, color: TH.text, fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", transition: 'background 0.3s' }}>
@@ -341,9 +389,9 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes morphIn {
           0%   { opacity: 0; filter: blur(8px); transform: translateY(6px) scale(0.98); }
-          100% { opacity: 1; filter: blur(0px); transform: translateY(0)   scale(1);    }
+          100% { opacity: 1; filter: blur(0px); transform: translateY(0) scale(1); }
         }
-        .lp-fade { animation: fadeUp 0.5s ease both; }
+        .lp-fade  { animation: fadeUp 0.5s ease both; }
         .lp-morph { animation: morphIn 0.38s cubic-bezier(0.22,1,0.36,1) both; }
         .lp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important; }
         .lp-card { transition: transform 0.2s, box-shadow 0.2s; }
@@ -351,7 +399,6 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         @media (max-width: 640px) {
           .lp-nav-links { display: none !important; }
           .lp-nav-right { gap: 6px !important; }
-          .lp-nav-right .lp-lang-toggle span { display: none; }
         }
       `}</style>
 
@@ -362,20 +409,19 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         backdropFilter: scrolled ? 'blur(12px)' : 'none',
         borderBottom: scrolled ? '1px solid ' + TH.border : '1px solid transparent',
         transition: 'all 0.25s',
-        overflow: 'hidden',
       }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 18, fontWeight: 800, color: TH.accent }}>&#x2211;</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: TH.text, letterSpacing: '-0.01em' }}>Mastery Module</span>
           </div>
-          {/* Nav links — hidden on small screens */}
+          {/* Nav links */}
           <div className="lp-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {[
-              { label: t.navWhat, ref: whatRef },
-              { label: t.navHow,  ref: howRef  },
-              { label: t.navTips, ref: tipsRef  },
+              { label: t.navIdea,   ref: chap1Ref },
+              { label: t.navEngine, ref: chap2Ref },
+              { label: t.navRetain, ref: chap3Ref },
             ].map(({ label, ref }) => (
               <button key={label} onClick={() => scrollTo(ref)} style={{
                 padding: '5px 13px', borderRadius: 8, border: '1px solid ' + TH.border,
@@ -390,7 +436,6 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
           </div>
           {/* Right controls */}
           <div className="lp-nav-right" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* Lang toggle */}
             <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', border: '1px solid ' + TH.border }}>
               {['es', 'en'].map(l => (
                 <button key={l} onClick={() => changeLang(l)} style={{
@@ -400,12 +445,10 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
                 }}>{l.toUpperCase()}</button>
               ))}
             </div>
-            {/* Dark toggle */}
             <button onClick={toggleDark} style={{
               background: 'none', border: '1px solid ' + TH.border, borderRadius: 6,
               padding: '4px 8px', cursor: 'pointer', fontSize: 12,
             }}>{dark ? '☀️' : '🌙'}</button>
-            {/* Login button */}
             <button onClick={() => goToAuth('login')} style={{
               padding: '6px 14px', borderRadius: 8, border: '1px solid ' + TH.border,
               background: TH.surface, color: TH.textSecondary, fontSize: 11, fontWeight: 700,
@@ -415,10 +458,12 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </nav>
 
-      {/* ── HERO ── */}
+      {/* ══════════════════════════════════════════
+          HERO
+      ══════════════════════════════════════════ */}
       <section style={{ paddingTop: 120, paddingBottom: 90, textAlign: 'center', padding: '120px 20px 90px' }}>
         <div key={morphKey} style={{ maxWidth: 680, margin: '0 auto' }} className="lp-fade lp-morph">
-          {/* Eyebrow pill */}
+          {/* Eyebrow */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.25)', borderRadius: 20, padding: '5px 14px', marginBottom: 28, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 2 }}>
             <span>&#x2211;</span> {t.heroEyebrow}
           </div>
@@ -427,12 +472,11 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             {t.heroTitle}<br />
             <span style={{ color: TH.accent }}>{t.heroTitleAccent}</span>
           </h1>
-          {/* Sub */}
           <p style={{ fontSize: 'clamp(14px, 2vw, 17px)', color: TH.textSecondary, lineHeight: 1.65, maxWidth: 520, margin: '0 auto 36px' }}>
             {t.heroSub}
           </p>
           {/* CTAs */}
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 40 }}>
             <button onClick={() => goToAuth('signup')} style={{
               padding: '14px 30px', borderRadius: 12, border: 'none',
               background: 'linear-gradient(135deg,' + TH.accentLight + ',' + TH.accent + ')',
@@ -445,15 +489,23 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
               fontSize: 14, cursor: 'pointer', fontFamily: 'inherit',
             }}>{t.heroLogin}</button>
           </div>
+          {/* Feature strip */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+            {t.heroFeatures.map((f, i) => (
+              <div key={i} style={{
+                padding: '5px 13px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+                border: '1px solid ' + TH.border, color: TH.textMuted, background: TH.surface,
+              }}>{f}</div>
+            ))}
+          </div>
         </div>
 
-        {/* Hero visual — faithful app replica */}
+        {/* Hero app mockup */}
         <div style={{ maxWidth: 640, margin: '56px auto 0', position: 'relative' }}>
           {/* Browser chrome */}
           <div style={{
             background: dark ? '#0e0e11' : '#e8e4dc',
-            borderRadius: '16px 16px 0 0',
-            padding: '10px 14px',
+            borderRadius: '16px 16px 0 0', padding: '10px 14px',
             display: 'flex', alignItems: 'center', gap: 6,
             borderBottom: '1px solid ' + TH.border,
           }}>
@@ -465,19 +517,14 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
 
           {/* App window */}
           <div style={{
-            background: TH.bg,
-            borderRadius: '0 0 16px 16px',
+            background: TH.bg, borderRadius: '0 0 16px 16px',
             boxShadow: dark ? '0 24px 80px rgba(0,0,0,0.55)' : '0 24px 80px rgba(0,0,0,0.1)',
-            overflow: 'hidden',
-            border: '1px solid ' + TH.border,
-            borderTop: 'none',
+            overflow: 'hidden', border: '1px solid ' + TH.border, borderTop: 'none',
           }}>
-            {/* Mini nav bar */}
+            {/* Mini nav */}
             <div style={{
               display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
-              padding: '8px 14px', gap: 6,
-              borderBottom: '1px solid ' + TH.border,
-              background: TH.bg,
+              padding: '8px 14px', gap: 6, borderBottom: '1px solid ' + TH.border, background: TH.bg,
             }}>
               {[
                 { label: lang === 'es' ? 'Módulo' : 'Module', accent: true },
@@ -499,7 +546,6 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
 
             {/* App content */}
             <div style={{ padding: '22px 28px 24px', textAlign: 'center' }}>
-              {/* Subject pill */}
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 border: '1px solid ' + TH.border, borderRadius: 20,
@@ -508,83 +554,41 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
               }}>
                 🎯 {lang === 'es' ? 'MATEMÁTICA · ESTADÍSTICA · ECONOMÍA · FINANZAS' : 'MATH · STATISTICS · ECONOMICS · FINANCE'}
               </div>
-
-              {/* App title */}
               <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', color: TH.text, marginBottom: 6 }}>
                 {lang === 'es' ? 'Módulo de Dominio' : 'Mastery Module'}
               </div>
               <div style={{ fontSize: 10, color: TH.textSecondary, marginBottom: 18, lineHeight: 1.5 }}>
-                {lang === 'es'
-                  ? 'Escribí un tema de mate, estadística, economía o finanzas.'
-                  : 'Type a topic in math, statistics, economics, or finance.'}
+                {lang === 'es' ? 'Escribí un tema de mate, estadística, economía o finanzas.' : 'Type a topic in math, statistics, economics, or finance.'}
               </div>
 
               {/* Input card */}
-              <div style={{
-                background: TH.surface, borderRadius: 14, border: '1px solid ' + TH.border,
-                padding: '12px', textAlign: 'left',
-                boxShadow: dark ? '0 4px 20px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.05)',
-              }}>
+              <div style={{ background: TH.surface, borderRadius: 14, border: '1px solid ' + TH.border, padding: '12px', textAlign: 'left', boxShadow: dark ? '0 4px 20px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.05)' }}>
                 {/* Topic input */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  background: TH.bg, borderRadius: 10, border: '1px solid ' + TH.border,
-                  padding: '8px 10px', marginBottom: 8,
-                }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: TH.bg, borderRadius: 10, border: '1px solid ' + TH.border, padding: '8px 10px', marginBottom: 8 }}>
                   <span style={{ fontSize: 11 }}>🔍</span>
                   <span style={{ flex: 1, fontSize: 10, color: TH.text, fontWeight: 500 }}>
                     {lang === 'es' ? 'Derivadas' : 'Derivatives'}
                   </span>
-                  {/* Upload icon — box with upward arrow */}
-                  <div style={{
-                    width: 22, height: 22, borderRadius: 6,
-                    border: '1px solid ' + TH.border,
-                    background: TH.surface,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0,
-                  }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 6, border: '1px solid ' + TH.border, background: TH.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke={TH.textMuted} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="2" width="10" height="10" rx="2"/>
                       <path d="M7 9V5M5 7l2-2 2 2"/>
                     </svg>
                   </div>
                 </div>
-
                 {/* Interests input */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  background: TH.bg, borderRadius: 10,
-                  border: '1px solid ' + TH.border,
-                  padding: '7px 10px', marginBottom: 6,
-                }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: TH.bg, borderRadius: 10, border: '1px solid ' + TH.border, padding: '7px 10px', marginBottom: 6 }}>
                   <span style={{ fontSize: 10 }}>🎯</span>
                   <span style={{ flex: 1, fontSize: 10, color: TH.accent, fontWeight: 600 }}>
                     {lang === 'es' ? 'Fútbol' : 'Basketball'}
                   </span>
-                  {/* Sparkle/dice icon */}
-                  <div style={{
-                    width: 20, height: 20, borderRadius: 5,
-                    border: '1px solid ' + TH.border,
-                    background: TH.surface,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0, fontSize: 10,
-                  }}>🎲</div>
-                  {/* X button */}
-                  <div style={{
-                    width: 20, height: 20, borderRadius: 5,
-                    border: '1px solid ' + TH.border,
-                    background: TH.surface,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0, fontSize: 9, color: TH.textMuted, fontWeight: 700,
-                  }}>✕</div>
+                  <div style={{ width: 20, height: 20, borderRadius: 5, border: '1px solid ' + TH.border, background: TH.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 10 }}>🎲</div>
+                  <div style={{ width: 20, height: 20, borderRadius: 5, border: '1px solid ' + TH.border, background: TH.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 9, color: TH.textMuted, fontWeight: 700 }}>✕</div>
                 </div>
                 <div style={{ fontSize: 8, color: TH.textFaint, textAlign: 'center', marginBottom: 10 }}>
                   {lang === 'es' ? 'Opcional, personaliza las analogías y el quiz con lo que te gusta' : 'Optional, personalizes analogies & quiz with your interests'}
                 </div>
-
-                {/* Divider */}
                 <div style={{ height: 1, background: TH.borderLight, marginBottom: 10 }} />
-
                 {/* Mode buttons */}
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                   {(lang === 'es'
@@ -600,11 +604,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
                       <div style={{ fontSize: 7, color: i === 1 ? TH.accent : TH.textFaint, marginTop: 1 }}>{sub}</div>
                     </div>
                   ))}
-                  <div style={{
-                    padding: '7px 16px', borderRadius: 8,
-                    background: dark ? '#3a3a4a' : '#2a2a3a',
-                    color: '#fff', fontSize: 10, fontWeight: 800,
-                  }}>
+                  <div style={{ padding: '7px 16px', borderRadius: 8, background: dark ? '#3a3a4a' : '#2a2a3a', color: '#fff', fontSize: 10, fontWeight: 800 }}>
                     {lang === 'es' ? 'Dale' : 'Learn'}
                   </div>
                 </div>
@@ -616,15 +616,10 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
                   ? ['Teorema de Pitágoras','Integrales','Distribución Normal','Ratios Financieros']
                   : ['Pythagorean Theorem','Integrals','Normal Distribution','Financial Ratios']
                 ).map((chip, i) => (
-                  <div key={i} style={{
-                    padding: '3px 10px', borderRadius: 20, fontSize: 8, fontWeight: 500,
-                    border: '1px solid ' + TH.border, color: TH.textSecondary,
-                    background: TH.surface,
-                  }}>{chip}</div>
+                  <div key={i} style={{ padding: '3px 10px', borderRadius: 20, fontSize: 8, fontWeight: 500, border: '1px solid ' + TH.border, color: TH.textSecondary, background: TH.surface }}>{chip}</div>
                 ))}
               </div>
 
-              {/* Footer tag */}
               <div style={{ marginTop: 14, fontSize: 8, color: TH.textFaint }}>
                 {lang === 'es' ? 'Aprendé desde los Principios Fundamentales' : 'Learn by First Principles'}
               </div>
@@ -632,52 +627,19 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
           </div>
 
           {/* Glow */}
-          <div style={{
-            position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)',
-            width: 300, height: 60, borderRadius: '50%',
-            background: 'rgba(232,148,10,0.12)', filter: 'blur(30px)', pointerEvents: 'none',
-          }} />
+          <div style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 300, height: 60, borderRadius: '50%', background: 'rgba(232,148,10,0.12)', filter: 'blur(30px)', pointerEvents: 'none' }} />
         </div>
       </section>
 
-      {/* ── AUTH SECTION (moved up — first stop after hero) ── */}
-      <section ref={authRef} style={{ padding: '20px 20px 80px' }}>
-        <div style={{ maxWidth: 420, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 28 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.25)', borderRadius: 20, padding: '4px 12px', marginBottom: 14, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>&#x2211; MASTERY MODULE</div>
-            {(() => {
-              const showingLogin = authMode === 'login' && !authForgot;
-              const showingSignup = authMode === 'signup' && !authForgot;
-              // Pick the right title/sub for the current mode
-              const title = authForgot ? t.authTitleForgot
-                : showingLogin && isReturning ? t.authTitleReturning
-                : showingLogin ? t.authTitleLogin
-                : t.authTitleSignup;
-              const sub = authForgot ? t.authSubForgot
-                : showingLogin && isReturning ? t.authSubReturning
-                : showingLogin ? t.authSubLogin
-                : t.authSubSignup;
-              return (
-                <>
-                  <h2 key={title} className="lp-morph" style={{ fontSize: 'clamp(24px,3.6vw,32px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 6 }}>{title}</h2>
-                  <p style={{ fontSize: 13, color: TH.textMuted }}>{sub}</p>
-                </>
-              );
-            })()}
-          </div>
-          <AuthForm
-            TH={TH} dark={dark} lang={lang} changeLang={changeLang} t={t}
-            confirmedEmail={confirmedEmail}
-            mode={authMode} setMode={setAuthMode}
-            forgot={authForgot} setForgot={setAuthForgot}
-            isReturning={isReturning} rememberedEmail={rememberedEmail}
-            onClearReturning={handleClearReturning}
-          />
-        </div>
-      </section>
+      {/* ══════════════════════════════════════════
+          CHAPTER 1: THE IDEA
+      ══════════════════════════════════════════ */}
+      <div ref={chap1Ref}>
+        <ChapterDivider number="01" title={t.chap1Title} sub={t.chap1Sub} />
+      </div>
 
-      {/* ── WHAT IS IT ── */}
-      <section ref={whatRef} style={{ padding: '80px 20px', borderTop: '1px solid ' + TH.borderLight }}>
+      {/* What is it */}
+      <section style={{ padding: '80px 20px', background: TH.bg }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <div key={`hdr-what-${morphKey}`} className="lp-morph" style={{ textAlign: 'center', marginBottom: 48 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeIdea}</div>
@@ -688,7 +650,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             {[t.whatP1, t.whatP2].map((p, i) => (
               <div key={i} className="lp-card" style={{
                 background: TH.surface, borderRadius: 16, border: '1px solid ' + TH.border,
-                padding: '24px 24px', boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.2)' : '0 4px 24px rgba(0,0,0,0.03)',
+                padding: '24px', boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.2)' : '0 4px 24px rgba(0,0,0,0.03)',
               }}>
                 <div style={{ fontSize: 24, marginBottom: 12 }}>{i === 0 ? '📐' : '🔬'}</div>
                 <p style={{ color: TH.textSecondary, fontSize: 14, lineHeight: 1.7 }}>{p}</p>
@@ -698,8 +660,15 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
-      {/* ── FIVE MODES ── */}
-      <section style={{ padding: '80px 20px', background: dark ? TH.surface : '#faf8f4', borderTop: '1px solid ' + TH.borderLight, borderBottom: '1px solid ' + TH.borderLight }}>
+      {/* ══════════════════════════════════════════
+          CHAPTER 2: THE LEARNING ENGINE
+      ══════════════════════════════════════════ */}
+      <div ref={chap2Ref}>
+        <ChapterDivider number="02" title={t.chap2Title} sub={t.chap2Sub} />
+      </div>
+
+      {/* Five modes */}
+      <section style={{ padding: '80px 20px', background: dark ? TH.surface : '#faf8f4', borderBottom: '1px solid ' + TH.borderLight }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeModes}</div>
@@ -721,8 +690,8 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
-      {/* ── SPEED / DEPTH MODES ── */}
-      <section style={{ padding: '80px 20px' }}>
+      {/* Speed / Depth modes */}
+      <section style={{ padding: '80px 20px', background: TH.bg }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{lang === 'es' ? 'PROFUNDIDAD' : 'DEPTH'}</div>
@@ -733,7 +702,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             {t.speedModes.map((sm, i) => {
               const modeColors = [
                 { accent: '#059669', accentBg: 'rgba(5,150,105,0.07)', border: 'rgba(5,150,105,0.2)', tag: 'LITE' },
-                { accent: '#e8940a', accentBg: 'rgba(232,148,10,0.07)', border: 'rgba(232,148,10,0.2)', tag: dark ? 'FAST' : 'FAST' },
+                { accent: '#e8940a', accentBg: 'rgba(232,148,10,0.07)', border: 'rgba(232,148,10,0.2)', tag: 'FAST' },
                 { accent: '#6366f1', accentBg: 'rgba(99,102,241,0.07)', border: 'rgba(99,102,241,0.2)', tag: 'THINK' },
               ][i];
               return (
@@ -765,19 +734,50 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
-      {/* ── REVIEW & RETAIN ── */}
+      {/* How it works */}
       <section style={{ padding: '80px 20px', background: dark ? TH.surface : '#faf8f4', borderTop: '1px solid ' + TH.borderLight, borderBottom: '1px solid ' + TH.borderLight }}>
+        <div style={{ maxWidth: 680, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeWorkflow}</div>
+            <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.howTitle}</h2>
+            <p style={{ fontSize: 13, color: TH.textMuted }}>{t.howSub}</p>
+          </div>
+          <div key={morphKey} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {t.steps.map((s, i) => (
+              <div key={i} style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+                <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 12, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: TH.accent, letterSpacing: 0.5, marginTop: 2 }}>
+                  {s.n}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: TH.text, marginBottom: 5 }}>{s.title}</div>
+                  <p style={{ fontSize: 13, color: TH.textMuted, lineHeight: 1.65 }}>{s.desc}</p>
+                  {i < t.steps.length - 1 && (
+                    <div style={{ width: 1, height: 16, background: TH.border, marginLeft: -28, marginTop: 12 }} />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          CHAPTER 3: NEVER FORGET
+      ══════════════════════════════════════════ */}
+      <div ref={chap3Ref}>
+        <ChapterDivider number="03" title={t.chap3Title} sub={t.chap3Sub} />
+      </div>
+
+      {/* Review & Retain */}
+      <section style={{ padding: '80px 20px', background: TH.bg }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
-          {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: 52 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeReview}</div>
             <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.reviewTitle}</h2>
             <p style={{ fontSize: 14, color: TH.textMuted, maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>{t.reviewSub}</p>
           </div>
 
-          {/* Two-column: steps + mockup */}
           <div key={morphKey} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 40, alignItems: 'center', marginBottom: 36 }}>
-
             {/* Steps */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               {t.reviewSteps.map((s, i) => (
@@ -791,18 +791,15 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
               ))}
             </div>
 
-            {/* Card mockup — revealed state */}
-            <div style={{ background: TH.bg, borderRadius: 16, border: '1px solid ' + TH.border, padding: 16, boxShadow: dark ? '0 8px 40px rgba(0,0,0,0.3)' : '0 8px 40px rgba(0,0,0,0.07)', maxWidth: 360, margin: '0 auto', width: '100%' }}>
-              {/* Card */}
-              <div style={{ background: TH.surface, borderRadius: 14, border: '1px solid ' + TH.border, overflow: 'hidden', marginBottom: 10 }}>
-                {/* Topic */}
+            {/* Review card mockup */}
+            <div style={{ background: TH.surface, borderRadius: 16, border: '1px solid ' + TH.border, padding: 16, boxShadow: dark ? '0 8px 40px rgba(0,0,0,0.3)' : '0 8px 40px rgba(0,0,0,0.07)', maxWidth: 360, margin: '0 auto', width: '100%' }}>
+              <div style={{ background: TH.bg, borderRadius: 14, border: '1px solid ' + TH.border, overflow: 'hidden', marginBottom: 10 }}>
                 <div style={{ padding: '18px 18px 14px', textAlign: 'center', borderBottom: '1px solid ' + TH.borderLight }}>
                   <div style={{ display: 'inline-block', background: '#e8940a18', border: '1px solid #e8940a44', borderRadius: 6, padding: '2px 8px', marginBottom: 8, fontSize: 8, color: '#e8940a', fontWeight: 700, letterSpacing: 1 }}>MATH</div>
                   <div style={{ fontSize: 17, fontWeight: 800, color: TH.text, letterSpacing: '-0.02em' }}>
                     {lang === 'es' ? 'Derivadas' : 'Derivatives'}
                   </div>
                 </div>
-                {/* Question + answers */}
                 <div style={{ padding: '14px 18px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <p style={{ fontSize: 12, fontWeight: 600, color: TH.textSecondary, lineHeight: 1.5, margin: 0 }}>
                     {lang === 'es' ? '¿Qué representa geométricamente la derivada?' : 'What does the derivative represent geometrically?'}
@@ -843,42 +840,16 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
-      {/* ── INTERESTS (personalization) ── */}
-      <section style={{ padding: '80px 20px', borderTop: '1px solid ' + TH.borderLight }}>
-        <div style={{ maxWidth: 860, margin: '0 auto' }}>
-          <div key={`hdr-int-${morphKey}`} className="lp-morph" style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeInterests}</div>
-            <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.interestsTitle}</h2>
-            <p style={{ fontSize: 13, color: TH.textMuted, maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>{t.interestsSub}</p>
-          </div>
-          <div key={morphKey} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(320px,1fr))', gap: 20 }}>
-            {t.interests.map((it, i) => (
-              <div key={i} className="lp-card" style={{
-                background: TH.surface, borderRadius: 16, border: '1px solid ' + TH.border,
-                padding: 26, boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.2)' : '0 4px 24px rgba(0,0,0,0.04)',
-              }}>
-                <div style={{ fontSize: 26, marginBottom: 14 }}>{it.icon}</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: TH.text, marginBottom: 10, letterSpacing: '-0.01em' }}>{it.title}</div>
-                <p style={{ fontSize: 13, color: TH.textSecondary, lineHeight: 1.7 }}>{it.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── KNOWLEDGE TREE ── */}
-      <section style={{ padding: '80px 20px' }}>
+      {/* Knowledge Tree */}
+      <section style={{ padding: '80px 20px', background: dark ? TH.surface : '#faf8f4', borderTop: '1px solid ' + TH.borderLight, borderBottom: '1px solid ' + TH.borderLight }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
-          {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: 52 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeKt}</div>
             <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.ktTitle}</h2>
             <p style={{ fontSize: 14, color: TH.textMuted, maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>{t.ktSub}</p>
           </div>
 
-          {/* Two-column: features + tree mockup */}
           <div key={morphKey} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 40, alignItems: 'center' }}>
-
             {/* Feature list */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
               {t.ktFeatures.map((f, i) => (
@@ -894,17 +865,14 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
 
             {/* Tree mockup */}
             <div style={{ background: TH.bg, borderRadius: 16, border: '1px solid ' + TH.border, padding: '28px 20px 24px', boxShadow: dark ? '0 8px 40px rgba(0,0,0,0.3)' : '0 8px 40px rgba(0,0,0,0.07)', maxWidth: 380, margin: '0 auto', width: '100%' }}>
-              {/* Root */}
               <div style={{ textAlign: 'center', marginBottom: 6 }}>
                 <div style={{ display: 'inline-block', padding: '6px 18px', borderRadius: 8, background: TH.surface, border: '1.5px solid ' + TH.border, fontSize: 11, fontWeight: 700, color: TH.text }}>
                   {lang === 'es' ? 'Mi Conocimiento' : 'My Knowledge'}
                 </div>
               </div>
-              {/* Root → branch connector row */}
               <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 0, paddingBottom: 0 }}>
                 {[0,1,2].map(i => <div key={i} style={{ width: 1, height: 14, background: TH.border }} />)}
               </div>
-              {/* Branches */}
               <div style={{ display: 'flex', justifyContent: 'space-around', gap: 8 }}>
                 {[
                   { label: lang === 'es' ? 'Mate' : 'Math', col: '#e8940a', topics: [
@@ -915,7 +883,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
                     { label: lang === 'es' ? 'Dist. Normal' : 'Normal Dist.', col: '#f5a623' },
                     { label: 'Regression', col: '#ef4444' },
                   ]},
-                  { label: lang === 'es' ? 'Econ' : 'Econ', col: '#10b981', topics: [
+                  { label: 'Econ', col: '#10b981', topics: [
                     { label: lang === 'es' ? 'Oferta y Dem.' : 'Supply & Dem.', col: '#22c55e' },
                   ]},
                 ].map(({ label, col, topics }) => (
@@ -949,7 +917,37 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
-      {/* ── USE CASES (problem sets + single exercise) ── */}
+      {/* ══════════════════════════════════════════
+          CHAPTER 4: BUILT AROUND YOU
+      ══════════════════════════════════════════ */}
+      <div ref={chap4Ref}>
+        <ChapterDivider number="04" title={t.chap4Title} sub={t.chap4Sub} />
+      </div>
+
+      {/* Interests */}
+      <section style={{ padding: '80px 20px', background: TH.bg }}>
+        <div style={{ maxWidth: 860, margin: '0 auto' }}>
+          <div key={`hdr-int-${morphKey}`} className="lp-morph" style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeInterests}</div>
+            <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.interestsTitle}</h2>
+            <p style={{ fontSize: 13, color: TH.textMuted, maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>{t.interestsSub}</p>
+          </div>
+          <div key={morphKey} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(320px,1fr))', gap: 20 }}>
+            {t.interests.map((it, i) => (
+              <div key={i} className="lp-card" style={{
+                background: TH.surface, borderRadius: 16, border: '1px solid ' + TH.border,
+                padding: 26, boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.2)' : '0 4px 24px rgba(0,0,0,0.04)',
+              }}>
+                <div style={{ fontSize: 26, marginBottom: 14 }}>{it.icon}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: TH.text, marginBottom: 10, letterSpacing: '-0.01em' }}>{it.title}</div>
+                <p style={{ fontSize: 13, color: TH.textSecondary, lineHeight: 1.7 }}>{it.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases */}
       <section style={{ padding: '80px 20px', background: dark ? TH.surface : '#faf8f4', borderTop: '1px solid ' + TH.borderLight, borderBottom: '1px solid ' + TH.borderLight }}>
         <div style={{ maxWidth: 860, margin: '0 auto' }}>
           <div key={`hdr-uc-${morphKey}`} className="lp-morph" style={{ textAlign: 'center', marginBottom: 48 }}>
@@ -972,35 +970,8 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
-      <section ref={howRef} style={{ padding: '80px 20px' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeWorkflow}</div>
-            <h2 style={{ fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.02em', color: TH.text, marginBottom: 10 }}>{t.howTitle}</h2>
-            <p style={{ fontSize: 13, color: TH.textMuted }}>{t.howSub}</p>
-          </div>
-          <div key={morphKey} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {t.steps.map((s, i) => (
-              <div key={i} style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-                <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 12, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: TH.accent, letterSpacing: 0.5, marginTop: 2 }}>
-                  {s.n}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: TH.text, marginBottom: 5 }}>{s.title}</div>
-                  <p style={{ fontSize: 13, color: TH.textMuted, lineHeight: 1.65 }}>{s.desc}</p>
-                  {i < t.steps.length - 1 && (
-                    <div style={{ width: 1, height: 16, background: TH.border, marginLeft: -28, marginTop: 12 }} />
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── TIPS ── */}
-      <section ref={tipsRef} style={{ padding: '80px 20px', background: dark ? TH.surface : '#faf8f4', borderTop: '1px solid ' + TH.borderLight, borderBottom: '1px solid ' + TH.borderLight }}>
+      {/* Tips */}
+      <section style={{ padding: '80px 20px', background: TH.bg }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.2)', borderRadius: 20, padding: '4px 12px', marginBottom: 16, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>{t.badgeTips}</div>
@@ -1024,18 +995,61 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </section>
 
+      {/* ══════════════════════════════════════════
+          CTA / AUTH SECTION
+      ══════════════════════════════════════════ */}
+      <div style={{ background: 'linear-gradient(135deg, #0f0f15 0%, #1a1624 100%)', padding: '72px 20px 20px', textAlign: 'center' }}>
+        <div style={{ width: 40, height: 3, background: '#f5a623', borderRadius: 2, margin: '0 auto 20px' }} />
+        <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(245,166,35,0.65)', letterSpacing: 3, textTransform: 'uppercase', marginBottom: 12 }}>
+          {lang === 'es' ? 'EMPEZAR' : 'GET STARTED'}
+        </div>
+        <h2 style={{ fontSize: 'clamp(28px,5vw,52px)', fontWeight: 800, color: '#f0eef8', letterSpacing: '-0.03em', lineHeight: 1.05, marginBottom: 12, fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>{t.chapCta}</h2>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.38)', marginBottom: 48 }}>{t.chapCtaSub}</p>
+      </div>
+
+      <section ref={authRef} style={{ padding: '0 20px 80px', background: 'linear-gradient(135deg, #0f0f15 0%, #1a1624 100%)' }}>
+        <div style={{ maxWidth: 420, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 28 }}>
+            {(() => {
+              const showingLogin = authMode === 'login' && !authForgot;
+              const title = authForgot ? t.authTitleForgot
+                : showingLogin && isReturning ? t.authTitleReturning
+                : showingLogin ? t.authTitleLogin
+                : t.authTitleSignup;
+              const sub = authForgot ? t.authSubForgot
+                : showingLogin && isReturning ? t.authSubReturning
+                : showingLogin ? t.authSubLogin
+                : t.authSubSignup;
+              return (
+                <>
+                  <h2 key={title} className="lp-morph" style={{ fontSize: 'clamp(22px,3.2vw,28px)', fontWeight: 800, letterSpacing: '-0.02em', color: '#f0eef8', marginBottom: 6 }}>{title}</h2>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.38)' }}>{sub}</p>
+                </>
+              );
+            })()}
+          </div>
+          <AuthForm
+            TH={TH} dark={dark} lang={lang} changeLang={changeLang} t={t}
+            confirmedEmail={confirmedEmail}
+            mode={authMode} setMode={setAuthMode}
+            forgot={authForgot} setForgot={setAuthForgot}
+            isReturning={isReturning} rememberedEmail={rememberedEmail}
+            onClearReturning={handleClearReturning}
+          />
+        </div>
+      </section>
+
       {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid ' + TH.borderLight, padding: '20px', textAlign: 'center' }}>
-        <span style={{ fontSize: 13, fontWeight: 800, color: TH.accent, marginRight: 8 }}>&#x2211;</span>
-        <span style={{ fontSize: 11, color: TH.textMuted }}>{t.footer}</span>
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '20px', textAlign: 'center', background: '#0c0c12' }}>
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#f5a623', marginRight: 8 }}>&#x2211;</span>
+        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>{t.footer}</span>
       </footer>
     </div>
   );
 }
 
-/* ═══════════ AUTH FORM (embedded, same as App.jsx logic) ═══════════ */
+/* ═══════════ AUTH FORM (unchanged) ═══════════ */
 function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, mode, setMode, forgot, setForgot, isReturning, rememberedEmail, onClearReturning }) {
-  // mode and forgot are controlled by the parent now — derived booleans for readability
   const isLogin = mode === 'login';
   const isForgot = !!forgot;
 
@@ -1054,16 +1068,13 @@ function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, mode, setMode
     if (confirmedEmail) setSuccess(t.emailConfirmed);
   }, [lang, confirmedEmail]);
 
-  // For returning users on landing: jump focus to password since email is already filled
   useEffect(() => {
     if (isReturning && isLogin && !isForgot && email && passwordRef.current) {
       passwordRef.current.focus();
     }
-    // run once on mount — intentionally no dep on state changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Clear transient errors/messages when switching modes
   useEffect(() => {
     setError(''); setSuccess('');
   }, [mode, forgot]);
@@ -1074,7 +1085,6 @@ function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, mode, setMode
     setEmail('');
     setPassword('');
     onClearReturning?.();
-    // focus email so user can type a new one
     setTimeout(() => emailRef.current?.focus(), 0);
   };
 
@@ -1089,7 +1099,6 @@ function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, mode, setMode
       } else if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        // successful login — remember this user so next visit is faster
         localStorage.setItem('mm_returning', '1');
         localStorage.setItem('mm_last_email', email);
       } else {
@@ -1100,7 +1109,6 @@ function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, mode, setMode
           setError(t.emailExists);
         } else {
           if (username.trim()) localStorage.setItem('mm_pending_username', username.trim());
-          // remember the email so when they come back to log in it's pre-filled
           localStorage.setItem('mm_last_email', email);
           setSuccess(t.signupOk);
         }
@@ -1116,13 +1124,10 @@ function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, mode, setMode
     fontSize: 14, fontFamily: 'inherit', background: TH.bg, color: TH.text, outline: 'none', boxSizing: 'border-box',
   };
 
-  // Show the "Not you?" link only when: returning user, currently in login mode,
-  // email hasn't been manually changed from the remembered one
   const showNotYou = isReturning && isLogin && !isForgot && email && email === rememberedEmail;
 
   return (
     <div style={{ background: TH.surface, borderRadius: 20, border: '1px solid ' + TH.border, padding: 28, boxShadow: dark ? '0 8px 40px rgba(0,0,0,0.35)' : '0 8px 40px rgba(0,0,0,0.06)' }}>
-      {/* Header inside card */}
       <div style={{ marginBottom: 20 }}>
         <h3 style={{ fontSize: 20, fontWeight: 800, color: TH.text, letterSpacing: '-0.01em', marginBottom: 3 }}>
           {isForgot ? t.forgotTitle : isLogin ? t.welcomeBack : t.createAccount}
@@ -1130,7 +1135,6 @@ function AuthForm({ TH, dark, lang, changeLang, t, confirmedEmail, mode, setMode
         <p style={{ fontSize: 12, color: TH.textMuted }}>{isForgot ? t.forgotSub : isLogin ? t.loginSub : t.signupSub}</p>
       </div>
 
-      {/* Lang toggle */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
         {['es', 'en'].map(l => (
           <button key={l} onClick={() => changeLang(l)} style={{
