@@ -1776,7 +1776,7 @@ body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:#f7f5f0;-
 }
 
 /* ═══════════ Feynman Prompt ═══════════ */
-function FeynmanPrompt({topic,keyConcepts,mt,lang,t,onDone}){
+function FeynmanPrompt({topic,keyConcepts,mt,lang,t,onDone,session}){
   const[answer,setAnswer]=useState("");
   const[result,setResult]=useState(null);
   const[grading,setGrading]=useState(false);
@@ -1805,7 +1805,7 @@ function FeynmanPrompt({topic,keyConcepts,mt,lang,t,onDone}){
       const userP=lang==="es"
         ?`Tema: "${topic}"\nConceptos clave: ${concepts}\n\nExplicación del estudiante:\n"${answer}"\n\nEvaluá y respondé SOLO con este JSON:\n{"score":0-100,"nailed":["1-3 cosas bien explicadas"],"missed":["1-3 conceptos importantes que faltaron"],"tip":"una oración concreta de qué mejorar","verdict":"una oración motivadora resumiendo el resultado"}\nSi es muy corta o irrelevante, score < 40.`
         :`Topic: "${topic}"\nKey concepts: ${concepts}\n\nStudent's explanation:\n"${answer}"\n\nEvaluate and respond ONLY with this JSON:\n{"score":0-100,"nailed":["1-3 things explained well"],"missed":["1-3 important missing concepts"],"tip":"one concrete sentence on what to improve","verdict":"one motivating sentence summarizing the result"}\nIf very short or irrelevant, score < 40.`;
-      const res=await fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json"},
+      const res=await fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(session?.access_token||"")},
         body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:500,system:sysP,messages:[{role:"user",content:userP}]})});
       const data=await res.json();
       const raw=(data.content||[]).map(b=>b.text||"").join("");
@@ -2357,7 +2357,7 @@ export default function MasteryModule({session, level, lang: langProp, dark, pen
           :<button onClick={()=>{setQuizAnswers({});setQuizSubmitted(false);}} style={retBtn}>{t.retry}</button>}
         </div>
         {quizSubmitted&&(mode==="fast"||mode==="think")&&!feynmanDone&&
-          <FeynmanPrompt topic={topic||content?.title||""} keyConcepts={content?.keyConcepts} mt={mt} lang={lang} t={t} onDone={()=>setFeynmanDone(true)}/>}
+          <FeynmanPrompt topic={topic||content?.title||""} keyConcepts={content?.keyConcepts} mt={mt} lang={lang} t={t} onDone={()=>setFeynmanDone(true)} session={session}/>}
         <YouTubeRecs searches={content.youtubeSearches} t={t} lang={lang}/>
       </div>}
 
@@ -2375,7 +2375,7 @@ export default function MasteryModule({session, level, lang: langProp, dark, pen
           :<button onClick={()=>{setExamAnswers({});setExamSubmitted(false);}} style={retBtn}>{t.retry}</button>}
         </div>
         {examSubmitted&&(mode==="fast"||mode==="think")&&!feynmanDone&&
-          <FeynmanPrompt topic={topic||content?.title||""} keyConcepts={content?.keyConcepts} mt={mt} lang={lang} t={t} onDone={()=>setFeynmanDone(true)}/>}
+          <FeynmanPrompt topic={topic||content?.title||""} keyConcepts={content?.keyConcepts} mt={mt} lang={lang} t={t} onDone={()=>setFeynmanDone(true)} session={session}/>}
 
         {/* CHALLENGE — Mixed MC + Solve & Reveal */}
         {mode==="think"&&content.examChallenge&&content.examChallenge.length>0&&<div style={{marginTop:32}}>

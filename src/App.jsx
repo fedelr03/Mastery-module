@@ -93,6 +93,11 @@ const PROFILE_T = {
     changeEmail: 'Change', cancelEmail: 'Cancel',
     newEmail: 'NEW EMAIL', newEmailPH: 'your@newemail.com',
     updateEmail: 'Send Confirmation', emailChangeSent: '✓ Confirmation sent to your new address.',
+    dailyBudget: 'DAILY BUDGET', dailyBudgetSub: '— resets at midnight UTC',
+    budgetAdmin: 'No daily limit', budgetAdminSub: 'Admin account',
+    budgetOf: 'of $0.40 today',
+    budgetReset: 'Resets at midnight UTC',
+    budgetFree: 'Free today',
   },
   es: {
     title: 'Mi Perfil', sub: 'Personalizá tu experiencia',
@@ -110,6 +115,11 @@ const PROFILE_T = {
     changeEmail: 'Cambiar', cancelEmail: 'Cancelar',
     newEmail: 'NUEVO EMAIL', newEmailPH: 'tu@nuevoemail.com',
     updateEmail: 'Enviar confirmación', emailChangeSent: '✓ Confirmación enviada a tu nuevo email.',
+    dailyBudget: 'PRESUPUESTO DIARIO', dailyBudgetSub: '— se reinicia a medianoche (UTC)',
+    budgetAdmin: 'Sin límite diario', budgetAdminSub: 'Cuenta administrador',
+    budgetOf: 'de $0.40 hoy',
+    budgetReset: 'Se reinicia a medianoche (UTC)',
+    budgetFree: 'Sin uso hoy',
   },
 };
 
@@ -417,7 +427,7 @@ function ResetPasswordScreen({ onDone }) {
 }
 
 /* ═══════════ PROFILE SCREEN ═══════════ */
-function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark }) {
+function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark, isAdmin }) {
   const TH = getTheme(dark);
   const t = PROFILE_T[lang] || PROFILE_T.en;
 
@@ -429,11 +439,29 @@ function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark 
   const [newEmail, setNewEmail] = useState('');
   const [emailChanging, setEmailChanging] = useState(false);
   const [emailMsg, setEmailMsg] = useState('');
+  const [todaySpend, setTodaySpend] = useState(null); // null = loading
 
   useEffect(() => {
     setUsername(profile?.username || '');
     setLevel(profile?.level || 'intermediate');
   }, [profile?.username, profile?.level]);
+
+  // Load today's spending
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+    supabase
+      .from('usage_logs')
+      .select('estimated_cost')
+      .eq('user_id', session.user.id)
+      .gte('created_at', todayStart.toISOString())
+      .then(({ data }) => {
+        const sum = (data || []).reduce((s, l) => s + (parseFloat(l.estimated_cost) || 0), 0);
+        setTodaySpend(parseFloat(sum.toFixed(4)));
+      })
+      .catch(() => setTodaySpend(0));
+  }, [session?.user?.id]);
 
   const changeLang = (l) => { setLang(l); localStorage.setItem('mm_lang', l); };
 
@@ -632,6 +660,71 @@ function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark 
               }} />
             </div>
           </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ borderTop: '1px solid ' + TH.borderLight, marginBottom: 24 }} />
+
+        {/* Daily Budget */}
+        <div style={{ marginBottom: 28 }}>
+          {sectionLabel(t.dailyBudget, t.dailyBudgetSub)}
+          {isAdmin ? (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px',
+              borderRadius: 10, border: '1px solid ' + TH.border, background: TH.bg,
+            }}>
+              <span style={{ fontSize: 18 }}>🛡️</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: TH.accent }}>{t.budgetAdmin}</div>
+                <div style={{ fontSize: 10, color: TH.textMuted, marginTop: 1 }}>{t.budgetAdminSub}</div>
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              padding: '14px 16px', borderRadius: 10,
+              border: '1px solid ' + (todaySpend >= 0.40 ? 'rgba(239,68,68,0.25)' : TH.border),
+              background: todaySpend >= 0.40 ? 'rgba(239,68,68,0.04)' : TH.bg,
+            }}>
+              {/* Amount row */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+                <span style={{
+                  fontSize: 22, fontWeight: 800, fontFamily: "'Bricolage Grotesque',sans-serif",
+                  color: todaySpend === null ? TH.textFaint
+                       : todaySpend >= 0.40 ? (dark ? '#f87171' : '#ef4444')
+                       : todaySpend >= 0.30 ? TH.accent
+                       : TH.text,
+                }}>
+                  {todaySpend === null ? '...' : '$' + todaySpend.toFixed(3)}
+                </span>
+                <span style={{ fontSize: 11, color: TH.textMuted, fontWeight: 500 }}>{t.budgetOf}</span>
+              </div>
+              {/* Progress bar */}
+              <div style={{
+                height: 6, borderRadius: 3, background: TH.borderLight, overflow: 'hidden', marginBottom: 7,
+              }}>
+                <div style={{
+                  height: '100%', borderRadius: 3,
+                  width: todaySpend === null ? '0%' : Math.min((todaySpend / 0.40) * 100, 100) + '%',
+                  background: todaySpend >= 0.40
+                    ? (dark ? '#f87171' : '#ef4444')
+                    : todaySpend >= 0.30
+                      ? 'linear-gradient(90deg, ' + TH.accent + ', #f5a623)'
+                      : 'linear-gradient(90deg, ' + TH.accent + ', ' + TH.accentLight + ')',
+                  transition: 'width 0.6s cubic-bezier(0.22,1,0.36,1)',
+                }} />
+              </div>
+              {/* Status text */}
+              <div style={{ fontSize: 10, color: todaySpend >= 0.40 ? (dark ? '#f87171' : '#ef4444') : TH.textMuted }}>
+                {todaySpend === null
+                  ? '...'
+                  : todaySpend === 0
+                    ? t.budgetFree
+                    : todaySpend >= 0.40
+                      ? (lang === 'es' ? '⚠ Límite alcanzado — ' : '⚠ Budget reached — ') + t.budgetReset
+                      : t.budgetReset}
+              </div>
+            </div>
+          )}
         </div>
 
         <button onClick={handleSave} disabled={saving} style={{
@@ -1750,7 +1843,7 @@ export default function App() {
       <TopBar session={session} profile={profile} isAdmin={isAdmin} view={view} setView={setView} onLogout={handleLogout} dark={dark} lang={lang} dueCount={dueCount} />
       <div style={{ paddingTop: 48 }}>
         {view === 'admin' && isAdmin && <AdminDashboard dark={dark} />}
-        {view === 'profile' && <ProfileScreen session={session} profile={profile} onSave={handleProfileSave} lang={lang} setLang={setLang} dark={dark} setDark={setDark} />}
+        {view === 'profile' && <ProfileScreen session={session} profile={profile} onSave={handleProfileSave} lang={lang} setLang={setLang} dark={dark} setDark={setDark} isAdmin={isAdmin} />}
         {view === 'knowledge' && <KnowledgeTree dark={dark} lang={lang} session={session} onLoad={(item) => { setPendingLoad(item); setView('module'); }} />}
         {view === 'review' && <ReviewMode dark={dark} lang={lang} session={session} onDone={() => { loadDueCount(session.user.id); setView('module'); }} />}
         <div style={{ display: (view !== 'admin' && view !== 'profile' && view !== 'knowledge' && view !== 'review') ? 'block' : 'none', maxWidth: 960, margin: '0 auto' }}>
