@@ -154,6 +154,44 @@ module.exports = async function handler(req, res) {
     return res.status(200).json(cached);
   }
 
+  /* ── Daily budget check (non-admin users, $0.40/day, resets midnight UTC) ── */
+  if (user && SB_SERVICE_KEY) {
+    try {
+      const sbBudget = createClient(SB_URL, SB_SERVICE_KEY);
+      const { data: profileData } = await sbBudget.from('profiles').select('role').eq('id', user.id).single();
+      const isAdminUser = profileData?.role === 'admin';
+
+      if (!isAdminUser) {
+        const DAILY_LIMIT = 0.40;
+        const todayStart = new Date();
+        todayStart.setUTCHours(0, 0, 0, 0);
+
+        const { data: todayLogs } = await sbBudget
+          .from('usage_logs')
+          .select('estimated_cost')
+          .eq('user_id', user.id)
+          .gte('created_at', todayStart.toISOString());
+
+        const todaySpend = (todayLogs || []).reduce((sum, log) => sum + (parseFloat(log.estimated_cost) || 0), 0);
+
+        if (todaySpend >= DAILY_LIMIT) {
+          const isEs = (meta.lang || '') === 'es';
+          return res.status(429).json({
+            error: isEs
+              ? `Límite diario alcanzado ($${todaySpend.toFixed(2)} de $${DAILY_LIMIT.toFixed(2)}). Tu presupuesto se reinicia a medianoche (UTC). Podés ver tu uso en el perfil.`
+              : `Daily budget reached ($${todaySpend.toFixed(2)} of $${DAILY_LIMIT.toFixed(2)}). Your budget resets at midnight UTC. Check your profile to track usage.`,
+            code: 'DAILY_LIMIT_REACHED',
+            spent: parseFloat(todaySpend.toFixed(4)),
+            limit: DAILY_LIMIT,
+          });
+        }
+      }
+    } catch (budgetErr) {
+      console.error('Daily budget check failed (non-blocking):', budgetErr);
+      // Don't block the request if the budget check itself fails
+    }
+  }
+
   /* ── Call Claude API with retry ── */
   try {
     stampRequest(user?.id);
