@@ -999,12 +999,6 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
           CTA / AUTH SECTION
       ══════════════════════════════════════════ */}
       <div style={{ background: 'linear-gradient(135deg, #0f0f15 0%, #1a1624 100%)', padding: '72px 20px 20px', textAlign: 'center' }}>
-        <div style={{ width: 40, height: 3, background: '#f5a623', borderRadius: 2, margin: '0 auto 20px' }} />
-        <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(245,166,35,0.65)', letterSpacing: 3, textTransform: 'uppercase', marginBottom: 12 }}>
-          {lang === 'es' ? 'EMPEZAR' : 'GET STARTED'}
-        </div>
-        <h2 style={{ fontSize: 'clamp(28px,5vw,52px)', fontWeight: 800, color: '#f0eef8', letterSpacing: '-0.03em', lineHeight: 1.05, marginBottom: 12, fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>{t.chapCta}</h2>
-        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.38)', marginBottom: 48 }}>{t.chapCtaSub}</p>
       </div>
 
       <section ref={authRef} style={{ padding: '0 20px 80px', background: 'linear-gradient(135deg, #0f0f15 0%, #1a1624 100%)' }}>
