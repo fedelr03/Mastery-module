@@ -93,11 +93,6 @@ const PROFILE_T = {
     changeEmail: 'Change', cancelEmail: 'Cancel',
     newEmail: 'NEW EMAIL', newEmailPH: 'your@newemail.com',
     updateEmail: 'Send Confirmation', emailChangeSent: '✓ Confirmation sent to your new address.',
-    dailyBudget: 'DAILY BUDGET', dailyBudgetSub: '— resets at midnight UTC',
-    budgetAdmin: 'No daily limit', budgetAdminSub: 'Admin account',
-    budgetOf: 'of $0.40 today',
-    budgetReset: 'Resets at midnight UTC',
-    budgetFree: 'Free today',
   },
   es: {
     title: 'Mi Perfil', sub: 'Personalizá tu experiencia',
@@ -115,11 +110,6 @@ const PROFILE_T = {
     changeEmail: 'Cambiar', cancelEmail: 'Cancelar',
     newEmail: 'NUEVO EMAIL', newEmailPH: 'tu@nuevoemail.com',
     updateEmail: 'Enviar confirmación', emailChangeSent: '✓ Confirmación enviada a tu nuevo email.',
-    dailyBudget: 'PRESUPUESTO DIARIO', dailyBudgetSub: '— se reinicia a medianoche (UTC)',
-    budgetAdmin: 'Sin límite diario', budgetAdminSub: 'Cuenta administrador',
-    budgetOf: 'de $0.40 hoy',
-    budgetReset: 'Se reinicia a medianoche (UTC)',
-    budgetFree: 'Sin uso hoy',
   },
 };
 
@@ -148,6 +138,10 @@ const REVIEW_T = {
     checkAnswer: 'Check Answer',
     yourAnswerLabel: 'YOUR ANSWER',
     modelAnswerLabel: 'MODEL ANSWER',
+    dailySession: "Today's session",
+    capNote: 'Capped at 5 cards to keep it focused',
+    moreWaiting: 'more due — come back after a break',
+    qtDef: 'Definition', qtEx: 'Example', qtApp: 'Apply it', qtChallenge: 'Challenge',
   },
   es: {
     title: 'Mazo de Repaso', of: 'de', exit: 'Salir',
@@ -166,6 +160,10 @@ const REVIEW_T = {
     checkAnswer: 'Ver Respuesta',
     yourAnswerLabel: 'TU RESPUESTA',
     modelAnswerLabel: 'RESPUESTA MODELO',
+    dailySession: 'Sesión de hoy',
+    capNote: 'Limitado a 5 tarjetas para mantener el foco',
+    moreWaiting: 'más pendientes — volvé después de un descanso',
+    qtDef: 'Definición', qtEx: 'Ejemplo', qtApp: 'Aplicación', qtChallenge: 'Desafío',
   },
 };
 
@@ -427,7 +425,7 @@ function ResetPasswordScreen({ onDone }) {
 }
 
 /* ═══════════ PROFILE SCREEN ═══════════ */
-function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark, isAdmin }) {
+function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark }) {
   const TH = getTheme(dark);
   const t = PROFILE_T[lang] || PROFILE_T.en;
 
@@ -439,29 +437,11 @@ function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark,
   const [newEmail, setNewEmail] = useState('');
   const [emailChanging, setEmailChanging] = useState(false);
   const [emailMsg, setEmailMsg] = useState('');
-  const [todaySpend, setTodaySpend] = useState(null); // null = loading
 
   useEffect(() => {
     setUsername(profile?.username || '');
     setLevel(profile?.level || 'intermediate');
   }, [profile?.username, profile?.level]);
-
-  // Load today's spending
-  useEffect(() => {
-    if (!session?.user?.id) return;
-    const todayStart = new Date();
-    todayStart.setUTCHours(0, 0, 0, 0);
-    supabase
-      .from('usage_logs')
-      .select('estimated_cost')
-      .eq('user_id', session.user.id)
-      .gte('created_at', todayStart.toISOString())
-      .then(({ data }) => {
-        const sum = (data || []).reduce((s, l) => s + (parseFloat(l.estimated_cost) || 0), 0);
-        setTodaySpend(parseFloat(sum.toFixed(4)));
-      })
-      .catch(() => setTodaySpend(0));
-  }, [session?.user?.id]);
 
   const changeLang = (l) => { setLang(l); localStorage.setItem('mm_lang', l); };
 
@@ -660,71 +640,6 @@ function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark,
               }} />
             </div>
           </div>
-        </div>
-
-        {/* Divider */}
-        <div style={{ borderTop: '1px solid ' + TH.borderLight, marginBottom: 24 }} />
-
-        {/* Daily Budget */}
-        <div style={{ marginBottom: 28 }}>
-          {sectionLabel(t.dailyBudget, t.dailyBudgetSub)}
-          {isAdmin ? (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px',
-              borderRadius: 10, border: '1px solid ' + TH.border, background: TH.bg,
-            }}>
-              <span style={{ fontSize: 18 }}>🛡️</span>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: TH.accent }}>{t.budgetAdmin}</div>
-                <div style={{ fontSize: 10, color: TH.textMuted, marginTop: 1 }}>{t.budgetAdminSub}</div>
-              </div>
-            </div>
-          ) : (
-            <div style={{
-              padding: '14px 16px', borderRadius: 10,
-              border: '1px solid ' + (todaySpend >= 0.40 ? 'rgba(239,68,68,0.25)' : TH.border),
-              background: todaySpend >= 0.40 ? 'rgba(239,68,68,0.04)' : TH.bg,
-            }}>
-              {/* Amount row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-                <span style={{
-                  fontSize: 22, fontWeight: 800, fontFamily: "'Bricolage Grotesque',sans-serif",
-                  color: todaySpend === null ? TH.textFaint
-                       : todaySpend >= 0.40 ? (dark ? '#f87171' : '#ef4444')
-                       : todaySpend >= 0.30 ? TH.accent
-                       : TH.text,
-                }}>
-                  {todaySpend === null ? '...' : '$' + todaySpend.toFixed(3)}
-                </span>
-                <span style={{ fontSize: 11, color: TH.textMuted, fontWeight: 500 }}>{t.budgetOf}</span>
-              </div>
-              {/* Progress bar */}
-              <div style={{
-                height: 6, borderRadius: 3, background: TH.borderLight, overflow: 'hidden', marginBottom: 7,
-              }}>
-                <div style={{
-                  height: '100%', borderRadius: 3,
-                  width: todaySpend === null ? '0%' : Math.min((todaySpend / 0.40) * 100, 100) + '%',
-                  background: todaySpend >= 0.40
-                    ? (dark ? '#f87171' : '#ef4444')
-                    : todaySpend >= 0.30
-                      ? 'linear-gradient(90deg, ' + TH.accent + ', #f5a623)'
-                      : 'linear-gradient(90deg, ' + TH.accent + ', ' + TH.accentLight + ')',
-                  transition: 'width 0.6s cubic-bezier(0.22,1,0.36,1)',
-                }} />
-              </div>
-              {/* Status text */}
-              <div style={{ fontSize: 10, color: todaySpend >= 0.40 ? (dark ? '#f87171' : '#ef4444') : TH.textMuted }}>
-                {todaySpend === null
-                  ? '...'
-                  : todaySpend === 0
-                    ? t.budgetFree
-                    : todaySpend >= 0.40
-                      ? (lang === 'es' ? '⚠ Límite alcanzado — ' : '⚠ Budget reached — ') + t.budgetReset
-                      : t.budgetReset}
-              </div>
-            </div>
-          )}
         </div>
 
         <button onClick={handleSave} disabled={saving} style={{
@@ -1369,6 +1284,345 @@ function ReviewMode({ dark, lang, session, onDone }) {
   const TH = getTheme(dark);
   const t = REVIEW_T[lang] || REVIEW_T.en;
   const MOD_COL = { math: '#e8940a', stats: '#6366f1', econ: '#10b981', finance: '#06b6d4', general: '#8a8a96' };
+  const DAILY_CAP = 5;
+
+  const [cards, setCards] = useState([]);
+  const [totalDue, setTotalDue] = useState(0);
+  const [current, setCurrent] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [lastRating, setLastRating] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [results, setResults] = useState([]);
+
+  // Phase state
+  const [phase, setPhase] = useState('loading_q');
+  const [question, setQuestion] = useState('');
+  const [modelAnswer, setModelAnswer] = useState('');
+  const [userAnswer, setUserAnswer] = useState('');
+  const [questionStyle, setQuestionStyle] = useState(null);
+
+  // Assigns a question type + prompt based on SM-2 ease_factor and interval
+  // Lower ef / shorter interval = simpler question; mastered cards get harder question types
+  const getQuestionStyle = (card) => {
+    const ef = parseFloat(card.ease_factor) || 2.5;
+    const iv = parseInt(card.interval) || 0;
+    if (iv <= 1 || ef < 1.8) return {
+      type: 'definition', emoji: '🌱',
+      label: lang === 'es' ? t.qtDef : t.qtDef,
+      color: '#10b981',
+      promptEn: 'Generate a DEFINITION question: ask the student to define or explain what this concept IS in their own words. Keep it simple and direct — 1 sentence.',
+      promptEs: 'Generá una pregunta de DEFINICIÓN: pedile al estudiante que defina o explique con sus palabras qué ES este concepto. Simple y directa — 1 oración.',
+    };
+    if (iv <= 5 || ef < 2.2) return {
+      type: 'example', emoji: '💡',
+      label: lang === 'es' ? t.qtEx : t.qtEx,
+      color: '#6366f1',
+      promptEn: 'Generate an EXAMPLE question: ask the student to give a concrete real-world example of this concept or describe where they would use it in practice.',
+      promptEs: 'Generá una pregunta de EJEMPLO: pedile al estudiante que dé un ejemplo concreto del mundo real de este concepto o dónde lo usaría en la práctica.',
+    };
+    if (iv <= 14 || ef < 2.6) return {
+      type: 'application', emoji: '⚡',
+      label: lang === 'es' ? t.qtApp : t.qtApp,
+      color: '#e8940a',
+      promptEn: 'Generate an APPLICATION question: ask the student to USE this concept — apply it to solve a small problem, explain a process step-by-step, or interpret a result.',
+      promptEs: 'Generá una pregunta de APLICACIÓN: pedile al estudiante que USE este concepto — aplicarlo para resolver un pequeño problema, explicar un proceso paso a paso, o interpretar un resultado.',
+    };
+    return {
+      type: 'challenge', emoji: '🔥',
+      label: lang === 'es' ? t.qtChallenge : t.qtChallenge,
+      color: '#ef4444',
+      promptEn: 'Generate a CHALLENGE question: ask about a common misconception, an edge case, a comparison with a closely related concept, or a situation where this concept breaks down or needs nuance.',
+      promptEs: 'Generá una pregunta DESAFÍO: preguntá sobre un error conceptual común, un caso borde, una comparación con un concepto relacionado, o cuándo este concepto falla o necesita matices.',
+    };
+  };
+
+  useEffect(() => { loadDue(); }, []);
+
+  // Generate a question whenever the active card changes
+  useEffect(() => {
+    if (loading || done || cards.length === 0) return;
+    const card = cards[current];
+    if (!card) return;
+    setPhase('loading_q');
+    setQuestion('');
+    setModelAnswer('');
+    setUserAnswer('');
+    const style = getQuestionStyle(card);
+    setQuestionStyle(style);
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        const token = authSession?.access_token;
+        const stylePrompt = lang === 'es' ? style.promptEs : style.promptEn;
+
+        const prompt = lang === 'es'
+          ? `Tema: "${card.topic}" (materia: ${card.module || 'general'})\n\n${stylePrompt}\n\nRespondé SOLO con JSON válido, sin backticks ni texto extra:\n{"question":"...","modelAnswer":"..."}\n\nLa pregunta debe ser 1 oración. La respuesta modelo: clara y concisa (1-2 oraciones). Usá español rioplatense.`
+          : `Topic: "${card.topic}" (subject: ${card.module || 'general'})\n\n${stylePrompt}\n\nRespond ONLY with valid JSON, no backticks or extra text:\n{"question":"...","modelAnswer":"..."}\n\nThe question is 1 sentence. The model answer is clear and concise (1-2 sentences).`;
+
+        const res = await fetch('/api/claude', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 300,
+            messages: [{ role: 'user', content: prompt }],
+            _meta: { topic: card.topic, module: 'recall', mode: 'recall', lang },
+          }),
+        });
+        const data = await res.json();
+        const text = (data.content || []).map(b => b.text || '').join('');
+        const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+        if (!cancelled) {
+          setQuestion(parsed.question || '');
+          setModelAnswer(parsed.modelAnswer || '');
+          setPhase('answering');
+        }
+      } catch (_) {
+        if (!cancelled) {
+          setQuestion(lang === 'es'
+            ? `¿Qué recordás sobre "${card.topic}"? Explicalo con tus palabras.`
+            : `What do you remember about "${card.topic}"? Explain it in your own words.`);
+          setModelAnswer('');
+          setPhase('answering');
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [current, cards.length, loading]);
+
+  const loadDue = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('review_cards')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .neq('status', 'suspended')
+      .lte('next_review_at', new Date().toISOString())
+      .order('next_review_at', { ascending: true });
+    const all = data || [];
+    setTotalDue(all.length);
+    setCards(all.slice(0, DAILY_CAP));
+    setLoading(false);
+  };
+
+  const ratingBtns = [
+    { r: 1, label: t.r1, emoji: '😶', color: TH.red,    bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.2)'   },
+    { r: 2, label: t.r2, emoji: '😓', color: '#f97316', bg: 'rgba(249,115,22,0.08)',  border: 'rgba(249,115,22,0.2)'  },
+    { r: 3, label: t.r3, emoji: '🙂', color: TH.accent, bg: TH.accentBg,             border: 'rgba(245,166,35,0.25)' },
+    { r: 4, label: t.r4, emoji: '😎', color: TH.green,  bg: 'rgba(34,197,94,0.08)',   border: 'rgba(34,197,94,0.2)'   },
+  ];
+
+  const handleRate = async (rating) => {
+    if (submitting) return;
+    setLastRating(rating);
+    setSubmitting(true);
+    const card = cards[current];
+    await reviewCard(supabase, card.id, rating, card);
+    setResults(prev => [...prev, { rating, topic: card.topic, module: card.module }]);
+    setSubmitting(false);
+    setTimeout(() => {
+      setLastRating(null);
+      if (current + 1 >= cards.length) setDone(true);
+      else setCurrent(prev => prev + 1);
+    }, 380);
+  };
+
+  if (loading) return (
+    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TH.textMuted, fontSize: 13 }}>
+      {t.loading}
+    </div>
+  );
+
+  if (cards.length === 0) return (
+    <div style={{ maxWidth: 520, margin: '0 auto', padding: '60px 20px', textAlign: 'center', animation: 'fadeUp 0.3s ease' }}>
+      <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
+      <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 24, fontWeight: 800, color: TH.text, marginBottom: 8 }}>{t.allDone}</h2>
+      <p style={{ color: TH.textMuted, fontSize: 13, marginBottom: 28 }}>{t.noCards}</p>
+      <button onClick={onDone} style={{ padding: '11px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,' + TH.accentLight + ',' + TH.accent + ')', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{t.backToModule}</button>
+    </div>
+  );
+
+  if (done) {
+    const passed = results.filter(r => r.rating >= 3).length;
+    const remaining = totalDue - cards.length;
+    return (
+      <div style={{ maxWidth: 520, margin: '0 auto', padding: '60px 20px', textAlign: 'center', animation: 'fadeUp 0.3s ease' }}>
+        <div style={{ fontSize: 52, marginBottom: 16 }}>✅</div>
+        <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 26, fontWeight: 800, color: TH.text, marginBottom: 8 }}>{t.sessionDone}</h2>
+        <p style={{ color: TH.textMuted, fontSize: 13, marginBottom: 24 }}>{passed}/{results.length} {t.passedLabel}</p>
+        {remaining > 0 && (
+          <div style={{ marginBottom: 20, padding: '10px 16px', borderRadius: 10, background: TH.accentBg, border: '1px solid rgba(245,166,35,0.2)', fontSize: 12, color: TH.accent, fontWeight: 600 }}>
+            +{remaining} {t.moreWaiting}
+          </div>
+        )}
+        <div style={{ background: TH.surface, borderRadius: 14, border: '1px solid ' + TH.border, padding: '12px 20px', marginBottom: 28, textAlign: 'left' }}>
+          {results.map((r, i) => {
+            const btn = ratingBtns.find(b => b.r === r.rating);
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < results.length - 1 ? '1px solid ' + TH.borderLight : 'none' }}>
+                <span style={{ fontSize: 12, color: TH.text, fontWeight: 500 }}>{r.topic}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: btn?.bg, color: btn?.color, border: '1px solid ' + btn?.border }}>{btn?.label}</span>
+              </div>
+            );
+          })}
+        </div>
+        <button onClick={onDone} style={{ padding: '11px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,' + TH.accentLight + ',' + TH.accent + ')', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{t.backToModule}</button>
+      </div>
+    );
+  }
+
+  const card = cards[current];
+  const col = MOD_COL[card.module] || MOD_COL.general;
+  const progress = (current / cards.length) * 100;
+
+  return (
+    <div style={{ maxWidth: 520, margin: '0 auto', padding: '32px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
+      <style>{`@keyframes mm-spin { to { transform: rotate(360deg); } }`}</style>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div>
+          <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 22, fontWeight: 800, color: TH.text }}>{t.title}</h2>
+          <p style={{ color: TH.textMuted, fontSize: 11, marginTop: 2 }}>{current + 1} {t.of} {cards.length}</p>
+        </div>
+        <button onClick={onDone} style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 8, padding: '6px 14px', fontSize: 11, color: TH.textMuted, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>{t.exit}</button>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ height: 4, borderRadius: 2, background: TH.borderLight, marginBottom: 28, overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: progress + '%', background: TH.accent, borderRadius: 2, transition: 'width 0.4s ease' }} />
+      </div>
+
+      {/* Card */}
+      <div style={{
+        background: TH.surface, borderRadius: 20, border: '1px solid ' + TH.border,
+        boxShadow: dark ? '0 4px 32px rgba(0,0,0,0.25)' : '0 4px 24px rgba(0,0,0,0.06)',
+        marginBottom: 24, opacity: submitting ? 0.55 : 1, transition: 'opacity 0.2s',
+        overflow: 'hidden',
+      }}>
+
+        {/* Module badge + question type badge + topic */}
+        <div style={{ padding: '28px 28px 20px', textAlign: 'center', borderBottom: phase !== 'loading_q' ? '1px solid ' + TH.borderLight : 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 14 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', background: col + '18', border: '1px solid ' + col + '44', borderRadius: 8, padding: '3px 10px', fontSize: 9, color: col, fontWeight: 700, letterSpacing: 1 }}>
+              {(card.module || 'general').toUpperCase()}
+            </div>
+            {questionStyle && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: questionStyle.color + '12', border: '1px solid ' + questionStyle.color + '35', borderRadius: 8, padding: '3px 9px', fontSize: 9, color: questionStyle.color, fontWeight: 700, letterSpacing: 0.5 }}>
+                <span style={{ fontSize: 10 }}>{questionStyle.emoji}</span>
+                {questionStyle.label}
+              </div>
+            )}
+          </div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: TH.text, fontFamily: "'Bricolage Grotesque',sans-serif", letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+            {card.topic}
+          </div>
+          {phase === 'loading_q' && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20, marginBottom: 8, color: TH.textMuted, fontSize: 12 }}>
+              <span style={{ display: 'inline-block', width: 13, height: 13, border: '2px solid ' + col + '55', borderTopColor: col, borderRadius: '50%', animation: 'mm-spin 0.75s linear infinite', flexShrink: 0 }} />
+              {t.generatingQ}
+            </div>
+          )}
+        </div>
+
+        {/* Answering phase */}
+        {phase === 'answering' && (
+          <div style={{ padding: '20px 28px 24px' }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: TH.text, lineHeight: 1.5, marginBottom: 16, marginTop: 0 }}>
+              {question}
+            </p>
+            <textarea
+              value={userAnswer}
+              onChange={e => setUserAnswer(e.target.value)}
+              placeholder={t.answerPH}
+              rows={3}
+              style={{
+                width: '100%', boxSizing: 'border-box', padding: '11px 13px',
+                border: '1px solid ' + TH.border, borderRadius: 10,
+                fontSize: 13, fontFamily: 'inherit', background: TH.bg,
+                color: TH.text, resize: 'vertical', outline: 'none', lineHeight: 1.5,
+              }}
+              onFocus={e => e.target.style.borderColor = col}
+              onBlur={e => e.target.style.borderColor = TH.border}
+            />
+            <button
+              onClick={() => setPhase('revealed')}
+              style={{
+                marginTop: 12, width: '100%', padding: '12px', border: 'none', borderRadius: 10,
+                background: 'linear-gradient(135deg,' + col + 'cc,' + col + ')',
+                color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              {t.checkAnswer}
+            </button>
+          </div>
+        )}
+
+        {/* Revealed phase */}
+        {phase === 'revealed' && question && (
+          <div style={{ padding: '20px 28px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: TH.textSecondary, lineHeight: 1.5, margin: 0 }}>
+              {question}
+            </p>
+            {userAnswer ? (
+              <div>
+                <div style={{ fontSize: 9, fontWeight: 700, color: TH.textMuted, letterSpacing: 1, marginBottom: 5 }}>{t.yourAnswerLabel}</div>
+                <div style={{
+                  padding: '10px 13px', borderRadius: 9,
+                  background: dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                  border: '1px solid ' + TH.borderLight,
+                  fontSize: 13, color: TH.textSecondary, lineHeight: 1.55,
+                }}>
+                  {userAnswer}
+                </div>
+              </div>
+            ) : null}
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: col, letterSpacing: 1, marginBottom: 5 }}>{t.modelAnswerLabel}</div>
+              <div style={{
+                padding: '10px 13px', borderRadius: 9,
+                background: col + '0f', border: '1px solid ' + col + '30',
+                fontSize: 13, color: TH.text, lineHeight: 1.55, fontWeight: 500,
+              }}>
+                {modelAnswer}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Rating */}
+      {phase === 'revealed' && (
+        <>
+          <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>{t.rateLabel}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+            {ratingBtns.map(btn => (
+              <button key={btn.r} onClick={() => handleRate(btn.r)} disabled={submitting} style={{
+                padding: '14px 4px', borderRadius: 12,
+                border: '1px solid ' + (lastRating === btn.r ? btn.border : TH.border),
+                background: lastRating === btn.r ? btn.bg : TH.surface,
+                color: lastRating === btn.r ? btn.color : TH.textSecondary,
+                fontWeight: 700, fontSize: 11, cursor: submitting ? 'wait' : 'pointer',
+                fontFamily: 'inherit', transition: 'all 0.15s',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+              }}>
+                <span style={{ fontSize: 20 }}>{btn.emoji}</span>
+                <span>{btn.label}</span>
+              </button>
+            ))}
+          </div>
+          <p style={{ textAlign: 'center', color: TH.textFaint, fontSize: 10, marginTop: 14 }}>{t.intervalHint}</p>
+        </>
+      )}
+    </div>
+  );
+}
+  const TH = getTheme(dark);
+  const t = REVIEW_T[lang] || REVIEW_T.en;
+  const MOD_COL = { math: '#e8940a', stats: '#6366f1', econ: '#10b981', finance: '#06b6d4', general: '#8a8a96' };
 
   const [cards, setCards] = useState([]);
   const [current, setCurrent] = useState(0);
@@ -1843,7 +2097,7 @@ export default function App() {
       <TopBar session={session} profile={profile} isAdmin={isAdmin} view={view} setView={setView} onLogout={handleLogout} dark={dark} lang={lang} dueCount={dueCount} />
       <div style={{ paddingTop: 48 }}>
         {view === 'admin' && isAdmin && <AdminDashboard dark={dark} />}
-        {view === 'profile' && <ProfileScreen session={session} profile={profile} onSave={handleProfileSave} lang={lang} setLang={setLang} dark={dark} setDark={setDark} isAdmin={isAdmin} />}
+        {view === 'profile' && <ProfileScreen session={session} profile={profile} onSave={handleProfileSave} lang={lang} setLang={setLang} dark={dark} setDark={setDark} />}
         {view === 'knowledge' && <KnowledgeTree dark={dark} lang={lang} session={session} onLoad={(item) => { setPendingLoad(item); setView('module'); }} />}
         {view === 'review' && <ReviewMode dark={dark} lang={lang} session={session} onDone={() => { loadDueCount(session.user.id); setView('module'); }} />}
         <div style={{ display: (view !== 'admin' && view !== 'profile' && view !== 'knowledge' && view !== 'review') ? 'block' : 'none', maxWidth: 960, margin: '0 auto' }}>
