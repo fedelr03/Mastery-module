@@ -26,6 +26,12 @@ function formatMath(text){
      Excludes commas inside brackets so ∑[i=1,n] limit notation is not affected. */
   s=s.replace(/\[([^\],\[\]]+)\]\/\(([^)]+)\)/g,"($1)/($2)");
   s=s.replace(/\[([^\],\[\]]+)\]\/([a-zA-Z0-9\u03B1-\u03C9]+)/g,"($1)/($2)");
+  /* Protect fractional exponents ^{n/d} and ^(n/d) before char-by-char mapping mangles them.
+     Restore as ^(n⁄d) using U+2044 FRACTION SLASH so processFractions (which only checks ASCII /)
+     will leave them alone; processExponents renders them as a tiny stacked superscript fraction. */
+  const fracExpProtect=[];
+  s=s.replace(/\^\{([^}]*\/[^}]*)\}/g,(_,inner)=>{fracExpProtect.push(inner);return"\x00FX"+fracExpProtect.length+"\x00";});
+  s=s.replace(/\^\(([^)]*\/[^)]*)\)/g,(_,inner)=>{fracExpProtect.push(inner);return"\x00FX"+fracExpProtect.length+"\x00";});
   s=s.replace(/\^{([^}]+)}/g,(_,i)=>i.split("").map(c=>SUP[c]||SUP[c.toLowerCase()]||c).join(""));
   s=s.replace(/\^([0-9a-zA-Z+\-()])/g,(_,c)=>SUP[c]||SUP[c.toLowerCase()]||c);
   s=s.replace(/_{([^}]+)}/g,(_,i)=>i.split("").map(c=>SUB_MAP[c]||SUB_MAP[c.toLowerCase()]||c).join(""));
@@ -194,6 +200,7 @@ function formatMath(text){
      Lines ending with ), digits, Greek, or superscripts are formula newlines → keep the gap. */
   s=s.replace(/([a-z\u00E0-\u00FF'"\u2019\u201D,])\n([a-z\u00E0-\u00FF])/g,"$1 $2");
   /* Restore **bold** and __underline__ markers */
+  s=s.replace(/\x00FX(\d+)\x00/g,(_,i)=>"^("+fracExpProtect[i-1].replace("/","\u2044")+")");
   s=s.replace(/\x00B(\d+)\x00/g,(_,n)=>"**"+boldSafe[n-1]+"**");
   s=s.replace(/\x00U(\d+)\x00/g,(_,n)=>"__"+ulSafe[n-1]+"__");
   return s;
@@ -456,11 +463,19 @@ function MathText({children}){
   /* Exponent rendering: base^(expr) → base with superscript block */
   function processExponents(input){
     if(typeof input!=="string")return input;
-    const re=/([a-zA-Z0-9\u03B1-\u03C9])\^\(([^)]+)\)/g;
+    /* Extended: `)` is valid base char (handles (expr)^(n/d) patterns).
+       U+2044 ⁄ FRACTION SLASH signals a protected fractional exponent → rendered as tiny stacked fraction. */
+    const re=/([a-zA-Z0-9\u03B1-\u03C9)])\^\(([^)]+)\)/g;
     const parts=[];let last=0,m;
     while((m=re.exec(input))!==null){
       if(m.index>last)parts.push(input.slice(last,m.index));
-      parts.push(<span key={"exp"+m.index} style={{display:"inline"}}>{m[1]}<sup style={{fontSize:"0.72em",lineHeight:1}}>{m[2]}</sup></span>);
+      const expInner=m[2];
+      let supContent;
+      if(expInner.includes("\u2044")){/* U+2044 fraction slash → tiny stacked fraction */
+        const si=expInner.indexOf("\u2044");const n=expInner.slice(0,si);const d=expInner.slice(si+1);
+        supContent=<span style={{display:"inline-flex",flexDirection:"column",alignItems:"center",verticalAlign:"middle",lineHeight:1.1,fontSize:"0.88em",margin:"0 1px"}}><span style={{padding:"0 2px"}}>{n}</span><span style={{width:"100%",height:"1px",background:"currentColor",margin:"1px 0",borderRadius:1}}/><span style={{padding:"0 2px"}}>{d}</span></span>;
+      }else{supContent=expInner;}
+      parts.push(<span key={"exp"+m.index} style={{display:"inline"}}>{m[1]}<sup style={{fontSize:"0.72em",lineHeight:1}}>{supContent}</sup></span>);
       last=m.index+m[0].length;
     }
     if(last<input.length)parts.push(input.slice(last));

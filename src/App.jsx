@@ -125,7 +125,11 @@ const REVIEW_T = {
     title: 'Review Deck', of: 'of', exit: 'Exit',
     loading: 'Loading cards...',
     allDone: 'All caught up!',
-    noCards: 'No cards are due for review right now. Check back later.',
+    noCards: 'No cards are due right now.',
+    deckTitle: 'Your Deck',
+    dueToday: 'Due today',
+    dueTomorrow: 'Tomorrow',
+    daysLabel: 'days',
     backToModule: 'Back to Module',
     sessionDone: 'Session Complete!',
     passedLabel: 'cards remembered',
@@ -147,7 +151,11 @@ const REVIEW_T = {
     title: 'Mazo de Repaso', of: 'de', exit: 'Salir',
     loading: 'Cargando tarjetas...',
     allDone: '¡Todo al día!',
-    noCards: 'No tenés tarjetas para repasar ahora. Volvé más tarde.',
+    noCards: 'No tenés tarjetas para repasar ahora.',
+    deckTitle: 'Tu Mazo',
+    dueToday: 'Hoy',
+    dueTomorrow: 'Mañana',
+    daysLabel: 'días',
     backToModule: 'Volver al Módulo',
     sessionDone: '¡Sesión Completada!',
     passedLabel: 'tarjetas recordadas',
@@ -1287,6 +1295,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
   const DAILY_CAP = 5;
 
   const [cards, setCards] = useState([]);
+  const [deckCards, setDeckCards] = useState([]);
   const [totalDue, setTotalDue] = useState(0);
   const [current, setCurrent] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -1395,16 +1404,15 @@ function ReviewMode({ dark, lang, session, onDone }) {
 
   const loadDue = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('review_cards')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .neq('status', 'suspended')
-      .lte('next_review_at', new Date().toISOString())
-      .order('next_review_at', { ascending: true });
-    const all = data || [];
+    const now = new Date().toISOString();
+    const [{ data: dueData }, { data: allData }] = await Promise.all([
+      supabase.from('review_cards').select('*').eq('user_id', session.user.id).neq('status', 'suspended').lte('next_review_at', now).order('next_review_at', { ascending: true }),
+      supabase.from('review_cards').select('id, topic, module, next_review_at, ease_factor, interval').eq('user_id', session.user.id).neq('status', 'suspended').order('next_review_at', { ascending: true }),
+    ]);
+    const all = dueData || [];
     setTotalDue(all.length);
     setCards(all.slice(0, DAILY_CAP));
+    setDeckCards(allData || []);
     setLoading(false);
   };
 
@@ -1436,14 +1444,61 @@ function ReviewMode({ dark, lang, session, onDone }) {
     </div>
   );
 
-  if (cards.length === 0) return (
-    <div style={{ maxWidth: 520, margin: '0 auto', padding: '60px 20px', textAlign: 'center', animation: 'fadeUp 0.3s ease' }}>
-      <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
-      <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 24, fontWeight: 800, color: TH.text, marginBottom: 8 }}>{t.allDone}</h2>
-      <p style={{ color: TH.textMuted, fontSize: 13, marginBottom: 28 }}>{t.noCards}</p>
-      <button onClick={onDone} style={{ padding: '11px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,' + TH.accentLight + ',' + TH.accent + ')', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{t.backToModule}</button>
-    </div>
-  );
+  if (cards.length === 0) {
+    const now = new Date();
+    const fmtDate = (iso) => {
+      const dt = new Date(iso);
+      const diffMs = dt - now;
+      const diffDays = Math.round(diffMs / 86400000);
+      if (diffDays <= 0) return t.dueToday;
+      if (diffDays === 1) return t.dueTomorrow;
+      return diffDays + ' ' + t.daysLabel;
+    };
+    const getMasteryLabel = (card) => {
+      const iv = parseInt(card.interval) || 0;
+      const ef = parseFloat(card.ease_factor) || 2.5;
+      if (iv >= 21 && ef >= 2.4) return { emoji: '🏆', color: TH.green };
+      if (iv >= 7) return { emoji: '⚡', color: TH.purple||'#6366f1' };
+      return { emoji: '🌱', color: TH.accent };
+    };
+    return (
+      <div style={{ maxWidth: 520, margin: '0 auto', padding: '32px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
+        <div style={{ textAlign: 'center', marginBottom: deckCards.length > 0 ? 28 : 0 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>{deckCards.length > 0 ? '✅' : '🎉'}</div>
+          <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 24, fontWeight: 800, color: TH.text, marginBottom: 6 }}>{t.allDone}</h2>
+          <p style={{ color: TH.textMuted, fontSize: 13 }}>{t.noCards}</p>
+        </div>
+        {deckCards.length > 0 && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <h3 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 14, fontWeight: 700, color: TH.text }}>{t.deckTitle}</h3>
+              <span style={{ fontSize: 10, fontWeight: 700, color: TH.textMuted, background: TH.bgAlt, padding: '2px 8px', borderRadius: 6 }}>{deckCards.length}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {deckCards.map((card, i) => {
+                const col = MOD_COL[card.module] || MOD_COL.general;
+                const mastery = getMasteryLabel(card);
+                const isDue = new Date(card.next_review_at) <= now;
+                return (
+                  <div key={i} style={{ background: TH.surface, borderRadius: 10, border: '1px solid ' + (isDue ? col + '55' : TH.border), padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: TH.cardShadow }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: col, flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, fontWeight: 600, color: TH.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.topic}</span>
+                      <span style={{ fontSize: 13, flexShrink: 0 }}>{mastery.emoji}</span>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: isDue ? col : TH.textMuted, flexShrink: 0, marginLeft: 8 }}>{fmtDate(card.next_review_at)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        <div style={{ textAlign: 'center', marginTop: 28 }}>
+          <button onClick={onDone} style={{ padding: '11px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,' + TH.accentLight + ',' + TH.accent + ')', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{t.backToModule}</button>
+        </div>
+      </div>
+    );
+  }
 
   if (done) {
     const passed = results.filter(r => r.rating >= 3).length;
