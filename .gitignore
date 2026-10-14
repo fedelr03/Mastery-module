@@ -15,3 +15,4 @@ zz_docker
 .kiro-chat
 .aws/sam/samconfig-Mastery-Module.toml
 .kiro-cli
+/node_modules/

@@ -1342,6 +1342,28 @@ function playDing(){
 let pdfL=false;function loadPdfJs(){return new Promise((r,j)=>{if(pdfL&&window.pdfjsLib){r(window.pdfjsLib);return;}const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";s.onload=()=>{window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";pdfL=true;r(window.pdfjsLib);};s.onerror=()=>j(new Error("fail"));document.head.appendChild(s);});}
 async function extractPdfText(buf){const lib=await loadPdfJs();const pdf=await lib.getDocument({data:buf}).promise;let o="";for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const tc=await pg.getTextContent();o+=tc.items.map(x=>x.str).join(" ")+"\n";}return o.trim();}
 
+/* ═══════════ User-facing error text (was always English) ═══════════ */
+const ERR_ES=[
+  [/timed out|AbortError/i,"La respuesta tardó demasiado. Probá de nuevo en un ratito."],
+  [/Invalid session|Not authenticated|log in/i,"Tu sesión venció. Volvé a iniciar sesión y probá de nuevo."],
+  [/Too many requests/i,"Hiciste varios pedidos seguidos. Esperá unos segundos y volvé a probar."],
+  [/Account blocked/i,"Tu cuenta está suspendida. Escribile al administrador si creés que es un error."],
+  [/Could not verify your session/i,"No pudimos verificar tu sesión. Probá de nuevo en un momento."],
+  [/Failed to reach|unavailable|overloaded|529|502|503/i,"El servicio de IA está saturado ahora. Probá de nuevo en un minuto."],
+  [/Empty response|Could not parse/i,"La respuesta llegó incompleta. Probá de nuevo, suele andar al segundo intento."],
+  [/Failed to fetch|NetworkError|Load failed/i,"No hay conexión con el servidor. Revisá tu internet y probá de nuevo."],
+];
+function friendlyError(raw,lang){
+  const m=String(raw||"");
+  if(lang==="es"){
+    if(/Límite diario/.test(m))return m;
+    for(const [re,txt] of ERR_ES)if(re.test(m))return txt;
+    return "Algo falló al generar el módulo. Probá de nuevo.";
+  }
+  if(/timed out|AbortError/i.test(m))return "Request timed out. Please try again.";
+  return m||"Something went wrong. Please try again.";
+}
+
 /* ═══════════ Robust JSON parser (handles truncation) ═══════════ */
 function safeParseJSON(raw){
   let s=raw.trim();
@@ -2011,8 +2033,9 @@ export default function MasteryModule({session, level, lang: langProp, dark, pen
     /* Fires BEFORE the if(isLite) branch, so it works for ALL modes: lite, fast, think      */
     const classifyInput=(activeTopic||fileContent||"").slice(0,400);
     const groupId=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+    let classifyP=Promise.resolve(null);
     if(classifyInput.trim().length>=2){
-      fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(session?.access_token||"")},
+      classifyP=fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(session?.access_token||"")},
         body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:25,
           _meta:{topic:classifyInput,module:"classifier",mode:"classify",lang,level,request_group_id:groupId},
           system:"Reply with ONLY valid JSON, no markdown or explanation: {\"module\":\"math|stats|econ|finance\",\"type\":\"concept|problem\"}. 'concept' = a theory or topic to understand (e.g. 'Derivatives', 'Supply and Demand'). 'problem' = a specific exercise or calculation to solve (e.g. 'Find the derivative of 3x²', 'Solve 2x+4=10', a PDF with exercises).",
@@ -2025,15 +2048,18 @@ export default function MasteryModule({session, level, lang: langProp, dark, pen
         if(["math","stats","econ","finance"].includes(parsed.module)){setMod(parsed.module);classModRef.current=parsed.module;}
         if(parsed.type==="problem"||parsed.type==="concept"){setTopicType(parsed.type);}
         setClassifierReady(true);
+        return ["math","stats","econ","finance"].includes(parsed.module)?parsed.module:null;
       })
-      .catch(()=>{setClassifierReady(true);});
+      .catch(()=>{setClassifierReady(true);return null;});
     }
-    const detectedMod=mod;/* snapshot for _meta logging only — real mod set async above */
+    /* Wait briefly for the classifier so the tutor role matches THIS topic.
+       Reading `mod` here would give the previous topic's subject (stale state). */
+    const detectedMod=(await Promise.race([classifyP,new Promise(r=>setTimeout(()=>r(null),3000))]))||"general";
 
     const isFast=mode==="fast";
     const isLite=mode==="lite";
     const prompt=fileContent?"Topic: "+(activeTopic||"Analyze this math content")+"\n\nContent:\n"+fileContent.slice(0,5000):"Topic: "+activeTopic;
-    const modConf=MOD_CONF[mod]||MOD_CONF.general;
+    const modConf=MOD_CONF[detectedMod]||MOD_CONF.general;
     const roleStr=lang==="es"?modConf.roleEs:modConf.roleEn;
     const langRule=lang==="es"?"CRÍTICO — IDIOMA Y CALIDAD:\n1. TODO el contenido en español argentino natural (voseo, cálido e informal). Usá 'vos' no 'tú'. Ejemplos: 'Imaginá que...', 'Básicamente lo que pasa es...', 'Ponele que tenés...'\n2. ORTOGRAFÍA Y ACENTOS: escribí SIEMPRE con acentos correctos. Ejemplos: 'fichó' no 'fico', 'también' no 'tambien', 'después' no 'despues', 'así' no 'asi'. Revisá cada palabra.\n3. TÉRMINOS TÉCNICOS: los términos técnicos aceptados en español (backpropagation, machine learning, overfitting, clustering) pueden quedarse en inglés. Todo lo demás en español.\n4. ETIQUETAS OBLIGATORIAS EN ESPAÑOL: el campo 'label' de bloques analogy DEBE ser 'Pensalo así' (no 'Think of it like this'). El campo 'title' de bloques steps DEBE empezar con 'Ejemplo Resuelto:' (no 'Worked Example:'). Los pasos deben decir 'Paso 1:', 'Paso 2:' etc.\n5. NUNCA uses / (barra) entre palabras en texto explicativo. Escribí 'dado que' no 'dado/que', 'verdadero o falso' no 'verdadero/falso'.\n6. PROHIBIDO: insultos, malas palabras o lenguaje ofensivo en cualquier idioma (no 'jodido', 'mierda', 'pelotudo', 'carajo', ni similares). Mantené todo respetuoso y profesional.\n7. NUNCA uses términos en inglés como 'Net Income', 'Revenue', 'Current Assets' — usá 'Ingreso Neto', 'Ingresos', 'Activos Corrientes'. Abreviaturas estándar (ROE, ROA, NPV, WACC, CAPM) están bien.":"All JSON string values in English. NEVER use insults or offensive language in any language.";
     const ytLang=lang==="es"?"youtubeSearches: 3 VERY SPECIFIC YouTube search queries IN SPANISH. Include channel names.":"youtubeSearches: 3 VERY SPECIFIC YouTube search queries IN ENGLISH. Include channel names.";
@@ -2058,7 +2084,7 @@ export default function MasteryModule({session, level, lang: langProp, dark, pen
         const liteSystem="You are "+roleStr+"."+levelCtx+"\n"+langRule+"\n\nNOTATION \u2014 CRITICAL RULES (Haiku makes specific mistakes \u2014 avoid ALL of them):\n\u2022 MULTIPLICATION: The ONLY allowed symbol is \u00D7. Write: (1)/(2)\u00D7ln(x), a\u00D7b, 2\u00D7n. NEVER use the letter x or X as a multiplication operator between terms. BAD: 'A x B', '2 x n'. GOOD: 'A\u00D7B', '2\u00D7n'. The letter x is ONLY a variable.\n\u2022 FRACTIONS: EVERY division needs (numerator)/(denominator) with parens on BOTH sides. MANDATORY in quiz/exam options. BAD: '1/2\u00D7ln(x)', '1/4 + C'. GOOD: '(1)/(2)\u00D7ln(x)', '(1)/(4) + C', '(x^3)/(3)'. Integration results: (x^3)/(3)\u00D7ln(x) \u2212 (x^3)/(9) + C. NEVER write 1/2 or x/3 without parens.\n\u2022 EXPONENTS: Multi-character exponents MUST use {}: e^{3t}, e^{-x}, x^{n+1}. Single char: x^2, e^n. NEVER drop the ^ symbol. BAD: 'e3t' (write e^{3t}), 'e(3t)' (write e^{3t}), 'x^32' (write (x^3)/(2)). If exponent has 2+ chars, ALWAYS use {}.\n\u2022 CALCULUS: Integrals: \u222B e^{3t} dt NOT '\u222B (e^3t3) dt'. Integration by parts: u = t, dv = e^{3t} dt NOT 'e3tdt'. Antiderivatives include + C. Derivatives: (dy)/(dx), f'(x).\n\u2022 Radicals: \u221A{content} \u2014 e.g. \u221A{2}, \u221A{x+1}. NEVER 'square root of'.\n\u2022 Absolute value: |x|. Logarithms: log_b(x), ln(x). Subscripts: x_0, x_i. Greek: \u03B1 \u03B2 \u03B3 \u03B4 \u03B5 \u03B8 \u03BB \u03BC \u03C0 \u03C3 \u03C6 \u03C9 (or spell out).\n\u2022 Comparisons: \u2265 \u2264 \u2260 \u2248 \u00B1 (or >=, <=, !=, approx, +-). NEVER use LaTeX \\\\frac or \\\\sqrt style."+modConf.notationPrompt+"\n\nRESPOND WITH ONLY A SINGLE JSON OBJECT. No markdown fences.\nRequired JSON keys (ALL MANDATORY):\n- \"title\": string\n- \"explanationBlocks\": array of 2-3 objects. BLOCK ORDER: analogy first, then text/keypoint, steps last.\n  {\"type\":\"analogy\",\"label\":\"Think of it like this\",\"text\":\"...\"} | {\"type\":\"text\",\"text\":\"...\"} | {\"type\":\"keypoint\",\"text\":\"...\"} | {\"type\":\"steps\",\"title\":\"Worked Example: [name]\",\"context\":\"Full problem. MANDATORY.\",\"items\":[\"Step 1:...\"]}\n  CRITICAL: every block MUST have non-empty text/items.\n- \"keyConcepts\": array of 2 objects {\"title\",\"description\",\"formula\"}\n- \"applications\": array of 1 object {\"title\",\"description\",\"example\"}\n- \"quiz\": array of 3 objects (2 mc + 1 tf).\n  MC: {\"type\":\"mc\",\"question\":\"...\",\"options\":[4 strings],\"correctIndex\":0-3,\"explanation\":\"1 sentence\"}\n  TF: {\"type\":\"tf\",\"statement\":\"A clear true-or-false claim\",\"answer\":true or false,\"explanation\":\"Why\"}\n- \"exam\": array of 3 mc objects {\"type\":\"mc\",\"question\",\"options\":[4 strings],\"correctIndex\":0-3,\"explanation\"}\n- \"tips\": array of 2 objects {\"title\",\"content\"}\n- "+ytLang+"\nKeep ALL sections concise: 1-2 sentences per block, 1 sentence per explanation. CURRENT YEAR IS 2026: use 2025-2026 context for any examples or data — never cite 2023 or earlier as recent/current. CORRECTNESS CHECK (CRITICAL): for every MC question, re-read options[correctIndex] and confirm it is the factually correct answer; your explanation MUST confirm that same option — a mismatch breaks the quiz. TOOL REFERENCES: if you mention any software tool (Excel, Python, R, etc.) in a question or example, you MUST briefly explain what that tool does in that context — never assume the student knows it. Vary correctIndex 0-3 randomly. NO REASONING IN EXPLANATIONS (CRITICAL): The \"explanation\" field of every quiz/exam MC question must be ONE clean sentence stating why the correctIndex option is correct. NEVER write \"espera\", \"esperá\", \"wait\", \"actually\", \"hmm\", \"let me recheck\", \"cambiando\", \"re-cálculo\", \"revisá\", \"no, la respuesta es\", or ANY meta-commentary, self-correction, or thinking-out-loud. Do all reasoning INTERNALLY before writing JSON; only output the final clean answer. NEVER mention \"index N\" or \"opción N\" in the explanation text — correctIndex already encodes that. If your answer changes mid-thought, rewrite correctIndex AND explanation cleanly; do NOT leave a trail."+liteInterestCtx+topicTypeCtx+"\n\nADDITIONAL REQUIRED JSON KEY:\n- \"relatedTopics\": array of 4-5 objects {\"label\":string,\"tagline\":string} — closely related subtopics or techniques to explore next. Keep labels short (2-5 words). Taglines: one brief phrase. NEVER list the current topic itself.";
         const liteRes=await fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(session?.access_token||"")},signal:controller.signal,
           body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:5500,
-            _meta:{topic:topic||"file",module:detectedMod,mode:"lite",lang,level,request_group_id:groupId},
+            _meta:{topic:activeTopic||"file",module:detectedMod,mode:"lite",lang,level,request_group_id:groupId},
             system:liteSystem,messages:[{role:"user",content:prompt}]})});
         const liteData=await liteRes.json();clearTimeout(timeout);
         if(liteData.error)throw new Error(liteData.error.message||liteData.error);
@@ -2090,11 +2116,11 @@ export default function MasteryModule({session, level, lang: langProp, dark, pen
         const [sonnetRes,haikuRes]=await Promise.all([
           fetch("/api/claude",{method:"POST",headers:authH,signal:controller.signal,
             body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:isFast?8000:12000,
-              _meta:{topic:topic||"file",module:detectedMod,mode,lang,level,request_group_id:groupId},
+              _meta:{topic:activeTopic||"file",module:detectedMod,mode,lang,level,request_group_id:groupId},
               system:sonnetSystem,messages:[{role:"user",content:prompt}]})}),
           fetch("/api/claude",{method:"POST",headers:authH,signal:controller.signal,
             body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:isFast?3500:5000,
-              _meta:{topic:topic||"file",module:detectedMod,mode:mode+"_haiku",lang,level,request_group_id:groupId},
+              _meta:{topic:activeTopic||"file",module:detectedMod,mode:mode+"_haiku",lang,level,request_group_id:groupId},
               system:haikuSystem,messages:[{role:"user",content:prompt}]})}),
         ]);
         const [sonnetData,haikuData]=await Promise.all([sonnetRes.json(),haikuRes.json()]);
@@ -2137,11 +2163,10 @@ export default function MasteryModule({session, level, lang: langProp, dark, pen
       }/* end fast/think else */
     }catch(err){
       console.error(err);
-      const msg=err.name==="AbortError"?"Request timed out. Please try again.":(err.message||"Something went wrong. Please try again.");
-      setError(msg);setPhase("idle");
+      setError(friendlyError(err.name==="AbortError"?"AbortError":err.message,lang));setPhase("idle");
     }
 
-    }catch(outerErr){console.error("go() error:",outerErr);setError("Something went wrong: "+outerErr.message);setPhase("idle");}
+    }catch(outerErr){console.error("go() error:",outerErr);setError(friendlyError(outerErr.message,lang));setPhase("idle");}
   };
 
   /* ═══════════ "I didn't understand" — one-shot simpler explanation ═══════════ */
@@ -2274,7 +2299,7 @@ export default function MasteryModule({session, level, lang: langProp, dark, pen
       {phase==="idle"&&!validationError&&<div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center",marginTop:14,zIndex:1,position:"relative",maxWidth:540}}>{(mod==="general"?[...CHIPS.math[lang].slice(0,2),...CHIPS.stats[lang].slice(0,2),...CHIPS.econ[lang].slice(0,2),...CHIPS.finance[lang].slice(0,2)]:(CHIPS[mod]||CHIPS.math)[lang]).map(c=><button key={c} onClick={()=>{setTopic(c);setValidationError(false);}} style={{background:TH.surface,border:"1px solid "+TH.border,borderRadius:20,padding:"5px 12px",color:TH.textMuted,fontSize:10,cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s",boxShadow:TH.shadow}} onMouseOver={e=>{e.target.style.borderColor=mt.borderAccent;e.target.style.color=mt.accent;}} onMouseOut={e=>{e.target.style.borderColor=TH.border;e.target.style.color=TH.textMuted;}}>{c}</button>)}</div>}
     </div>
 
-    {error&&<div style={{maxWidth:540,margin:"0 auto 8px",padding:"9px 14px",background:TH.redBg,border:"1px solid rgba(239,68,68,0.12)",borderRadius:7,color:TH.red,fontSize:11,textAlign:"center"}}>{error}</div>}
+    {error&&<div style={{maxWidth:540,margin:"0 auto 8px",padding:"9px 14px",background:TH.redBg,border:"1px solid rgba(239,68,68,0.12)",borderRadius:7,color:TH.red,fontSize:13,textAlign:"center"}}>{error}</div>}
 
     {phase==="loading"&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,padding:"48px 20px 36px"}}>
       {/* Spinner — neutral until classifier resolves, then module-colored */}
