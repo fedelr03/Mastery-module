@@ -1,9 +1,13 @@
 name: Keep Supabase Alive
 
+# The free Supabase plan pauses a project after a stretch without activity.
+# This pings the database every day so that doesn't happen.
+# Note: GitHub turns off scheduled workflows after 60 days with no commits.
+# If that happens, re-enable it from the Actions tab.
+
 on:
     schedule:
-        # Run at midnight (0 0 * *) on Sunday (0) and Friday(5)
-        - cron: '0 0 * * 0,5'
+        - cron: '17 12 * * *'
     workflow_dispatch:
 
 jobs:
@@ -11,7 +15,16 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Ping Supabase Database
+              env:
+                  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+                  SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
               run: |
-                  curl -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/health_check?select=id&limit=1" \
-                  -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
-                  -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
+                  if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+                      echo "::error::Missing SUPABASE_URL or SUPABASE_KEY repository secret"
+                      exit 1
+                  fi
+                  # -f makes HTTP errors (401, 404, 5xx) fail the job instead of passing silently.
+                  curl -fsS --retry 3 --retry-delay 10 --max-time 30 \
+                      "$SUPABASE_URL/rest/v1/profiles?select=id&limit=1" \
+                      -H "apikey: $SUPABASE_KEY" \
+                      -H "Authorization: Bearer $SUPABASE_KEY"

@@ -137,6 +137,7 @@ const REVIEW_T = {
     rateLabel: 'HOW WELL DID YOU REMEMBER?',
     r1: 'Blackout', r2: 'Hard', r3: 'Good', r4: 'Easy',
     intervalHint: 'Your rating determines when this card comes back.',
+    rateFailed: "Your rating couldn't be saved. Check your connection and tap it again.",
     generatingQ: 'Generating question...',
     answerPH: 'Type your answer here...',
     checkAnswer: 'Check Answer',
@@ -163,6 +164,7 @@ const REVIEW_T = {
     rateLabel: '¿QUÉ TAN BIEN LO RECORDASTE?',
     r1: 'Olvidé', r2: 'Difícil', r3: 'Bien', r4: 'Fácil',
     intervalHint: 'Tu respuesta determina cuándo vuelve a aparecer esta tarjeta.',
+    rateFailed: 'No se pudo guardar tu calificación. Revisá la conexión y tocala de nuevo.',
     generatingQ: 'Generando pregunta...',
     answerPH: 'Escribí tu respuesta acá...',
     checkAnswer: 'Ver Respuesta',
@@ -174,189 +176,6 @@ const REVIEW_T = {
     qtDef: 'Definición', qtEx: 'Ejemplo', qtApp: 'Aplicación', qtChallenge: 'Desafío',
   },
 };
-
-/* ═══════════ AUTH SCREEN ═══════════ */
-function AuthScreen({ confirmedEmail }) {
-  const [lang, setLang] = useState(() => localStorage.getItem('mm_lang') || 'es');
-  const [dark] = useState(() => localStorage.getItem('mm_dark') === 'true');
-  const TH = getTheme(dark);
-  const changeLang = (l) => { setLang(l); localStorage.setItem('mm_lang', l); };
-  const [isLogin, setIsLogin] = useState(true);
-  const [isForgot, setIsForgot] = useState(false);
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPW, setConfirmPW] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-
-  useEffect(() => {
-    if (confirmedEmail) setSuccess(AUTH_T[lang].emailConfirmed);
-  }, [lang, confirmedEmail]);
-
-  const t = AUTH_T[lang];
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true); setError(''); setSuccess('');
-    try {
-      if (isForgot) {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: window.location.origin,
-        });
-        if (error) throw error;
-        setSuccess(t.resetSent);
-      } else if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      } else {
-        if (password !== confirmPW) { setError(t.pwMismatch); setLoading(false); return; }
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        if (data?.user?.identities?.length === 0) {
-          setError(t.emailExists);
-        } else {
-          if (username.trim()) localStorage.setItem('mm_pending_username', username.trim());
-          setSuccess(t.signupOk);
-        }
-      }
-    } catch (err) {
-      setError(err.message);
-    }
-    setLoading(false);
-  };
-
-  const inputStyle = {
-    width: '100%', padding: '12px 14px', border: '1px solid ' + TH.border, borderRadius: 10,
-    fontSize: 14, fontFamily: 'inherit', background: TH.bg, color: TH.text, outline: 'none',
-    boxSizing: 'border-box',
-  };
-
-  const title = isForgot ? t.forgotTitle : isLogin ? t.welcomeBack : t.createAccount;
-  const subtitle = isForgot ? t.forgotSub : isLogin ? t.loginSub : t.signupSub;
-
-  return (
-    <div style={{ minHeight: '100vh', background: TH.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div style={{ width: '100%', maxWidth: 380, animation: 'fadeUp 0.4s ease' }}>
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.25)', borderRadius: 10, padding: '3px 10px', marginBottom: 12, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>&#x2211; MASTERY MODULE</div>
-          <h1 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 32, fontWeight: 800, color: TH.text, letterSpacing: '-0.02em' }}>
-            {title}
-          </h1>
-          <p style={{ color: TH.textMuted, fontSize: 13, marginTop: 6 }}>
-            {subtitle}
-          </p>
-        </div>
-
-        <div style={{ background: TH.surface, borderRadius: 16, border: '1px solid ' + TH.border, padding: 24, boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.3)' : '0 4px 24px rgba(0,0,0,0.04)' }}>
-          {/* ── Language toggle ── */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 18 }}>
-            {['es', 'en'].map(l => (
-              <button key={l} onClick={() => changeLang(l)} style={{
-                padding: '4px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-                border: '1px solid ' + (lang === l ? TH.accent : TH.border),
-                background: lang === l ? TH.accentBg : 'transparent',
-                color: lang === l ? TH.accent : TH.textMuted,
-                borderRadius: l === 'es' ? '6px 0 0 6px' : '0 6px 6px 0',
-              }}>
-                {l.toUpperCase()}
-              </button>
-            ))}
-          </div>
-
-          <form onSubmit={handleSubmit}>
-            {/* ── Sign up only: username ── */}
-            {!isLogin && !isForgot && (
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ fontSize: 11, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>{t.username}</label>
-                <input type="text" value={username} onChange={e => setUsername(e.target.value)}
-                  placeholder={t.usernamePH} style={inputStyle}
-                  onFocus={e => e.target.style.borderColor = TH.accent}
-                  onBlur={e => e.target.style.borderColor = TH.border} />
-              </div>
-            )}
-
-            {/* ── Email (always shown) ── */}
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 11, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>{t.email}</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                placeholder="you@email.com" style={inputStyle}
-                onFocus={e => e.target.style.borderColor = TH.accent}
-                onBlur={e => e.target.style.borderColor = TH.border} />
-            </div>
-
-            {/* ── Password (login / signup only) ── */}
-            {!isForgot && (
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ fontSize: 11, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>{t.password}</label>
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-                  placeholder={isLogin ? '••••••••' : t.pwPH} minLength={6} style={inputStyle}
-                  onFocus={e => e.target.style.borderColor = TH.accent}
-                  onBlur={e => e.target.style.borderColor = TH.border} />
-              </div>
-            )}
-
-            {/* ── Confirm password (signup only) ── */}
-            {!isLogin && !isForgot && (
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ fontSize: 11, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>{t.confirmPW}</label>
-                <input type="password" value={confirmPW} onChange={e => setConfirmPW(e.target.value)} required
-                  placeholder={t.confirmPH} minLength={6} style={inputStyle}
-                  onFocus={e => e.target.style.borderColor = TH.accent}
-                  onBlur={e => e.target.style.borderColor = TH.border} />
-              </div>
-            )}
-
-            {!isLogin && !isForgot && <div style={{ marginBottom: 6 }} />}
-
-            {error && <div style={{ padding: '8px 12px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)', borderRadius: 8, color: TH.red, fontSize: 12, marginBottom: 14 }}>{error}</div>}
-            {success && <div style={{ padding: '8px 12px', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.12)', borderRadius: 8, color: TH.green, fontSize: 12, marginBottom: 14 }}>{success}</div>}
-
-            <button type="submit" disabled={loading} style={{
-              width: '100%', padding: '13px', border: 'none', borderRadius: 10,
-              background: loading ? TH.border : 'linear-gradient(135deg, ' + TH.accentLight + ', ' + TH.accent + ')',
-              color: '#fff', fontWeight: 700, fontSize: 14, cursor: loading ? 'wait' : 'pointer',
-              fontFamily: 'inherit', boxShadow: '0 2px 12px rgba(232,148,10,0.2)',
-            }}>
-              {loading ? '...' : isForgot ? t.sendReset : isLogin ? t.loginBtn : t.signupBtn}
-            </button>
-          </form>
-
-          {/* ── Bottom links ── */}
-          <div style={{ textAlign: 'center', marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {isForgot ? (
-              <button onClick={() => { setIsForgot(false); setIsLogin(true); setError(''); setSuccess(''); }} style={{
-                background: 'none', border: 'none', color: TH.accent, fontSize: 12,
-                cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600,
-              }}>
-                {t.backToLogin}
-              </button>
-            ) : (
-              <>
-                {isLogin && (
-                  <button onClick={() => { setIsForgot(true); setError(''); setSuccess(''); }} style={{
-                    background: 'none', border: 'none', color: TH.textMuted, fontSize: 11,
-                    cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500,
-                  }}>
-                    {t.forgotPW}
-                  </button>
-                )}
-                <button onClick={() => { setIsLogin(!isLogin); setError(''); setSuccess(''); setUsername(''); setConfirmPW(''); }} style={{
-                  background: 'none', border: 'none', color: TH.accent, fontSize: 12,
-                  cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600,
-                }}>
-                  {isLogin ? t.toSignup : t.toLogin}
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-        <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 10, marginTop: 16 }}>{t.footer}</p>
-      </div>
-    </div>
-  );
-}
 
 /* ═══════════ RESET PASSWORD SCREEN ═══════════ */
 function ResetPasswordScreen({ onDone }) {
@@ -1303,6 +1122,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [results, setResults] = useState([]);
+  const [rateError, setRateError] = useState('');
 
   // Phase state
   const [phase, setPhase] = useState('loading_q');
@@ -1427,8 +1247,16 @@ function ReviewMode({ dark, lang, session, onDone }) {
     if (submitting) return;
     setLastRating(rating);
     setSubmitting(true);
+    setRateError('');
     const card = cards[current];
-    await reviewCard(supabase, card.id, rating, card);
+    const saved = await reviewCard(supabase, card.id, rating, card);
+    if (!saved) {
+      // Before, a failed save was ignored and the card moved on as if rated.
+      setRateError(t.rateFailed);
+      setLastRating(null);
+      setSubmitting(false);
+      return;
+    }
     setResults(prev => [...prev, { rating, topic: card.topic, module: card.module }]);
     setSubmitting(false);
     setTimeout(() => {
@@ -1669,7 +1497,8 @@ function ReviewMode({ dark, lang, session, onDone }) {
               </button>
             ))}
           </div>
-          <p style={{ textAlign: 'center', color: TH.textFaint, fontSize: 10, marginTop: 14 }}>{t.intervalHint}</p>
+          {rateError && <p role="alert" style={{ textAlign: 'center', color: TH.red, fontSize: 13, marginTop: 14 }}>{rateError}</p>}
+          <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 12, marginTop: 14 }}>{t.intervalHint}</p>
         </>
       )}
     </div>

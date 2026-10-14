@@ -14,8 +14,16 @@
  */
 export function sm2Update(card, rating) {
   let { interval, ease_factor, repetitions } = card;
+  interval = Number(interval) || 0;
+  ease_factor = Number(ease_factor) || 2.5;
+  repetitions = Number(repetitions) || 0;
 
-  if (rating < 3) {
+  // The app's 4 buttons (1 Olvidé, 2 Difícil, 3 Bien, 4 Fácil) map onto SM-2's
+  // 0–5 quality scale. Feeding 1–4 straight into the formula made "Bien" lower
+  // the ease every time and "Fácil" never raise it, and "Difícil" reset the card.
+  const quality = { 1: 1, 2: 3, 3: 4, 4: 5 }[rating] ?? 4;
+
+  if (quality < 3) {
     // Failed — reset streak, short retry interval
     repetitions = 0;
     interval = 1;
@@ -23,6 +31,8 @@ export function sm2Update(card, rating) {
     // Passed
     if (repetitions === 0)      interval = 1;
     else if (repetitions === 1) interval = 6;
+    // "Difícil" (quality 3): only stretch the gap a little, like Anki's Hard.
+    else if (quality === 3)     interval = Math.max(interval + 1, Math.round(interval * 1.2));
     else                        interval = Math.round(interval * ease_factor);
 
     repetitions += 1;
@@ -31,7 +41,7 @@ export function sm2Update(card, rating) {
   // Ease factor update — clamped to minimum 1.3
   ease_factor = Math.max(
     1.3,
-    ease_factor + 0.1 - (5 - rating) * (0.08 + (5 - rating) * 0.02)
+    ease_factor + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)
   );
 
   const status = repetitions >= 2 ? 'review' : 'learning';
@@ -84,15 +94,18 @@ export function getDueCount(cards) {
  * @returns {object|null}
  */
 export async function addCard(supabase, { userId, topic, module, lang, level, studyHistoryId = null }) {
-  // Guard: don't add duplicates
-  const { data: existing } = await supabase
+  // Guard: don't add duplicates. Escape % and _ so they aren't treated as
+  // wildcards, and use limit(1) so several matches don't turn into "none".
+  const pattern = topic.trim().replace(/[\\%_]/g, (c) => '\\' + c);
+  const { data: existingRows } = await supabase
     .from('review_cards')
     .select('id')
     .eq('user_id', userId)
-    .ilike('topic', topic.trim())
+    .ilike('topic', pattern)
     .neq('status', 'suspended')
-    .maybeSingle();
+    .limit(1);
 
+  const existing = existingRows?.[0];
   if (existing) return { alreadyExists: true, card: existing };
 
   const { data, error } = await supabase

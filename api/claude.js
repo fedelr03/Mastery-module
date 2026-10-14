@@ -1,4 +1,10 @@
 const { createClient } = require('@supabase/supabase-js');
+const crypto = require('crypto');
+
+// Public (anon) key, same one the browser app ships with. Used to verify login
+// tokens when the service-role key isn't configured.
+const PUBLIC_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
+  || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkeXd4b3hhbnVsbW5qdGNtdWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzODY3MDUsImV4cCI6MjA4OTk2MjcwNX0.A9L18tI9xEAy66n7kfMu6wSNjWvVNjaq1wcc7j-EVi4';
 
 // ─── In-memory response cache ────────────────────────────────────────────────
 // Key: "<topic>|<level>|<lang>|<module>"  →  { data, expiresAt }
@@ -7,9 +13,13 @@ const responseCache = new Map();
 const CACHE_TTL_MS  = 60 * 60 * 1000; // 1 hour
 
 function getCacheKey(meta, body) {
-  // Only cache explanation-style requests — quizzes/exams should always vary
-  if (!meta.topic || meta.module === 'quiz' || meta.module === 'exam') return null;
-  return `${(meta.topic || '').toLowerCase().trim()}|${meta.level || ''}|${meta.lang || ''}|${meta.module || ''}|${meta.mode || ''}`;
+  // The key is a hash of the FULL request (model, system prompt, messages, limits).
+  // Keying on topic/level/lang alone mixed up different requests: every uploaded
+  // PDF shared the key "file", the user's interest was ignored, and a related-topic
+  // request could be stored under the previous topic's name.
+  // Review (recall) questions are never cached so they stay varied.
+  if (meta.mode === 'recall' || meta.module === 'recall') return null;
+  return crypto.createHash('sha256').update(JSON.stringify(body)).digest('hex');
 }
 
 function getCached(key) {
@@ -104,12 +114,30 @@ module.exports = async function handler(req, res) {
   const token = (req.headers.authorization || '').replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Not authenticated. Please log in.' });
 
+  // Always verify the token. Before, if SUPABASE_SERVICE_ROLE_KEY was missing,
+  // any non-empty token was accepted with no rate limit or budget.
   let user = null;
-  if (SB_SERVICE_KEY) {
-    const sb = createClient(SB_URL, SB_SERVICE_KEY);
-    const { data, error } = await sb.auth.getUser(token);
+  try {
+    const sbAuth = createClient(SB_URL, SB_SERVICE_KEY || PUBLIC_ANON_KEY);
+    const { data, error } = await sbAuth.auth.getUser(token);
     if (error || !data?.user) return res.status(401).json({ error: 'Invalid session. Please log in again.' });
     user = data.user;
+  } catch (authErr) {
+    console.error('Auth check failed:', authErr);
+    return res.status(503).json({ error: 'Could not verify your session. Please try again in a moment.' });
+  }
+
+  /* ── Blocked users can't use the AI (before, the block only hid the UI) ── */
+  try {
+    const sbRole = SB_SERVICE_KEY
+      ? createClient(SB_URL, SB_SERVICE_KEY)
+      : createClient(SB_URL, PUBLIC_ANON_KEY, { global: { headers: { Authorization: 'Bearer ' + token } } });
+    const { data: roleRow } = await sbRole.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    if (roleRow?.role === 'blocked') {
+      return res.status(403).json({ error: 'Account blocked.', code: 'ACCOUNT_BLOCKED' });
+    }
+  } catch (roleErr) {
+    console.error('Role check failed (non-blocking):', roleErr);
   }
 
   /* ── Per-user cooldown check ── */
