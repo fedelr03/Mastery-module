@@ -1770,16 +1770,25 @@ export default function App() {
       window.history.replaceState(null, '', window.location.pathname);
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) {
-        applyPendingUsername(session.user.id);
-        checkRole(session.user.id);
-        loadProfile(session.user.id);
-        loadDueCount(session.user.id);
-      }
-      setLoading(false);
-    });
+    // If Supabase is unreachable (e.g. the project is paused), getSession can
+    // hang or reject; without this the app stays on the loading screen forever.
+    const sessionTimeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Supabase getSession timeout')), 8000));
+    Promise.race([supabase.auth.getSession(), sessionTimeout])
+      .then(({ data: { session } }) => {
+        setSession(session);
+        if (session) {
+          applyPendingUsername(session.user.id);
+          checkRole(session.user.id);
+          loadProfile(session.user.id);
+          loadDueCount(session.user.id);
+        }
+      })
+      .catch((err) => {
+        console.error('Could not restore session:', err);
+        setSession(null);
+      })
+      .finally(() => setLoading(false));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (_event === 'PASSWORD_RECOVERY') {
