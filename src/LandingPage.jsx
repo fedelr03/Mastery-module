@@ -222,8 +222,8 @@ const css = (TH) => `
         font-family:'DM Sans', system-ui, sans-serif; font-size:17px; line-height:1.6;
         -webkit-font-smoothing:antialiased; }
   .lp *, .lp *::before, .lp *::after { box-sizing:border-box; }
-  .lp h1, .lp h2, .lp h3 { font-family:'Bricolage Grotesque', system-ui, sans-serif; margin:0; color:var(--text); }
-  .lp p { margin:0; }
+  :where(.lp) :where(h1, h2, h3) { font-family:'Bricolage Grotesque', system-ui, sans-serif; margin:0; color:var(--text); }
+  :where(.lp) :where(p) { margin:0; }
   .lp a { color:inherit; }
   .lp button { font-family:inherit; }
   .lp :focus-visible { outline:3px solid var(--accent); outline-offset:2px; border-radius:6px; }
@@ -255,7 +255,7 @@ const css = (TH) => `
   /* hero */
   .lp-hero { padding:72px 0 64px; }
   .lp-hero-grid { display:grid; grid-template-columns:1.1fr 1fr; gap:56px; align-items:center; }
-  .lp-hero h1 { font-size:clamp(36px, 5.2vw, 58px); line-height:1.04; letter-spacing:-0.03em; font-weight:800; max-width:14ch; }
+  .lp-hero h1 { font-size:clamp(36px, 5.2vw, 58px); line-height:1.04; letter-spacing:-0.03em; font-weight:800; max-width:15ch; }
   .lp-hero-sub { margin-top:22px; font-size:19px; color:var(--text2); max-width:34em; }
   .lp-hero-ctas { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; }
   .lp-hero-note { margin-top:14px; font-size:14px; color:var(--text2); }
@@ -347,6 +347,9 @@ const css = (TH) => `
   }
   @media (max-width: 520px) {
     .lp-nav-right .lp-hide-sm { display:none; }
+    .lp-nav-in { gap:8px; }
+    .lp-logo span:last-child { display:none; }
+    .lp-seg button { padding:6px 8px; }
     .lp-subjects { grid-template-columns:1fr 1fr; gap:20px; }
     .lp-demo { padding:20px; }
     .lp-demo-text { min-height:12em; }
@@ -392,7 +395,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
   const pickInterest = (k) => { if (k !== interest) { setInterest(k); setSwapKey((n) => n + 1); } };
 
   const demo = t.demo.find((d) => d.key === interest) || t.demo[0];
-  const barWidths = ['8%', '22%', '48%', '100%'];
+  const barWidths = [14, 40, 90, 170];
 
   return (
     <div className="lp">
@@ -410,12 +413,12 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
             <button className="lp-link" onClick={() => scrollTo(faqRef)}>{t.navFaq}</button>
           </nav>
           <div className="lp-nav-right">
-            <div className="lp-seg lp-hide-sm" role="group" aria-label={t.langLabel}>
+            <div className="lp-seg" role="group" aria-label={t.langLabel}>
               {['es', 'en'].map((l) => (
                 <button key={l} aria-pressed={lang === l} onClick={() => changeLang(l)}>{l.toUpperCase()}</button>
               ))}
             </div>
-            <button className="lp-icon-btn lp-hide-sm" onClick={toggleDark} aria-label={dark ? t.themeLight : t.themeDark} title={dark ? t.themeLight : t.themeDark}>
+            <button className="lp-icon-btn" onClick={toggleDark} aria-label={dark ? t.themeLight : t.themeDark} title={dark ? t.themeLight : t.themeDark}>
               {dark ? (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
               ) : (
@@ -512,7 +515,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
                   {t.intervals.map((iv, i) => (
                     <li key={iv.r}>
                       <span className="lbl">{iv.r}</span>
-                      <span className="when"><span className="bar" style={{ width: barWidths[i] }} aria-hidden="true" />{iv.when}</span>
+                      <span className="when"><span className="bar" style={{ width: barWidths[i], flex: 'none' }} aria-hidden="true" />{iv.when}</span>
                     </li>
                   ))}
                 </ol>

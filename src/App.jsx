@@ -1629,6 +1629,11 @@ export default function App() {
         await supabase.from('profiles').update({ email: session.user.email }).eq('id', session.user.id);
       }
       setSession(session);
+      if (_event === 'SIGNED_IN') {
+        // Pick up the language/theme chosen on the landing page before logging in.
+        setLang(localStorage.getItem('mm_lang') || 'es');
+        setDark(localStorage.getItem('mm_dark') === 'true');
+      }
       if (session) {
         applyPendingUsername(session.user.id);
         checkRole(session.user.id);
