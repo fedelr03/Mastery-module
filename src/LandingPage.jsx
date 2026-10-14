@@ -267,9 +267,9 @@ const css = (TH) => `
   .lp-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
   .lp-chip { border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:999px; padding:7px 15px; font-size:15px; font-weight:600; cursor:pointer; }
   .lp-chip[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:var(--onAccent); }
-  .lp-demo-topic { margin-top:22px; display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .lp-demo-topic { margin-top:22px; display:flex; flex-direction:column; gap:2px; }
   .lp-demo-topic h3 { font-size:28px; font-weight:800; letter-spacing:-0.02em; }
-  .lp-formula { font-family:'Cambria Math','STIX Two Math','Times New Roman',serif; font-size:17px; color:var(--text2); white-space:nowrap; }
+  .lp-formula { font-family:'Cambria Math','STIX Two Math','Times New Roman',serif; font-size:16px; color:var(--text2); max-width:100%; overflow-wrap:anywhere; }
   .lp-demo-text { margin-top:12px; font-size:17px; line-height:1.65; background:var(--surface); border-left:3px solid var(--accent); padding:12px 14px; border-radius:0 10px 10px 0; min-height:9.5em; }
   .lp-demo-text.swap { animation:lpSwap .32s ease; }
   .lp-demo-foot { margin-top:14px; font-size:14px; color:var(--text2); }
