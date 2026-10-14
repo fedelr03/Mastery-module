@@ -7,19 +7,31 @@ import { reviewCard } from './srs';
 /* ═══════════ THEMES ═══════════ */
 const LIGHT = {
   bg: '#f7f5f0', surface: '#ffffff', border: '#e4ded4', borderLight: '#ece8e0',
-  text: '#2a2a3a', textSecondary: '#5c5c6c', textMuted: '#8a8a96', textFaint: '#b0aeb8',
-  accent: '#e8940a', accentLight: '#f5a623', accentBg: 'rgba(245,166,35,0.07)',
-  red: '#ef4444', green: '#22c55e', purple: '#6366f1',
+  text: '#1f1d2b', textSecondary: '#4a4858', textMuted: '#5f5d6e', textFaint: '#67657a',
+  accent: '#e8940a', accentLight: '#f5a623', accentBg: 'rgba(245,166,35,0.10)',
+  accentText: '#8f5400', onAccent: '#1f1d2b',
+  red: '#b42318', green: '#15803d', purple: '#4f46e5',
 };
 
 const DARK = {
   bg: '#111114', surface: '#1c1c21', border: '#2c2c38', borderLight: '#222229',
-  text: '#e2e2ec', textSecondary: '#9898b0', textMuted: '#606078', textFaint: '#38384a',
+  text: '#ecebf3', textSecondary: '#b4b2c4', textMuted: '#a3a1b6', textFaint: '#8d8ba0',
   accent: '#f5a623', accentLight: '#f5a623', accentBg: 'rgba(245,166,35,0.12)',
-  red: '#f87171', green: '#4ade80', purple: '#9b9ef8',
+  accentText: '#f5a623', onAccent: '#15141c',
+  red: '#f87171', green: '#4ade80', purple: '#a5a8fa',
 };
 
 const getTheme = (dark) => dark ? DARK : LIGHT;
+
+/* Button background + text per subject (both pass WCAG AA). */
+const MOD_BTN = {
+  math: ['#e8940a', '#1f1d2b'], stats: ['#4f46e5', '#ffffff'], econ: ['#047857', '#ffffff'],
+  finance: ['#0e7490', '#ffffff'], general: ['#475569', '#ffffff'],
+};
+const MOD_NAME = {
+  es: { math: 'Matemática', stats: 'Estadística', econ: 'Economía', finance: 'Finanzas', general: 'General' },
+  en: { math: 'Math', stats: 'Statistics', econ: 'Economics', finance: 'Finance', general: 'General' },
+};
 
 /* ═══════════ AUTH TRANSLATIONS ═══════════ */
 const AUTH_T = {
@@ -80,13 +92,13 @@ const PROFILE_T = {
   en: {
     title: 'My Profile', sub: 'Customize your experience',
     email: 'EMAIL', username: 'USERNAME',
-    usernameSub: '— replaces your email in the top bar',
+    usernameSub: '(shown in the top bar instead of your email)',
     usernamePH: 'e.g. Federico, Profe, fede.lr',
-    level: 'KNOWLEDGE LEVEL', levelSub: '— adjusts how the system explains things to you',
+    level: 'KNOWLEDGE LEVEL', levelSub: '(changes how explanations are written for you)',
     beginner: 'Beginner', beginnerDesc: 'Simple language, more examples',
     intermediate: 'Intermediate', intermediateDesc: 'Balanced depth & clarity',
     advanced: 'Advanced', advancedDesc: 'Technical, skips the basics',
-    language: 'LANGUAGE', languageSub: '— applies to the app and modules',
+    language: 'LANGUAGE', languageSub: '(for the app and the modules)',
     appearance: 'APPEARANCE',
     darkMode: 'Night Mode', darkModeDesc: 'Easier on the eyes in low light',
     save: 'Save Changes', saving: 'Saving...', saved: '✓ Saved!',
@@ -97,13 +109,13 @@ const PROFILE_T = {
   es: {
     title: 'Mi Perfil', sub: 'Personalizá tu experiencia',
     email: 'EMAIL', username: 'NOMBRE DE USUARIO',
-    usernameSub: '— reemplaza tu email en la barra superior',
+    usernameSub: '(aparece arriba en lugar de tu email)',
     usernamePH: 'ej. Federico, Profe, fede.lr',
-    level: 'NIVEL DE CONOCIMIENTO', levelSub: '— ajusta cómo el sistema te explica las cosas',
+    level: 'NIVEL DE CONOCIMIENTO', levelSub: '(cambia cómo se escriben las explicaciones)',
     beginner: 'Principiante', beginnerDesc: 'Lenguaje simple, más ejemplos',
     intermediate: 'Intermedio', intermediateDesc: 'Profundidad y claridad equilibradas',
     advanced: 'Avanzado', advancedDesc: 'Técnico, sin básicos',
-    language: 'IDIOMA', languageSub: '— se aplica a la app y los módulos',
+    language: 'IDIOMA', languageSub: '(para la app y los módulos)',
     appearance: 'APARIENCIA',
     darkMode: 'Modo Noche', darkModeDesc: 'Más cómodo con poca luz',
     save: 'Guardar Cambios', saving: 'Guardando...', saved: '✓ ¡Guardado!',
@@ -145,7 +157,7 @@ const REVIEW_T = {
     modelAnswerLabel: 'MODEL ANSWER',
     dailySession: "Today's session",
     capNote: 'Capped at 5 cards to keep it focused',
-    moreWaiting: 'more due — come back after a break',
+    moreWaiting: 'more due. Come back after a break.',
     qtDef: 'Definition', qtEx: 'Example', qtApp: 'Apply it', qtChallenge: 'Challenge',
   },
   es: {
@@ -172,7 +184,7 @@ const REVIEW_T = {
     modelAnswerLabel: 'RESPUESTA MODELO',
     dailySession: 'Sesión de hoy',
     capNote: 'Limitado a 5 tarjetas para mantener el foco',
-    moreWaiting: 'más pendientes — volvé después de un descanso',
+    moreWaiting: 'más pendientes. Volvé después de un descanso.',
     qtDef: 'Definición', qtEx: 'Ejemplo', qtApp: 'Aplicación', qtChallenge: 'Desafío',
   },
 };
@@ -213,21 +225,21 @@ function ResetPasswordScreen({ onDone }) {
     <div style={{ minHeight: '100vh', background: TH.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
       <div style={{ width: '100%', maxWidth: 380, animation: 'fadeUp 0.4s ease' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.25)', borderRadius: 10, padding: '3px 10px', marginBottom: 12, fontSize: 9, color: TH.accent, fontWeight: 700, letterSpacing: 1.5 }}>&#x2211; MASTERY MODULE</div>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.25)', borderRadius: 10, padding: '3px 10px', marginBottom: 12, fontSize: 11, color: TH.accentText, fontWeight: 700, letterSpacing: 1.5 }}>&#x2211; MASTERY MODULE</div>
           <h1 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 32, fontWeight: 800, color: TH.text, letterSpacing: '-0.02em' }}>{t.newPWTitle}</h1>
           <p style={{ color: TH.textMuted, fontSize: 13, marginTop: 6 }}>{t.newPWSub}</p>
         </div>
         <div style={{ background: TH.surface, borderRadius: 16, border: '1px solid ' + TH.border, padding: 24, boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.3)' : '0 4px 24px rgba(0,0,0,0.04)' }}>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 11, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>{t.newPassword}</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>{t.newPassword}</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
                 placeholder={t.pwPH} minLength={6} style={inputStyle}
                 onFocus={e => e.target.style.borderColor = TH.accent}
                 onBlur={e => e.target.style.borderColor = TH.border} />
             </div>
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 11, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>{t.confirmPW}</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>{t.confirmPW}</label>
               <input type="password" value={confirmPW} onChange={e => setConfirmPW(e.target.value)} required
                 placeholder={t.confirmPH} minLength={6} style={inputStyle}
                 onFocus={e => e.target.style.borderColor = TH.accent}
@@ -237,15 +249,15 @@ function ResetPasswordScreen({ onDone }) {
             {success && <div style={{ padding: '8px 12px', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.12)', borderRadius: 8, color: TH.green, fontSize: 12, marginBottom: 14 }}>{success}</div>}
             <button type="submit" disabled={loading || !!success} style={{
               width: '100%', padding: '13px', border: 'none', borderRadius: 10,
-              background: success ? TH.green : loading ? TH.border : 'linear-gradient(135deg, ' + TH.accentLight + ', ' + TH.accent + ')',
-              color: '#fff', fontWeight: 700, fontSize: 14, cursor: loading ? 'wait' : 'pointer',
+              background: success ? TH.green : loading ? TH.border : TH.accent,
+              color: success ? '#fff' : TH.onAccent, fontWeight: 700, fontSize: 14, cursor: loading ? 'wait' : 'pointer',
               fontFamily: 'inherit', boxShadow: '0 2px 12px rgba(232,148,10,0.2)',
             }}>
               {loading ? '...' : t.newPWBtn}
             </button>
           </form>
         </div>
-        <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 10, marginTop: 16 }}>{AUTH_T[lang].footer}</p>
+        <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 12, marginTop: 16 }}>{AUTH_T[lang].footer}</p>
       </div>
     </div>
   );
@@ -308,7 +320,7 @@ function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark 
   };
 
   const sectionLabel = (main, sub) => (
-    <label style={{ fontSize: 11, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>
+    <label style={{ fontSize: 12, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>
       {main}{sub && <span style={{ color: TH.textFaint, fontWeight: 400 }}> {sub}</span>}
     </label>
   );
@@ -327,7 +339,7 @@ function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
             {sectionLabel(t.email)}
             <button onClick={() => { setShowEmailChange(v => !v); setEmailMsg(''); setNewEmail(''); }} style={{
-              background: 'none', border: 'none', color: TH.accent, fontSize: 11, fontWeight: 600,
+              background: 'none', border: 'none', color: TH.accentText, fontSize: 12, fontWeight: 600,
               cursor: 'pointer', fontFamily: 'inherit', padding: 0, marginBottom: 5,
             }}>
               {showEmailChange ? t.cancelEmail : t.changeEmail}
@@ -352,8 +364,8 @@ function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark 
                 />
                 <button onClick={handleEmailChange} disabled={emailChanging || !newEmail.trim()} style={{
                   padding: '0 16px', borderRadius: 10, border: 'none', cursor: emailChanging ? 'wait' : 'pointer',
-                  background: 'linear-gradient(135deg, ' + TH.accentLight + ', ' + TH.accent + ')',
-                  color: '#fff', fontWeight: 700, fontSize: 12, fontFamily: 'inherit', whiteSpace: 'nowrap',
+                  background: TH.accent,
+                  color: TH.onAccent, fontWeight: 700, fontSize: 12, fontFamily: 'inherit', whiteSpace: 'nowrap',
                 }}>
                   {emailChanging ? '...' : t.updateEmail}
                 </button>
@@ -399,8 +411,8 @@ function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark 
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
               }}>
                 <span style={{ fontSize: 20 }}>{opt.emoji}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: level === opt.value ? TH.accent : TH.text }}>{opt.label}</span>
-                <span style={{ fontSize: 9, color: TH.textMuted, lineHeight: 1.3, textAlign: 'center' }}>{opt.desc}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: level === opt.value ? TH.accentText : TH.text }}>{opt.label}</span>
+                <span style={{ fontSize: 11, color: TH.textMuted, lineHeight: 1.3, textAlign: 'center' }}>{opt.desc}</span>
               </button>
             ))}
           </div>
@@ -424,8 +436,7 @@ function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark 
                 transition: 'background 0.15s',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
               }}>
-                <img src={l.flagSrc} alt={l.name} style={{ width: 32, height: 24, borderRadius: 3, objectFit: 'cover', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
-                <span style={{ fontSize: 11, fontWeight: 700, color: lang === l.code ? TH.accent : TH.text }}>{l.name}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: lang === l.code ? TH.accentText : TH.text }}>{l.name}</span>
               </button>
             ))}
           </div>
@@ -449,8 +460,8 @@ function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 20 }}>{dark ? '🌙' : '☀️'}</span>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: dark ? TH.accent : TH.text }}>{t.darkMode}</div>
-                <div style={{ fontSize: 10, color: TH.textMuted, marginTop: 1 }}>{t.darkModeDesc}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: dark ? TH.accentText : TH.text }}>{t.darkMode}</div>
+                <div style={{ fontSize: 12, color: TH.textMuted, marginTop: 1 }}>{t.darkModeDesc}</div>
               </div>
             </div>
             {/* Toggle pill */}
@@ -471,8 +482,8 @@ function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark 
 
         <button onClick={handleSave} disabled={saving} style={{
           width: '100%', padding: '13px', border: 'none', borderRadius: 10,
-          background: saved ? TH.green : saving ? TH.border : 'linear-gradient(135deg, ' + TH.accentLight + ', ' + TH.accent + ')',
-          color: '#fff', fontWeight: 700, fontSize: 14, cursor: saving ? 'wait' : 'pointer',
+          background: saved ? TH.green : saving ? TH.border : TH.accent,
+          color: saved ? '#fff' : TH.onAccent, fontWeight: 700, fontSize: 14, cursor: saving ? 'wait' : 'pointer',
           fontFamily: 'inherit', boxShadow: '0 2px 12px rgba(232,148,10,0.2)', transition: 'background 0.3s',
         }}>
           {saved ? t.saved : saving ? t.saving : t.save}
@@ -483,7 +494,25 @@ function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark 
 }
 
 /* ═══════════ ADMIN DASHBOARD ═══════════ */
-function AdminDashboard({ dark }) {
+const ADMIN_T = {
+  es: { title: 'Panel de administración', sub: 'Uso de la IA y gestión de usuarios', refresh: 'Actualizar', loading: 'Cargando el panel…',
+        overview: 'Resumen', users: 'Usuarios', requests: 'Pedidos', totalUsers: 'Usuarios', totalRequests: 'Pedidos a la IA', totalCost: 'Costo total',
+        today: 'Hoy', reqs: ' pedidos', tokens: 'Tokens', in: ' entrada', out: ' salida', topUsers: 'Usuarios con más gasto', seeAll: 'Ver todos',
+        noUsage: 'Todavía no hay uso.', email: 'Email', username: 'Usuario', role: 'Rol', signedUp: 'Alta', cost: 'Costo', action: 'Acción',
+        allUsers: 'Todos los usuarios', block: 'Bloquear', unblock: 'Desbloquear', recent: 'Pedidos recientes', total: 'en total', apiCalls: 'llamadas a la API',
+        noRequests: 'Todavía no hay pedidos.', time: 'Hora', user: 'Usuario', topic: 'Tema', module: 'Materia', calls: 'Llamadas', totalCostCol: 'Costo',
+        roles: { admin: 'ADMIN', blocked: 'BLOQUEADO', user: 'USUARIO' } },
+  en: { title: 'Admin dashboard', sub: 'AI usage and user management', refresh: 'Refresh', loading: 'Loading dashboard…',
+        overview: 'Overview', users: 'Users', requests: 'Requests', totalUsers: 'Users', totalRequests: 'AI requests', totalCost: 'Total cost',
+        today: 'Today', reqs: ' reqs', tokens: 'Tokens', in: ' in', out: ' out', topUsers: 'Top users by cost', seeAll: 'See all',
+        noUsage: 'No usage yet.', email: 'Email', username: 'Username', role: 'Role', signedUp: 'Signed up', cost: 'Cost', action: 'Action',
+        allUsers: 'All users', block: 'Block', unblock: 'Unblock', recent: 'Recent requests', total: 'total', apiCalls: 'API calls',
+        noRequests: 'No requests yet.', time: 'Time', user: 'User', topic: 'Topic', module: 'Subject', calls: 'Calls', totalCostCol: 'Cost',
+        roles: { admin: 'ADMIN', blocked: 'BLOCKED', user: 'USER' } },
+};
+
+function AdminDashboard({ dark, lang = 'es' }) {
+  const A = ADMIN_T[lang] || ADMIN_T.en;
   const TH = getTheme(dark);
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
@@ -533,87 +562,87 @@ function AdminDashboard({ dark }) {
 
   const card = (label, value, sub, color) => (
     <div style={{ background: TH.surface, borderRadius: 12, border: '1px solid ' + TH.border, padding: '14px 18px', flex: '1 1 140px', minWidth: 140 }}>
-      <div style={{ fontSize: 9, color: TH.textMuted, fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 11, color: TH.textMuted, fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 26, fontWeight: 800, color: color || TH.text, fontFamily: "'Bricolage Grotesque',sans-serif" }}>{value}</div>
-      {sub && <div style={{ fontSize: 9, color: TH.textMuted, marginTop: 2 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 11, color: TH.textMuted, marginTop: 2 }}>{sub}</div>}
     </div>
   );
 
-  const th = { textAlign: 'left', padding: '8px 10px', fontSize: 9, fontWeight: 700, color: TH.textMuted, borderBottom: '1px solid ' + TH.border, letterSpacing: 0.5 };
-  const td = { padding: '8px 10px', fontSize: 11.5, color: TH.text, borderBottom: '1px solid ' + (dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)') };
+  const th = { textAlign: 'left', padding: '8px 10px', fontSize: 11, fontWeight: 700, color: TH.textMuted, borderBottom: '1px solid ' + TH.border, letterSpacing: 0.5 };
+  const td = { padding: '8px 10px', fontSize: 12, color: TH.text, borderBottom: '1px solid ' + (dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)') };
   const tabBtn = (id, label) => (
     <button key={id} onClick={() => setTab(id)} style={{
       padding: '6px 16px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
       border: '1px solid ' + (tab === id ? TH.accent : TH.border),
-      background: tab === id ? TH.accentBg : 'transparent', color: tab === id ? TH.accent : TH.textMuted,
+      background: tab === id ? TH.accentBg : 'transparent', color: tab === id ? TH.accentText : TH.textMuted,
     }}>{label}</button>
   );
 
-  if (loading) return <div style={{ padding: 60, textAlign: 'center', color: TH.textMuted, fontSize: 13 }}>Loading dashboard...</div>;
+  if (loading) return <div style={{ padding: 60, textAlign: 'center', color: TH.textMuted, fontSize: 13 }}>{A.loading}</div>;
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 24, fontWeight: 800, color: TH.text }}>Admin Dashboard</h2>
-          <p style={{ color: TH.textMuted, fontSize: 11, marginTop: 2 }}>Usage tracking & user management</p>
+          <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 24, fontWeight: 800, color: TH.text }}>{A.title}</h2>
+          <p style={{ color: TH.textMuted, fontSize: 12, marginTop: 2 }}>{A.sub}</p>
         </div>
-        <button onClick={loadData} style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 8, padding: '7px 16px', fontSize: 11, color: TH.textSecondary, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>Refresh</button>
+        <button onClick={loadData} style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 8, padding: '7px 16px', fontSize: 12, color: TH.textSecondary, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>{A.refresh}</button>
       </div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-        {tabBtn('overview', 'Overview')}
-        {tabBtn('users', 'Users')}
-        {tabBtn('requests', 'Requests')}
+        {tabBtn('overview', A.overview)}
+        {tabBtn('users', A.users)}
+        {tabBtn('requests', A.requests)}
       </div>
 
       {tab === 'overview' && stats && <>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
-          {card('TOTAL USERS', stats.totalUsers)}
-          {card('TOTAL REQUESTS', stats.totalRequests)}
-          {card('TOTAL COST', '$' + stats.totalCost.toFixed(4), null, TH.accent)}
-          {card('TODAY', stats.todayReqs + ' reqs', '$' + stats.todayCost.toFixed(4), TH.purple)}
-          {card('TOKENS', ((stats.totalInput + stats.totalOutput) / 1000).toFixed(1) + 'K', (stats.totalInput / 1000).toFixed(1) + 'K in / ' + (stats.totalOutput / 1000).toFixed(1) + 'K out')}
+          {card(A.totalUsers, stats.totalUsers)}
+          {card(A.totalRequests, stats.totalRequests)}
+          {card(A.totalCost, '$' + stats.totalCost.toFixed(4), null, TH.accentText)}
+          {card(A.today, stats.todayReqs + A.reqs, '$' + stats.todayCost.toFixed(4), TH.purple)}
+          {card(A.tokens, ((stats.totalInput + stats.totalOutput) / 1000).toFixed(1) + 'K', (stats.totalInput / 1000).toFixed(1) + 'K' + A.in + ' / ' + (stats.totalOutput / 1000).toFixed(1) + 'K' + A.out)}
         </div>
         <div style={{ background: TH.surface, borderRadius: 12, border: '1px solid ' + TH.border, overflow: 'hidden' }}>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid ' + TH.border, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: TH.text }}>Top Users by Cost</span>
-            <button onClick={() => setTab('users')} style={{ fontSize: 10, color: TH.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit' }}>See all</button>
+            <span style={{ fontSize: 13, fontWeight: 700, color: TH.text }}>{A.topUsers}</span>
+            <button onClick={() => setTab('users')} style={{ fontSize: 12, color: TH.accentText, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit' }}>{A.seeAll}</button>
           </div>
-          {users.length === 0 ? <div style={{ padding: 20, textAlign: 'center', color: TH.textMuted, fontSize: 12 }}>No usage yet</div> :
+          {users.length === 0 ? <div style={{ padding: 20, textAlign: 'center', color: TH.textMuted, fontSize: 12 }}>{A.noUsage}</div> :
           <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead><tr><th style={th}>EMAIL</th><th style={th}>REQUESTS</th><th style={th}>COST</th></tr></thead>
+            <thead><tr><th style={th}>{A.email}</th><th style={th}>{A.requests}</th><th style={th}>{A.cost}</th></tr></thead>
             <tbody>{users.slice(0, 5).map(u => <tr key={u.email}>
               <td style={td}><span style={{ fontWeight: 600 }}>{u.email}</span></td>
               <td style={td}>{u.requests}</td>
-              <td style={{ ...td, color: TH.accent, fontWeight: 700 }}>${u.cost.toFixed(4)}</td>
+              <td style={{ ...td, color: TH.accentText, fontWeight: 700 }}>${u.cost.toFixed(4)}</td>
             </tr>)}</tbody>
           </table></div>}
         </div>
       </>}
 
       {tab === 'users' && <div style={{ background: TH.surface, borderRadius: 12, border: '1px solid ' + TH.border, overflow: 'hidden' }}>
-        <div style={{ padding: '12px 16px', borderBottom: '1px solid ' + TH.border }}><span style={{ fontSize: 13, fontWeight: 700, color: TH.text }}>All Users ({profiles.length})</span></div>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid ' + TH.border }}><span style={{ fontSize: 13, fontWeight: 700, color: TH.text }}>{A.allUsers} ({profiles.length})</span></div>
         <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr><th style={th}>EMAIL</th><th style={th}>USERNAME</th><th style={th}>ROLE</th><th style={th}>SIGNED UP</th><th style={th}>REQUESTS</th><th style={th}>COST</th><th style={th}>ACTION</th></tr></thead>
+          <thead><tr><th style={th}>{A.email}</th><th style={th}>{A.username}</th><th style={th}>{A.role}</th><th style={th}>{A.signedUp}</th><th style={th}>{A.requests}</th><th style={th}>{A.cost}</th><th style={th}>{A.action}</th></tr></thead>
           <tbody>{profiles.map(p => {
             const usage = users.find(u => u.email === p.email);
             return <tr key={p.id}>
               <td style={td}><span style={{ fontWeight: 600 }}>{p.email}</span></td>
               <td style={{ ...td, color: p.username ? TH.text : TH.textFaint, fontStyle: p.username ? 'normal' : 'italic' }}>{p.username || '—'}</td>
               <td style={td}><span style={{
-                fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 4, letterSpacing: 0.3,
+                fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, letterSpacing: 0.3,
                 background: p.role === 'admin' ? 'rgba(245,166,35,0.1)' : p.role === 'blocked' ? 'rgba(239,68,68,0.08)' : 'rgba(34,197,94,0.06)',
-                color: p.role === 'admin' ? TH.accent : p.role === 'blocked' ? TH.red : TH.green,
-              }}>{(p.role || 'user').toUpperCase()}</span></td>
-              <td style={{ ...td, fontSize: 10, color: TH.textMuted }}>{new Date(p.created_at).toLocaleDateString()}</td>
+                color: p.role === 'admin' ? TH.accentText : p.role === 'blocked' ? TH.red : TH.green,
+              }}>{A.roles[p.role || 'user'] || (p.role || 'user').toUpperCase()}</span></td>
+              <td style={{ ...td, fontSize: 12, color: TH.textMuted }}>{new Date(p.created_at).toLocaleDateString()}</td>
               <td style={td}>{usage?.requests || 0}</td>
-              <td style={{ ...td, color: TH.accent, fontWeight: 600 }}>${(usage?.cost || 0).toFixed(4)}</td>
+              <td style={{ ...td, color: TH.accentText, fontWeight: 600 }}>${(usage?.cost || 0).toFixed(4)}</td>
               <td style={td}>{p.role !== 'admin' && <button onClick={() => toggleBlock(p.id, p.role)} style={{
-                fontSize: 10, fontWeight: 600, padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit',
                 background: p.role === 'blocked' ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.06)',
                 border: '1px solid ' + (p.role === 'blocked' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.15)'),
                 color: p.role === 'blocked' ? TH.green : TH.red,
-              }}>{p.role === 'blocked' ? 'Unblock' : 'Block'}</button>}</td>
+              }}>{p.role === 'blocked' ? A.unblock : A.block}</button>}</td>
             </tr>;
           })}</tbody>
         </table></div>
@@ -636,30 +665,30 @@ function AdminDashboard({ dark }) {
         return (
           <div style={{ background: TH.surface, borderRadius: 12, border: '1px solid ' + TH.border, overflow: 'hidden' }}>
             <div style={{ padding: '12px 16px', borderBottom: '1px solid ' + TH.border }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: TH.text }}>Recent Requests ({groups.length} total)</span>
-              <span style={{ fontSize: 10, color: TH.textMuted, marginLeft: 8 }}>({recent.length} API calls)</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: TH.text }}>{A.recent} ({groups.length} {A.total})</span>
+              <span style={{ fontSize: 12, color: TH.textMuted, marginLeft: 8 }}>({recent.length} {A.apiCalls})</span>
             </div>
-            {groups.length === 0 ? <div style={{ padding: 20, textAlign: 'center', color: TH.textMuted, fontSize: 12 }}>No requests yet</div> :
+            {groups.length === 0 ? <div style={{ padding: 20, textAlign: 'center', color: TH.textMuted, fontSize: 12 }}>{A.noRequests}</div> :
             <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead><tr>
-                <th style={th}>TIME</th><th style={th}>USER</th><th style={th}>TOPIC</th>
-                <th style={th}>MODULE</th><th style={th}>CALLS</th><th style={th}>TOKENS</th>
-                <th style={th}>TOTAL COST</th>
+                <th style={th}>{A.time}</th><th style={th}>{A.user}</th><th style={th}>{A.topic}</th>
+                <th style={th}>{A.module}</th><th style={th}>{A.calls}</th><th style={th}>{A.tokens}</th>
+                <th style={th}>{A.totalCostCol}</th>
               </tr></thead>
               <tbody>{groups.map((g, i) => {
                 const first = g.rows[0];
                 const modules = [...new Set(g.rows.map(r => r.module).filter(Boolean))].join(', ');
                 return (
                   <tr key={i}>
-                    <td style={{ ...td, fontSize: 10, color: TH.textMuted, whiteSpace: 'nowrap' }}>{new Date(first.created_at).toLocaleString()}</td>
-                    <td style={{ ...td, fontSize: 11 }}>{first.email}</td>
-                    <td style={{ ...td, fontSize: 11, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{first.topic}</td>
-                    <td style={td}><span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: TH.bg, fontWeight: 600 }}>{modules}</span></td>
-                    <td style={{ ...td, fontSize: 11, textAlign: 'center' }}>
-                      <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.08)', color: TH.purple, fontWeight: 700 }}>{g.rows.length}</span>
+                    <td style={{ ...td, fontSize: 12, color: TH.textMuted, whiteSpace: 'nowrap' }}>{new Date(first.created_at).toLocaleString()}</td>
+                    <td style={{ ...td, fontSize: 12 }}>{first.email}</td>
+                    <td style={{ ...td, fontSize: 12, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{first.topic}</td>
+                    <td style={td}><span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, background: TH.bg, fontWeight: 600 }}>{modules}</span></td>
+                    <td style={{ ...td, fontSize: 12, textAlign: 'center' }}>
+                      <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.08)', color: TH.purple, fontWeight: 700 }}>{g.rows.length}</span>
                     </td>
-                    <td style={{ ...td, fontSize: 11 }}>{g.totalTokens.toLocaleString()}</td>
-                    <td style={{ ...td, color: TH.accent, fontWeight: 800, fontSize: 12 }}>${g.totalCost.toFixed(5)}</td>
+                    <td style={{ ...td, fontSize: 12 }}>{g.totalTokens.toLocaleString()}</td>
+                    <td style={{ ...td, color: TH.accentText, fontWeight: 800, fontSize: 12 }}>${g.totalCost.toFixed(5)}</td>
                   </tr>
                 );
               })}</tbody>
@@ -687,7 +716,9 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
   const [hasData, setHasData] = useState(false);
 
   const MOD_COL   = { math:'#e8940a', stats:'#6366f1', econ:'#10b981', finance:'#06b6d4', general:'#8a8a96' };
-  const MOD_LABEL = { math:'Math', stats:'Stats', econ:'Econ', finance:'Finance', general:'General' };
+  const MOD_LABEL = lang === 'es'
+    ? { math:'Mate', stats:'Estad.', econ:'Econ.', finance:'Finanzas', general:'General' }
+    : { math:'Math', stats:'Stats', econ:'Econ', finance:'Finance', general:'General' };
 
   const TR = lang === 'es' ? {
     title:'Árbol de Conocimiento', sub:'Tus temas organizados por materia',
@@ -1039,9 +1070,9 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20, flexWrap:'wrap', gap:10 }}>
         <div>
           <h2 style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:24, fontWeight:800, color:TH.text }}>{TR.title}</h2>
-          <p style={{ color:TH.textMuted, fontSize:11, marginTop:2 }}>{TR.sub}</p>
+          <p style={{ color:TH.textMuted, fontSize:12, marginTop:2 }}>{TR.sub}</p>
         </div>
-        <button onClick={loadAndBuild} style={{ background:TH.surface, border:'1px solid '+TH.border, borderRadius:8, padding:'7px 16px', fontSize:11, color:TH.textSecondary, cursor:'pointer', fontFamily:'inherit', fontWeight:600 }}>{TR.refresh}</button>
+        <button onClick={loadAndBuild} style={{ background:TH.surface, border:'1px solid '+TH.border, borderRadius:8, padding:'7px 16px', fontSize:12, color:TH.textSecondary, cursor:'pointer', fontFamily:'inherit', fontWeight:600 }}>{TR.refresh}</button>
       </div>
 
       {loading ? (
@@ -1070,19 +1101,19 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
             {hovInfo ? (
               <span style={{ fontSize:12 }}>
                 <strong style={{ color:MOD_COL[hovInfo.mod]||'#8a8a96' }}>{hovInfo.label}</strong>
-                <span style={{ color:TH.textMuted }}> — {hovInfo.count}{TR.studied}{hovInfo.connCount>0?' · '+hovInfo.connCount+' '+TR.connections:''}</span>
+                <span style={{ color:TH.textMuted }}> · {hovInfo.count}{TR.studied}{hovInfo.connCount>0?' · '+hovInfo.connCount+' '+TR.connections:''}</span>
                 {hovInfo.masteryLevel && hovInfo.masteryLevel !== 'none' && (() => {
                   const mCol = { due:'#ef4444', learning:'#f5a623', reviewing:'#6366f1', mastered:'#22c55e' };
                   const mLabel = { due: TR.mDue, learning: TR.mLearning, reviewing: TR.mReviewing, mastered: TR.mMastered };
                   return (
-                    <span style={{ marginLeft:8, fontSize:10, fontWeight:700, color: mCol[hovInfo.masteryLevel], background: mCol[hovInfo.masteryLevel]+'18', border:'1px solid '+mCol[hovInfo.masteryLevel]+'30', borderRadius:5, padding:'1px 7px' }}>
+                    <span style={{ marginLeft:8, fontSize:12, fontWeight:700, color: mCol[hovInfo.masteryLevel], background: mCol[hovInfo.masteryLevel]+'18', border:'1px solid '+mCol[hovInfo.masteryLevel]+'30', borderRadius:5, padding:'1px 7px' }}>
                       {mLabel[hovInfo.masteryLevel]}
                     </span>
                   );
                 })()}
               </span>
             ) : (
-              <span style={{ fontSize:11, color:TH.textMuted, fontWeight:500 }}>{TR.hint}</span>
+              <span style={{ fontSize:12, color:TH.textMuted, fontWeight:500 }}>{TR.hint}</span>
             )}
           </div>
           {/* Mastery legend */}
@@ -1093,7 +1124,7 @@ function KnowledgeTree({ dark, lang, session, onLoad }) {
               { col:'#6366f1', label: TR.mReviewing },
               { col:'#22c55e', label: TR.mMastered },
             ].map(({ col, label }) => (
-              <span key={label} style={{ display:'flex', alignItems:'center', gap:5, fontSize:10, color:TH.textSecondary }}>
+              <span key={label} style={{ display:'flex', alignItems:'center', gap:5, fontSize:12, color:TH.textSecondary }}>
                 <span style={{ width:10, height:10, borderRadius:3, border:'2px solid '+col, display:'inline-block', flexShrink:0 }} />
                 {label}
               </span>
@@ -1139,28 +1170,28 @@ function ReviewMode({ dark, lang, session, onDone }) {
     if (iv <= 1 || ef < 1.8) return {
       type: 'definition', emoji: '🌱',
       label: lang === 'es' ? t.qtDef : t.qtDef,
-      color: '#10b981',
+      color: dark ? '#34d399' : '#047857',
       promptEn: 'Generate a DEFINITION question: ask the student to define or explain what this concept IS in their own words. Keep it simple and direct — 1 sentence.',
       promptEs: 'Generá una pregunta de DEFINICIÓN: pedile al estudiante que defina o explique con sus palabras qué ES este concepto. Simple y directa — 1 oración.',
     };
     if (iv <= 5 || ef < 2.2) return {
       type: 'example', emoji: '💡',
       label: lang === 'es' ? t.qtEx : t.qtEx,
-      color: '#6366f1',
+      color: dark ? '#a5b4fc' : '#4338ca',
       promptEn: 'Generate an EXAMPLE question: ask the student to give a concrete real-world example of this concept or describe where they would use it in practice.',
       promptEs: 'Generá una pregunta de EJEMPLO: pedile al estudiante que dé un ejemplo concreto del mundo real de este concepto o dónde lo usaría en la práctica.',
     };
     if (iv <= 14 || ef < 2.6) return {
       type: 'application', emoji: '⚡',
       label: lang === 'es' ? t.qtApp : t.qtApp,
-      color: '#e8940a',
+      color: dark ? '#f5a623' : '#8f5400',
       promptEn: 'Generate an APPLICATION question: ask the student to USE this concept — apply it to solve a small problem, explain a process step-by-step, or interpret a result.',
       promptEs: 'Generá una pregunta de APLICACIÓN: pedile al estudiante que USE este concepto — aplicarlo para resolver un pequeño problema, explicar un proceso paso a paso, o interpretar un resultado.',
     };
     return {
       type: 'challenge', emoji: '🔥',
       label: lang === 'es' ? t.qtChallenge : t.qtChallenge,
-      color: '#ef4444',
+      color: dark ? '#f87171' : '#b42318',
       promptEn: 'Generate a CHALLENGE question: ask about a common misconception, an edge case, a comparison with a closely related concept, or a situation where this concept breaks down or needs nuance.',
       promptEs: 'Generá una pregunta DESAFÍO: preguntá sobre un error conceptual común, un caso borde, una comparación con un concepto relacionado, o cuándo este concepto falla o necesita matices.',
     };
@@ -1239,7 +1270,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
   const ratingBtns = [
     { r: 1, label: t.r1, emoji: '😶', color: TH.red,    bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.2)'   },
     { r: 2, label: t.r2, emoji: '😓', color: '#f97316', bg: 'rgba(249,115,22,0.08)',  border: 'rgba(249,115,22,0.2)'  },
-    { r: 3, label: t.r3, emoji: '🙂', color: TH.accent, bg: TH.accentBg,             border: 'rgba(245,166,35,0.25)' },
+    { r: 3, label: t.r3, emoji: '🙂', color: TH.accentText, bg: TH.accentBg,             border: 'rgba(245,166,35,0.25)' },
     { r: 4, label: t.r4, emoji: '😎', color: TH.green,  bg: 'rgba(34,197,94,0.08)',   border: 'rgba(34,197,94,0.2)'   },
   ];
 
@@ -1287,7 +1318,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
       const ef = parseFloat(card.ease_factor) || 2.5;
       if (iv >= 21 && ef >= 2.4) return { emoji: '🏆', color: TH.green };
       if (iv >= 7) return { emoji: '⚡', color: TH.purple||'#6366f1' };
-      return { emoji: '🌱', color: TH.accent };
+      return { emoji: '🌱', color: TH.accentText };
     };
     return (
       <div style={{ maxWidth: 520, margin: '0 auto', padding: '32px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
@@ -1300,7 +1331,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <h3 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 14, fontWeight: 700, color: TH.text }}>{t.deckTitle}</h3>
-              <span style={{ fontSize: 10, fontWeight: 700, color: TH.textMuted, background: TH.bgAlt, padding: '2px 8px', borderRadius: 6 }}>{deckCards.length}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: TH.textMuted, background: TH.bgAlt, padding: '2px 8px', borderRadius: 6 }}>{deckCards.length}</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {deckCards.map((card, i) => {
@@ -1314,7 +1345,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
                       <span style={{ fontSize: 13, fontWeight: 600, color: TH.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.topic}</span>
                       <span style={{ fontSize: 13, flexShrink: 0 }}>{mastery.emoji}</span>
                     </div>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: isDue ? col : TH.textMuted, flexShrink: 0, marginLeft: 8 }}>{fmtDate(card.next_review_at)}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: isDue ? col : TH.textMuted, flexShrink: 0, marginLeft: 8 }}>{fmtDate(card.next_review_at)}</span>
                   </div>
                 );
               })}
@@ -1322,7 +1353,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
           </div>
         )}
         <div style={{ textAlign: 'center', marginTop: 28 }}>
-          <button onClick={onDone} style={{ padding: '11px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,' + TH.accentLight + ',' + TH.accent + ')', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{t.backToModule}</button>
+          <button onClick={onDone} style={{ padding: '11px 28px', borderRadius: 10, border: 'none', background: TH.accent, color: TH.onAccent, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{t.backToModule}</button>
         </div>
       </div>
     );
@@ -1337,7 +1368,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
         <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 26, fontWeight: 800, color: TH.text, marginBottom: 8 }}>{t.sessionDone}</h2>
         <p style={{ color: TH.textMuted, fontSize: 13, marginBottom: 24 }}>{passed}/{results.length} {t.passedLabel}</p>
         {remaining > 0 && (
-          <div style={{ marginBottom: 20, padding: '10px 16px', borderRadius: 10, background: TH.accentBg, border: '1px solid rgba(245,166,35,0.2)', fontSize: 12, color: TH.accent, fontWeight: 600 }}>
+          <div style={{ marginBottom: 20, padding: '10px 16px', borderRadius: 10, background: TH.accentBg, border: '1px solid rgba(245,166,35,0.2)', fontSize: 12, color: TH.accentText, fontWeight: 600 }}>
             +{remaining} {t.moreWaiting}
           </div>
         )}
@@ -1347,12 +1378,12 @@ function ReviewMode({ dark, lang, session, onDone }) {
             return (
               <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < results.length - 1 ? '1px solid ' + TH.borderLight : 'none' }}>
                 <span style={{ fontSize: 12, color: TH.text, fontWeight: 500 }}>{r.topic}</span>
-                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: btn?.bg, color: btn?.color, border: '1px solid ' + btn?.border }}>{btn?.label}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: btn?.bg, color: btn?.color, border: '1px solid ' + btn?.border }}>{btn?.label}</span>
               </div>
             );
           })}
         </div>
-        <button onClick={onDone} style={{ padding: '11px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,' + TH.accentLight + ',' + TH.accent + ')', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{t.backToModule}</button>
+        <button onClick={onDone} style={{ padding: '11px 28px', borderRadius: 10, border: 'none', background: TH.accent, color: TH.onAccent, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{t.backToModule}</button>
       </div>
     );
   }
@@ -1369,9 +1400,9 @@ function ReviewMode({ dark, lang, session, onDone }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
           <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 22, fontWeight: 800, color: TH.text }}>{t.title}</h2>
-          <p style={{ color: TH.textMuted, fontSize: 11, marginTop: 2 }}>{current + 1} {t.of} {cards.length}</p>
+          <p style={{ color: TH.textMuted, fontSize: 12, marginTop: 2 }}>{current + 1} {t.of} {cards.length}</p>
         </div>
-        <button onClick={onDone} style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 8, padding: '6px 14px', fontSize: 11, color: TH.textMuted, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>{t.exit}</button>
+        <button onClick={onDone} style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 8, padding: '6px 14px', fontSize: 12, color: TH.textMuted, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>{t.exit}</button>
       </div>
 
       {/* Progress bar */}
@@ -1390,12 +1421,12 @@ function ReviewMode({ dark, lang, session, onDone }) {
         {/* Module badge + question type badge + topic */}
         <div style={{ padding: '28px 28px 20px', textAlign: 'center', borderBottom: phase !== 'loading_q' ? '1px solid ' + TH.borderLight : 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 14 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', background: col + '18', border: '1px solid ' + col + '44', borderRadius: 8, padding: '3px 10px', fontSize: 9, color: col, fontWeight: 700, letterSpacing: 1 }}>
-              {(card.module || 'general').toUpperCase()}
+            <div style={{ display: 'inline-flex', alignItems: 'center', background: col + '18', border: '1px solid ' + col + '44', borderRadius: 8, padding: '3px 10px', fontSize: 11, color: (dark ? { math: '#f5a623', stats: '#a5b4fc', econ: '#34d399', finance: '#22d3ee', general: '#cbd5e1' } : { math: '#8f5400', stats: '#4338ca', econ: '#047857', finance: '#0e7490', general: '#475569' })[card.module] || TH.textSecondary, fontWeight: 700, letterSpacing: 1 }}>
+              {((MOD_NAME[lang] || MOD_NAME.en)[card.module || 'general'] || card.module).toUpperCase()}
             </div>
             {questionStyle && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: questionStyle.color + '12', border: '1px solid ' + questionStyle.color + '35', borderRadius: 8, padding: '3px 9px', fontSize: 9, color: questionStyle.color, fontWeight: 700, letterSpacing: 0.5 }}>
-                <span style={{ fontSize: 10 }}>{questionStyle.emoji}</span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: questionStyle.color + '12', border: '1px solid ' + questionStyle.color + '35', borderRadius: 8, padding: '3px 9px', fontSize: 11, color: questionStyle.color, fontWeight: 700, letterSpacing: 0.5 }}>
+                <span style={{ fontSize: 12 }}>{questionStyle.emoji}</span>
                 {questionStyle.label}
               </div>
             )}
@@ -1435,8 +1466,8 @@ function ReviewMode({ dark, lang, session, onDone }) {
               onClick={() => setPhase('revealed')}
               style={{
                 marginTop: 12, width: '100%', padding: '12px', border: 'none', borderRadius: 10,
-                background: 'linear-gradient(135deg,' + col + 'cc,' + col + ')',
-                color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
+                background: (MOD_BTN[card.module] || MOD_BTN.general)[0],
+                color: (MOD_BTN[card.module] || MOD_BTN.general)[1], fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
               {t.checkAnswer}
@@ -1452,7 +1483,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
             </p>
             {userAnswer ? (
               <div>
-                <div style={{ fontSize: 9, fontWeight: 700, color: TH.textMuted, letterSpacing: 1, marginBottom: 5 }}>{t.yourAnswerLabel}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: TH.textMuted, letterSpacing: 1, marginBottom: 5 }}>{t.yourAnswerLabel}</div>
                 <div style={{
                   padding: '10px 13px', borderRadius: 9,
                   background: dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
@@ -1464,7 +1495,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
               </div>
             ) : null}
             <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: col, letterSpacing: 1, marginBottom: 5 }}>{t.modelAnswerLabel}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: col, letterSpacing: 1, marginBottom: 5 }}>{t.modelAnswerLabel}</div>
               <div style={{
                 padding: '10px 13px', borderRadius: 9,
                 background: col + '0f', border: '1px solid ' + col + '30',
@@ -1480,7 +1511,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
       {/* Rating */}
       {phase === 'revealed' && (
         <>
-          <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>{t.rateLabel}</p>
+          <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 12, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>{t.rateLabel}</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
             {ratingBtns.map(btn => (
               <button key={btn.r} onClick={() => handleRate(btn.r)} disabled={submitting} style={{
@@ -1488,7 +1519,7 @@ function ReviewMode({ dark, lang, session, onDone }) {
                 border: '1px solid ' + (lastRating === btn.r ? btn.border : TH.border),
                 background: lastRating === btn.r ? btn.bg : TH.surface,
                 color: lastRating === btn.r ? btn.color : TH.textSecondary,
-                fontWeight: 700, fontSize: 11, cursor: submitting ? 'wait' : 'pointer',
+                fontWeight: 700, fontSize: 12, cursor: submitting ? 'wait' : 'pointer',
                 fontFamily: 'inherit', transition: 'all 0.15s',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
               }}>
@@ -1510,57 +1541,49 @@ function TopBar({ session, profile, isAdmin, view, setView, onLogout, dark, lang
   const TH = getTheme(dark);
   const t = TOP_T[lang] || TOP_T.en;
   const displayName = profile?.username || session.user.email;
-  const btnStyle = (active) => ({
-    padding: '5px 14px', borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-    border: '1px solid ' + (active ? TH.accent : TH.border),
-    background: active ? TH.accentBg : 'transparent',
-    color: active ? TH.accent : TH.textMuted,
-  });
+  const items = [
+    ['module', t.module], ['knowledge', t.knowledge], ['review', t.review], ['profile', t.profile],
+    ...(isAdmin ? [['admin', t.dashboard]] : []),
+  ];
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, minHeight: 48,
-      background: dark ? '#111114' : '#f7f5f0',
-      borderBottom: '1px solid ' + TH.border,
-    }}>
+    <header className="mm-topbar" style={{ background: TH.bg, borderBottom: '1px solid ' + TH.border }}>
       <style>{`
-        .mm-topbar-inner { padding: 8px 20px; }
-        .mm-topbar-name  { max-width: 200px; }
-        .mm-topbar-btn   { padding: 5px 14px; font-size: 11px; }
-        .mm-topbar-logout{ padding: 5px 14px; font-size: 11px; }
-        @media (max-width: 480px) {
-          .mm-topbar-inner  { padding: 8px 12px; gap: 4px !important; }
-          .mm-topbar-name   { max-width: 80px; font-size: 10px; }
-          .mm-topbar-btn    { padding: 5px 9px !important; font-size: 10px !important; }
-          .mm-topbar-logout { padding: 5px 9px !important; font-size: 10px !important; margin-left: 2px !important; }
+        .mm-topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        .mm-topbar-inner { max-width: 960px; margin: 0 auto; padding: 8px 20px; display: flex; align-items: center; gap: 12px; min-height: var(--mm-topbar-h); box-sizing: border-box; }
+        .mm-brand { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+        .mm-name { font-size: 14px; color: ${TH.textSecondary}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+        .mm-nav { display: flex; align-items: center; gap: 4px; }
+        .mm-nav button, .mm-logout { font-family: inherit; font-size: 14px; font-weight: 600; min-height: 36px; padding: 0 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        .mm-nav button { border: 1px solid transparent; background: transparent; color: ${TH.textSecondary}; }
+        .mm-nav button:hover { color: ${TH.text}; background: ${TH.accentBg}; }
+        .mm-nav button[aria-current="page"] { color: ${TH.accentText}; background: ${TH.accentBg}; border-color: ${dark ? 'rgba(245,166,35,0.35)' : 'rgba(232,148,10,0.35)'}; }
+        .mm-logout { border: 1px solid ${TH.border}; background: transparent; color: ${TH.textSecondary}; }
+        .mm-badge { background: ${TH.accent}; color: ${TH.onAccent}; border-radius: 999px; font-size: 12px; font-weight: 800; min-width: 20px; height: 20px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; }
+        @media (max-width: 640px) {
+          .mm-topbar-inner { flex-wrap: wrap; padding: 6px 12px 8px; gap: 6px; }
+          .mm-nav { order: 3; width: 100%; }
+          .mm-nav button { flex: 1; padding: 0 4px; font-size: 13px; }
+          .mm-name { max-width: 50vw; }
         }
       `}</style>
-      <div className="mm-topbar-inner" style={{
-        maxWidth: 960, margin: '0 auto',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'nowrap', gap: 6,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flexShrink: 1 }}>
-          <span style={{ fontSize: 14, fontWeight: 800, color: TH.text, fontFamily: "'Bricolage Grotesque',sans-serif", flexShrink: 0 }}>&#x2211;</span>
-          <span className="mm-topbar-name" style={{ fontSize: 11, color: TH.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</span>
-          {isAdmin && <span style={{ fontSize: 8, fontWeight: 700, color: TH.accent, background: TH.accentBg, padding: '2px 6px', borderRadius: 4, letterSpacing: 0.5, flexShrink: 0 }}>ADMIN</span>}
+      <div className="mm-topbar-inner">
+        <div className="mm-brand">
+          <span style={{ fontSize: 20, fontWeight: 800, color: TH.accent, fontFamily: "'Bricolage Grotesque',sans-serif", lineHeight: 1 }} aria-hidden="true">&#x2211;</span>
+          <span className="mm-name" title={displayName}>{displayName}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-          <button onClick={() => setView('module')} className="mm-topbar-btn" style={btnStyle(view === 'module')}>{t.module}</button>
-          <button onClick={() => setView('knowledge')} className="mm-topbar-btn" style={btnStyle(view === 'knowledge')}>{t.knowledge}</button>
-          <button onClick={() => setView('review')} className="mm-topbar-btn" style={{ ...btnStyle(view === 'review'), display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            {t.review}
-            {dueCount > 0 && (
-              <span style={{ background: view === 'review' ? TH.accent : 'rgba(245,166,35,0.9)', color: '#fff', borderRadius: 8, fontSize: 8, fontWeight: 800, padding: '1px 5px', lineHeight: 1.4 }}>{dueCount}</span>
-            )}
-          </button>
-          <button onClick={() => setView('profile')} className="mm-topbar-btn" style={btnStyle(view === 'profile')}>{t.profile}</button>
-          {isAdmin && <button onClick={() => setView('admin')} className="mm-topbar-btn" style={btnStyle(view === 'admin')}>{t.dashboard}</button>}
-          <button onClick={onLogout} className="mm-topbar-logout" style={{
-            padding: '5px 14px', borderRadius: 7, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
-            background: 'transparent', border: '1px solid ' + TH.border, color: TH.textMuted, fontWeight: 600, marginLeft: 4,
-          }}>{t.logout}</button>
-        </div>
+        <nav className="mm-nav" aria-label={lang === 'es' ? 'Secciones' : 'Sections'}>
+          {items.map(([id, label]) => (
+            <button key={id} onClick={() => setView(id)} aria-current={view === id ? 'page' : undefined}>
+              {label}
+              {id === 'review' && dueCount > 0 && (
+                <span className="mm-badge" aria-label={(lang === 'es' ? 'pendientes: ' : 'due: ') + dueCount}>{dueCount}</span>
+              )}
+            </button>
+          ))}
+        </nav>
+        <button onClick={onLogout} className="mm-logout">{t.logout}</button>
       </div>
-    </div>
+    </header>
   );
 }
 
@@ -1687,8 +1710,9 @@ export default function App() {
   };
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: TH.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TH.textMuted, fontSize: 13 }}>
-      Loading...
+    <div style={{ minHeight: '100vh', background: TH.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TH.textMuted, fontSize: 13 }} role="status" aria-live="polite">
+      <span style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 28, fontWeight: 800, color: TH.accent, marginRight: 10 }} aria-hidden="true">&#x2211;</span>
+      {lang === 'es' ? 'Cargando…' : 'Loading…'}
     </div>
   );
 
@@ -1706,18 +1730,29 @@ export default function App() {
     <div style={{ minHeight: '100vh', background: TH.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
       <div style={{ textAlign: 'center', maxWidth: 400 }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>&#x1F6AB;</div>
-        <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 22, fontWeight: 800, color: TH.text, marginBottom: 8 }}>Account Blocked</h2>
-        <p style={{ color: TH.textMuted, fontSize: 13, lineHeight: 1.6, marginBottom: 20 }}>Your account has been temporarily suspended. Contact the administrator for more information.</p>
-        <button onClick={handleLogout} style={{ padding: '10px 24px', borderRadius: 10, border: '1px solid ' + TH.border, background: TH.surface, color: TH.textSecondary, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>Log Out</button>
+        <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 22, fontWeight: 800, color: TH.text, marginBottom: 8 }}>{lang === 'es' ? 'Cuenta suspendida' : 'Account suspended'}</h2>
+        <p style={{ color: TH.textMuted, fontSize: 13, lineHeight: 1.6, marginBottom: 20 }}>{lang === 'es' ? 'Tu cuenta está suspendida por ahora. Escribile al administrador para saber más.' : 'Your account is suspended for now. Contact the administrator to find out more.'}</p>
+        <button onClick={handleLogout} style={{ padding: '10px 24px', borderRadius: 10, border: '1px solid ' + TH.border, background: TH.surface, color: TH.textSecondary, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{lang === 'es' ? 'Salir' : 'Log out'}</button>
       </div>
     </div>
   );
 
   return (
     <div style={{ minHeight: '100vh', background: TH.bg, transition: 'background 0.3s' }}>
+      <style>{`
+        :root { --mm-topbar-h: 56px; }
+        @media (max-width: 640px) { :root { --mm-topbar-h: 96px; } }
+        button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+          outline: 3px solid ${TH.accent}; outline-offset: 2px;
+        }
+        ::placeholder { color: ${TH.textFaint}; opacity: 1; }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+        }
+      `}</style>
       <TopBar session={session} profile={profile} isAdmin={isAdmin} view={view} setView={setView} onLogout={handleLogout} dark={dark} lang={lang} dueCount={dueCount} />
-      <div style={{ paddingTop: 48 }}>
-        {view === 'admin' && isAdmin && <AdminDashboard dark={dark} />}
+      <div style={{ paddingTop: 'var(--mm-topbar-h)' }}>
+        {view === 'admin' && isAdmin && <AdminDashboard dark={dark} lang={lang} />}
         {view === 'profile' && <ProfileScreen session={session} profile={profile} onSave={handleProfileSave} lang={lang} setLang={setLang} dark={dark} setDark={setDark} />}
         {view === 'knowledge' && <KnowledgeTree dark={dark} lang={lang} session={session} onLoad={(item) => { setPendingLoad(item); setView('module'); }} />}
         {view === 'review' && <ReviewMode dark={dark} lang={lang} session={session} onDone={() => { loadDueCount(session.user.id); setView('module'); }} />}
