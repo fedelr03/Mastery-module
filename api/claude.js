@@ -1,5 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
+const { buildRequest, estimateCost, cleanResponse } = require('./_lib/models');
 
 // Public (anon) key, same one the browser app ships with. Used to verify login
 // tokens when the service-role key isn't configured.
@@ -146,13 +147,18 @@ module.exports = async function handler(req, res) {
   }
 
   /* ── Extract metadata and build Claude request ── */
-  const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-  const meta = body._meta || {};
-  delete body._meta;
-
-  /* ── Whitelist allowed models (default: Sonnet 4.6) ── */
-  const ALLOWED_MODELS = ['claude-sonnet-4-6', 'claude-haiku-4-5-20251001'];
-  if (!ALLOWED_MODELS.includes(body.model)) body.model = 'claude-sonnet-4-6';
+  let clientBody;
+  try {
+    clientBody = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+  } catch (_) {
+    return res.status(400).json({ error: 'Invalid request body.' });
+  }
+  if (!Array.isArray(clientBody.messages) || clientBody.messages.length === 0) {
+    return res.status(400).json({ error: 'Invalid request body.' });
+  }
+  const meta = clientBody._meta || {};
+  /* The server picks the model and its settings (see api/_lib/models.js). */
+  const { body, model, fallbackBody } = buildRequest(clientBody, meta);
 
   /* ── Cache lookup ── */
   const cacheKey = getCacheKey(meta, body);
@@ -224,28 +230,41 @@ module.exports = async function handler(req, res) {
   try {
     stampRequest(user?.id);
 
-    const claudeRes = await fetchWithRetry('https://api.anthropic.com/v1/messages', {
+    const send = (payload) => fetchWithRetry('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': ANTHROPIC_KEY,
         'anthropic-version': '2023-06-01',
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(payload),
     });
 
-    const data = await claudeRes.json();
+    let usedModel = model;
+    let claudeRes = await send(body);
+    let data = await claudeRes.json();
+
+    /* Plan B: if the new model or one of its new fields is rejected, retry once on the previous model. */
+    if ((claudeRes.status === 400 || claudeRes.status === 404) && fallbackBody.model) {
+      console.warn(`Model ${model} rejected (${claudeRes.status}): ${data?.error?.message || ''}. Retrying on ${fallbackBody.model}.`);
+      usedModel = fallbackBody.model;
+      claudeRes = await send(fallbackBody);
+      data = await claudeRes.json();
+    }
+
+    if (claudeRes.status === 200 && data.stop_reason === 'refusal') {
+      return res.status(422).json({ error: { message: 'refusal' }, code: 'REFUSAL' });
+    }
+    data = cleanResponse(data);
 
     /* ── Store in cache ── */
     if (claudeRes.status === 200) setCache(cacheKey, data);
 
     /* ── Log usage ── */
     if (user && SB_SERVICE_KEY && data.usage) {
-      const inputTokens = data.usage.input_tokens || 0;
+      const inputTokens = (data.usage.input_tokens || 0) + (data.usage.cache_read_input_tokens || 0) + (data.usage.cache_creation_input_tokens || 0);
       const outputTokens = data.usage.output_tokens || 0;
-      /* Model-aware pricing: Haiku ($0.80/$4 per M) vs Sonnet ($3/$15 per M) */
-      const isHaiku = (body.model || '').includes('haiku');
-      const cost = (inputTokens * (isHaiku ? 0.80 : 3) + outputTokens * (isHaiku ? 4 : 15)) / 1_000_000;
+      const cost = estimateCost(usedModel, data.usage);
 
       try {
         const sb = createClient(SB_URL, SB_SERVICE_KEY);
