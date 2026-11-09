@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabase';
+import { usePrefs } from './lib/prefs';
 
 /* ═══════════ THEME TOKENS ═══════════
    Same brand as the app (cream paper, orange, Bricolage Grotesque),
@@ -359,8 +360,7 @@ const css = (TH) => `
 
 /* ═══════════ PAGE ═══════════ */
 export default function LandingPage({ confirmedEmail, initialForm }) {
-  const [lang, setLang] = useState(() => localStorage.getItem('mm_lang') || 'es');
-  const [dark, setDark] = useState(() => localStorage.getItem('mm_dark') === 'true');
+  const { lang, dark, setLang: changeLang, setDark } = usePrefs();
   const [scrolled, setScrolled] = useState(false);
   const [interest, setInterest] = useState('futbol');
   const [swapKey, setSwapKey] = useState(0);
@@ -379,11 +379,8 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
   const reviewRef = useRef(null);
   const faqRef = useRef(null);
 
-  const changeLang = (l) => { setLang(l); localStorage.setItem('mm_lang', l); };
-  const toggleDark = () => { const n = !dark; setDark(n); localStorage.setItem('mm_dark', String(n)); };
+  const toggleDark = () => setDark(!dark);
 
-  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
-  useEffect(() => { document.body.style.background = TH.bg; }, [dark]);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener('scroll', onScroll, { passive: true });

@@ -98,7 +98,14 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
 // ─── Main handler ────────────────────────────────────────────────────────────
 module.exports = async function handler(req, res) {
   /* ── CORS ── */
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // The app calls this endpoint from its own domain, so other websites don't need access.
+  // (Before, '*' let any site call it from a visitor's browser.)
+  const origin = req.headers.origin;
+  if (origin) {
+    let sameSite = false;
+    try { sameSite = new URL(origin).host === req.headers.host || /^https?:\/\/localhost(:\d+)?$/.test(origin); } catch (_) { /* malformed origin */ }
+    if (sameSite) { res.setHeader('Access-Control-Allow-Origin', origin); res.setHeader('Vary', 'Origin'); }
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -212,8 +219,8 @@ module.exports = async function handler(req, res) {
           const isEs = (meta.lang || '') === 'es';
           return res.status(429).json({
             error: isEs
-              ? `Límite diario alcanzado ($${todaySpend.toFixed(2)} de $${DAILY_LIMIT.toFixed(2)}). Tu presupuesto se reinicia a medianoche (UTC). Podés ver tu uso en el perfil.`
-              : `Daily budget reached ($${todaySpend.toFixed(2)} of $${DAILY_LIMIT.toFixed(2)}). Your budget resets at midnight UTC. Check your profile to track usage.`,
+              ? `Límite diario alcanzado ($${todaySpend.toFixed(2)} de $${DAILY_LIMIT.toFixed(2)}). Tu presupuesto se reinicia a medianoche (UTC).`
+              : `Daily budget reached ($${todaySpend.toFixed(2)} of $${DAILY_LIMIT.toFixed(2)}). Your budget resets at midnight UTC.`,
             code: 'DAILY_LIMIT_REACHED',
             spent: parseFloat(todaySpend.toFixed(4)),
             limit: DAILY_LIMIT,

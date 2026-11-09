@@ -147,3 +147,26 @@ export async function reviewCard(supabase, cardId, rating, card) {
   if (error) { console.error('reviewCard error:', error); return null; }
   return data;
 }
+
+/**
+ * masteryLevel — how well a card is known, for the map and the deck list.
+ *
+ * @param {object} card              - review_cards row (or null when the topic has no card)
+ * @param {object} [opts]
+ *   @param {boolean} [opts.ignoreDue] - skip the "due" state and report the underlying level
+ * @returns {'none'|'due'|'learning'|'reviewing'|'mastered'}
+ */
+export function masteryLevel(card, { ignoreDue = false } = {}) {
+  if (!card) return 'none';
+  if (!ignoreDue && isDue(card)) return 'due';
+  const ease = parseFloat(card.ease_factor) || 2.5;
+  const interval = parseInt(card.interval, 10) || 0;
+  if (interval >= 21 && ease >= 2.4) return 'mastered';
+  if (interval >= 7) return 'reviewing';
+  return 'learning';
+}
+
+export const MASTERY_LABEL = {
+  es: { due: 'Para repasar', learning: 'Aprendiendo', reviewing: 'Repasando', mastered: 'Dominado', none: 'Sin tarjeta' },
+  en: { due: 'Due for review', learning: 'Learning', reviewing: 'Reviewing', mastered: 'Mastered', none: 'No card' },
+};
