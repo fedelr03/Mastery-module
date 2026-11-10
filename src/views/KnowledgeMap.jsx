@@ -1,12 +1,13 @@
-/* Knowledge map — every topic you studied, grouped by subject and colored by how well you know it.
-   It used to be a fixed-width drawing that was unreadable on phones and unreachable by keyboard;
-   now it is ordinary buttons in a responsive grid. */
+/* Knowledge map — every topic you studied, drawn as a concept map:
+   you → subjects → topics, colored by how well you know each one,
+   with links between topics of different subjects that share key ideas. */
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../supabase';
 import { usePrefs } from '../lib/prefs';
 import { masteryLevel, MASTERY_LABEL } from '../srs';
 import { subjectName, SUBJECT_IDS } from '../theme';
 import { IconRefresh } from '../components/icons';
+import ConceptMap from './ConceptMap';
 
 const COPY = {
   es: {
@@ -15,7 +16,11 @@ const COPY = {
     empty: 'Todavía no estudiaste ningún tema', emptyHint: 'Cuando estudies el primero, aparece acá.', goStudy: 'Estudiar un tema',
     topics: 'temas', topic: 'tema', statTopics: 'Temas estudiados', statDue: 'Para repasar hoy', statMastered: 'Dominados', statSubjects: 'Materias',
     reviewNow: 'Repasar ahora', all: 'Todos', search: 'Buscar un tema…', noMatch: 'Ningún tema coincide con el filtro.',
-    times: '{n} veces', linked: 'Se conecta con', open: 'Abrir',
+    times: '{n} veces', linked: 'Se conecta con', open: 'Abrir tema',
+    root: 'Mi conocimiento', mapLabel: 'Mapa conceptual de tus temas',
+    hint: 'Pasá el cursor por un tema para ver con qué se conecta. Tocalo para abrirlo.',
+    studiedOnce: 'Estudiado 1 vez', studiedN: 'Estudiado {n} veces', noLinks: 'Todavía no se conecta con temas de otras materias.',
+    legendLink: 'Comparten ideas', noCard: 'Sin tarjeta de repaso',
     loadFailed: 'No pudimos cargar tu mapa. Revisá la conexión y probá de nuevo.',
     openFailed: 'No se pudo abrir ese tema. Probá de nuevo.',
   },
@@ -25,13 +30,16 @@ const COPY = {
     empty: "You haven't studied any topic yet", emptyHint: 'Your first one will show up here.', goStudy: 'Study a topic',
     topics: 'topics', topic: 'topic', statTopics: 'Topics studied', statDue: 'Due today', statMastered: 'Mastered', statSubjects: 'Subjects',
     reviewNow: 'Review now', all: 'All', search: 'Search a topic…', noMatch: 'No topic matches the filter.',
-    times: '{n} times', linked: 'Connects with', open: 'Open',
+    times: '{n} times', linked: 'Connects with', open: 'Open topic',
+    root: 'My knowledge', mapLabel: 'Concept map of your topics',
+    hint: 'Hover a topic to see what it connects with. Tap it to open it.',
+    studiedOnce: 'Studied once', studiedN: 'Studied {n} times', noLinks: 'Not linked to topics in other subjects yet.',
+    legendLink: 'Share ideas', noCard: 'No review card',
     loadFailed: "We couldn't load your map. Check your connection and try again.",
     openFailed: "Couldn't open that topic. Try again.",
   },
 };
 
-const SUBJECT_ICON = { math: '∑', stats: 'σ', econ: '⚖', finance: '$', general: '◎' };
 const LEVELS = ['due', 'learning', 'reviewing', 'mastered'];
 const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
@@ -57,7 +65,7 @@ function buildMap(history, cards) {
     if (!key) return;
     if (!byKey[key]) {
       const module = SUBJECT_IDS.includes(row.module) ? row.module : 'general';
-      byKey[key] = { key, id: row.id, label: row.topic, module, mode: row.mode, count: 0, level: masteryLevel(cardByTopic[key]), keywords: new Set(), links: [] };
+      byKey[key] = { key, id: row.id, label: row.topic, module, mode: row.mode, count: 0, level: masteryLevel(cardByTopic[key]), keywords: new Set(), links: [], linkKeys: [] };
     }
     byKey[key].count += 1;
     keywordsOf(row.kc).forEach((k) => byKey[key].keywords.add(k));
@@ -71,7 +79,7 @@ function buildMap(history, cards) {
       if (a.module === b.module) continue;
       let shared = 0;
       for (const k of b.keywords) { if (a.keywords.has(k) && ++shared > 1) break; }
-      if (shared > 1) { a.links.push(b.label); b.links.push(a.label); }
+      if (shared > 1) { a.links.push(b.label); b.links.push(a.label); a.linkKeys.push(b.key); b.linkKeys.push(a.key); }
     }
   }
 
@@ -94,6 +102,9 @@ export default function KnowledgeMap({ session, onOpen, onReview, onStudy }) {
   const [filter, setFilter] = useState('all');
   const [query, setQuery] = useState('');
   const [openingId, setOpeningId] = useState(null);
+  const [active, setActive] = useState(null);
+  const [shownKey, setShownKey] = useState(null);
+  const activate = (k) => { setActive(k); if (k) setShownKey(k); };
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -131,6 +142,15 @@ export default function KnowledgeMap({ session, onOpen, onReview, onStudy }) {
   const q = norm(query);
   const visible = (tp) => (filter === 'all' || tp.level === filter) && (!q || norm(tp.label).includes(q));
   const shown = subjects.map((s) => ({ ...s, list: s.topics.filter(visible) })).filter((s) => s.list.length > 0);
+  // The map always draws every topic (non-matching ones are faded) so its shape doesn't jump around while filtering.
+  const subjectsForMap = useMemo(() => subjects.map((s) => ({
+    ...s,
+    topics: s.topics.map((tp) => ({
+      ...tp,
+      aria: tp.label + ', ' + subjectName(s.id, lang) + (tp.level !== 'none' ? ', ' + labels[tp.level] : '') + (tp.links.length ? '. ' + t.linked + ' ' + tp.links.join(', ') : ''),
+    })),
+  })), [subjects, lang, labels, t.linked]);
+  const shownTopic = shownKey ? topics.find((tp) => tp.key === shownKey) : null;
 
   const open = async (tp) => {
     if (openingId !== null) return;
@@ -153,7 +173,7 @@ export default function KnowledgeMap({ session, onOpen, onReview, onStudy }) {
       {head}
       <span className="sr-only">{t.loading}</span>
       <div className="stats">{[0, 1, 2, 3].map((i) => <div key={i} className="skeleton" style={{ height: 84 }} />)}</div>
-      <div className="map-grid">{[0, 1, 2].map((i) => <div key={i} className="skeleton" style={{ height: 240 }} />)}</div>
+      <div className="skeleton" style={{ height: 420 }} />
     </div>
   );
 
@@ -198,54 +218,43 @@ export default function KnowledgeMap({ session, onOpen, onReview, onStudy }) {
         )}
       </div>
 
-      {shown.length === 0 && <p className="muted" style={{ textAlign: 'center', padding: '32px 0' }}>{t.noMatch}</p>}
+      {shown.length === 0 && <p className="muted" style={{ textAlign: 'center', padding: '12px 0 4px' }}>{t.noMatch}</p>}
 
-      <div className="map-grid">
-        {shown.map((s) => {
-          const total = s.topics.length;
-          return (
-            <section key={s.id} className="map-col" data-subject={s.id}>
-              <header className="map-col-head">
-                <span className="map-icon" aria-hidden="true">{SUBJECT_ICON[s.id]}</span>
-                <div>
-                  <h2>{subjectName(s.id, lang)}</h2>
-                  <small>{total} {total === 1 ? t.topic : t.topics}</small>
-                  <div className="map-bar" aria-hidden="true">
-                    {LEVELS.map((lv) => {
-                      const n = s.topics.filter((tp) => tp.level === lv).length;
-                      return n > 0 ? <i key={lv} className={'m-' + lv} style={{ width: (n / total) * 100 + '%', background: 'var(--m)' }} /> : null;
-                    })}
-                  </div>
-                </div>
-              </header>
-              <ul className="map-topics">
-                {s.list.map((tp) => (
-                  <li key={tp.key}>
-                    <button type="button" className="map-topic" disabled={openingId !== null} onClick={() => open(tp)}
-                      title={tp.links.length ? t.linked + ': ' + tp.links.join(', ') : t.open}>
-                      {openingId === tp.id ? <span className="spinner" /> : <span className={'m-dot m-' + tp.level} />}
-                      <span>
-                        <b>{tp.label}</b>
-                        {(tp.links.length > 0 || tp.count > 1) && (
-                          <small>
-                            {tp.count > 1 ? t.times.replace('{n}', tp.count) : ''}
-                            {tp.count > 1 && tp.links.length > 0 ? ' · ' : ''}
-                            {tp.links.length > 0 ? '↔ ' + tp.links.slice(0, 2).join(', ') : ''}
-                          </small>
-                        )}
-                      </span>
-                      {tp.level !== 'none' && <span className={'m-label m-' + tp.level}>{labels[tp.level]}</span>}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          );
-        })}
+      <ConceptMap
+        subjects={subjectsForMap}
+        rootLabel={t.root}
+        ariaLabel={t.mapLabel}
+        subjectLabel={(id) => subjectName(id, lang)}
+        countLabel={(n) => n + ' ' + (n === 1 ? t.topic : t.topics)}
+        isDimmed={(tp) => !visible(tp)}
+        onOpen={open}
+        openingId={openingId}
+        active={active}
+        setActive={activate}
+      />
+
+      <div className="cm-info" aria-live="polite">
+        {shownTopic ? (
+          <>
+            <div className="cm-info-main" data-subject={shownTopic.module}>
+              <span className={'m-dot m-' + shownTopic.level} />
+              <div>
+                <b>{shownTopic.label}</b>
+                <small>
+                  {subjectName(shownTopic.module, lang)} · {shownTopic.count > 1 ? t.studiedN.replace('{n}', shownTopic.count) : t.studiedOnce}
+                  {' · '}<span className={'m-label m-' + shownTopic.level}>{shownTopic.level === 'none' ? t.noCard : labels[shownTopic.level]}</span>
+                </small>
+                <small>{shownTopic.links.length ? t.linked + ': ' + shownTopic.links.join(', ') : t.noLinks}</small>
+              </div>
+            </div>
+            <button type="button" className="btn btn-ghost btn-sm" disabled={openingId !== null} onClick={() => open(shownTopic)}>{t.open} →</button>
+          </>
+        ) : <p>{t.hint}</p>}
       </div>
 
       <div className="legend" aria-hidden="true">
         {LEVELS.map((lv) => <span key={lv}><i className={'m-dot m-' + lv} />{labels[lv]}</span>)}
+        <span><svg width="26" height="8" aria-hidden="true"><path d="M1 4 H25" className="cm-legend-link" /></svg>{t.legendLink}</span>
       </div>
     </div>
   );

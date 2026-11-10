@@ -25,15 +25,26 @@ const getTheme = (dark) => (dark ? DARK : LIGHT);
 /* ═══════════ COPY ═══════════ */
 const T = {
   es: {
-    navHow: 'Cómo funciona', navReview: 'Repaso', navFaq: 'Preguntas',
+    navHow: 'Cómo funciona', navReview: 'Ejemplos', navFaq: 'Preguntas',
     login: 'Iniciar sesión', signup: 'Crear cuenta',
     heroTitle: 'Entendé cada tema como para explicárselo a un amigo.',
     heroSub: 'Escribís un tema de matemática, estadística, economía o finanzas. Mastery Module te lo explica desde cero, a tu nivel y con ejemplos de lo que te gusta, y después te toma un quiz para ver si quedó.',
     heroCta: 'Crear cuenta gratis', heroCta2: 'Ya tengo cuenta',
     heroNote: 'Gratis, en español o en inglés.',
-    demoLabel: 'Probalo acá: elegí qué te gusta',
+    heroShotAlt: 'Captura de Mastery Module: la explicación de Derivadas, que arranca con una analogía de fútbol.',
+    frameUrl: 'mastery-module.vercel.app',
+    tourTitle: 'Así se ve por dentro',
+    tourLead: 'Estas capturas son de la app, con una cuenta de prueba. Es lo mismo que vas a ver vos.',
+    tour: [
+      { key: 'home', title: 'Escribís el tema', desc: 'Lo que tenés que estudiar, con tus palabras. Si querés, sumás algo que te guste y los ejemplos salen de ahí. Elegís si tenés 2 minutos o media hora.', alt: 'Pantalla de inicio: el tema «Elasticidad precio de la demanda» escrito en la barra, con fútbol como interés y el modo Rápido elegido.' },
+      { key: 'explain', title: 'Leés la explicación', desc: 'Arranca con una analogía, sigue con la definición y la fórmula, y cierra con un ejercicio resuelto paso a paso. Si algo no te cierra, tocás «No entendí» y te lo explica más simple.', alt: 'Explicación de Derivadas: analogía con un delantero, definición, fórmula del límite y un ejemplo resuelto.' },
+      { key: 'quiz', title: 'Te tomás el quiz', desc: 'Cada respuesta se corrige al toque y te dice por qué. Después viene un examen más largo y, al final, te pide que lo expliques vos con tus palabras.', alt: 'Quiz corregido: una respuesta bien, otra mal, con la explicación de cada una.' },
+      { key: 'review', title: 'Lo repasás antes de olvidarlo', desc: 'Cuando un tema está por olvidarse, la app te hace una pregunta nueva sobre él. Respondés de memoria, comparás con la respuesta modelo y calificás cómo te fue: eso decide cuándo vuelve.', alt: 'Tarjeta de repaso de Inflación: la respuesta del estudiante al lado de la respuesta modelo.' },
+      { key: 'map', title: 'Ves todo en tu mapa', desc: 'Cada tema cuelga de su materia, con un color según cuánto lo sabés. Las líneas punteadas unen temas de materias distintas que comparten ideas, como derivadas y elasticidad.', alt: 'Mapa de conocimiento: materias con sus temas y una línea que une Derivadas con Elasticidad precio.' },
+    ],
+    demoTitle: 'Los ejemplos salen de lo que te gusta',
+    demoLead: 'La misma idea, la derivada, explicada para tres personas distintas. Tocá un interés.',
     demoTopic: 'Derivada',
-    demoFoot: 'La misma idea, explicada con tus intereses. En la app lo hacés con cualquier tema.',
     demo: [
       { key: 'futbol', label: 'Fútbol', text: 'Un delantero arranca a correr hacia el arco y su posición cambia todo el tiempo. La derivada te dice qué tan rápido está cambiando en un instante exacto: la velocidad que marcaría un radar justo en el momento en que patea.' },
       { key: 'cocina', label: 'Cocina', text: 'Ponés agua a hervir y anotás la temperatura cada minuto. La derivada es qué tan rápido sube la temperatura en un momento puntual, por ejemplo cuántos grados gana por segundo justo antes de que empiece a burbujear.' },
@@ -46,37 +57,26 @@ const T = {
       { name: 'Economía', topics: ['Oferta y demanda', 'Elasticidad', 'Política monetaria', 'Estructuras de mercado'] },
       { name: 'Finanzas', topics: ['Valuación por DCF', 'Ratios financieros', 'Valuación de opciones', 'Teoría de portfolio'] },
     ],
-    howTitle: 'Cómo funciona',
-    steps: [
-      { title: 'Escribí un tema', desc: 'Mientras más concreto, mejor: «Elasticidad precio de la demanda» rinde más que «Economía». También podés subir el PDF de la guía de ejercicios o pegar el ejercicio que no te sale.' },
-      { title: 'Leé y practicá', desc: 'La explicación viene por partes, con ejemplos resueltos paso a paso. Si algo no te cierra, tocás «No entendí» y te lo explica más simple. Después hacés el quiz y el examen, y cada respuesta trae su corrección.' },
-      { title: 'Repasalo antes de olvidarlo', desc: 'Sumás el tema a tu mazo de repaso y la app te lo vuelve a preguntar cuando estás por olvidarlo.' },
+    homeworkTitle: 'Para la tarea de esta semana',
+    hwPdfTitle: 'Subí la guía de ejercicios',
+    hwPdfDesc: 'La app lee el PDF, agrupa los ejercicios por tipo y te enseña el método de cada grupo. Así el próximo lo resolvés solo.',
+    hwPdfFile: 'Guia_3_Derivadas.pdf', hwPdfMeta: '40 ejercicios',
+    hwPdfFound: 'Encontró 4 tipos de problema',
+    hwPdfTypes: [['Regla de la potencia', 'ej. 1 a 12'], ['Regla de la cadena', 'ej. 13 a 24'], ['Producto y cociente', 'ej. 25 a 33'], ['Recta tangente', 'ej. 34 a 40']],
+    hwExTitle: 'Pegá el ejercicio que no te sale',
+    hwExDesc: 'Lo escribís tal cual está en la guía y te lo resuelve paso a paso, diciendo por qué se hace cada cosa.',
+    hwExInput: 'Derivá f(x) = (3x² + 1)⁵',
+    hwExSteps: [
+      'Es una función adentro de otra: (algo)⁵, y adentro 3x² + 1. Va regla de la cadena.',
+      'Derivás la de afuera dejando la de adentro igual: 5(3x² + 1)⁴.',
+      'Multiplicás por la derivada de la de adentro: 6x.',
+      'f′(x) = 30x(3x² + 1)⁴',
     ],
     depthTitle: 'Elegís cuánto tiempo tenés',
     depths: [
       { name: 'Lite', desc: 'Unos 2 minutos: la idea central, dos conceptos clave y tres preguntas.' },
       { name: 'Rápido', desc: 'Explicación completa, quiz y un examen de 5 preguntas.' },
       { name: 'Profundo', desc: 'Análisis a fondo, examen de 10 preguntas, desafíos y slides de resumen.' },
-    ],
-    reviewTitle: 'El repaso se organiza solo',
-    reviewText: 'Cada tarjeta te hace una pregunta nueva sobre algo que ya estudiaste. Respondés de memoria, la comparás con la respuesta modelo y te calificás. Con esa calificación, la app decide cuándo volver a preguntarte.',
-    intervalsTitle: 'Según cómo te fue, la tarjeta vuelve:',
-    intervals: [
-      { r: 'Olvidé', when: 'mañana' },
-      { r: 'Difícil', when: 'un poco más adelante' },
-      { r: 'Bien', when: 'en unos días' },
-      { r: 'Fácil', when: 'en semanas' },
-    ],
-    mapTitle: 'Y todo queda en tu mapa',
-    mapText: 'Los temas que estudiaste se ordenan por materia, con un color según cuánto los dominás. Tocás cualquiera y lo retomás donde lo dejaste.',
-    cardTopic: 'Derivadas', cardQ: '¿Qué representa geométricamente la derivada?',
-    cardYours: 'Tu respuesta', cardYoursText: 'La pendiente de la recta tangente en ese punto.',
-    cardModel: 'Respuesta modelo', cardModelText: 'La tasa de cambio instantánea: la pendiente de la recta tangente a la curva en ese punto.',
-    cardRate: '¿Qué tan bien lo recordaste?',
-    homeworkTitle: 'Para la tarea de esta semana',
-    homework: [
-      { title: 'Subí la guía de ejercicios', desc: '¿Tenés un PDF con 40 ejercicios? Subilo. La app reconoce qué tipo de problemas son y te enseña el método para resolverlos, así el próximo lo sacás vos.' },
-      { title: 'Pegá el ejercicio que no te sale', desc: 'Lo escribís en la barra y te lo resuelve paso a paso, explicando por qué se hace cada cosa. Ideal para el que entra seguro en el parcial.' },
     ],
     faqTitle: 'Preguntas frecuentes',
     faq: [
@@ -114,15 +114,26 @@ const T = {
     errGeneric: 'Algo falló. Probá de nuevo en un momento.',
   },
   en: {
-    navHow: 'How it works', navReview: 'Review', navFaq: 'FAQ',
+    navHow: 'How it works', navReview: 'Examples', navFaq: 'FAQ',
     login: 'Log in', signup: 'Sign up',
     heroTitle: 'Understand every topic well enough to explain it to a friend.',
     heroSub: 'Type a topic in math, statistics, economics or finance. Mastery Module explains it from scratch, at your level and with examples from things you like, then quizzes you to check it stuck.',
     heroCta: 'Create a free account', heroCta2: 'I have an account',
     heroNote: 'Free, in English or Spanish.',
-    demoLabel: 'Try it: pick something you like',
+    heroShotAlt: 'Screenshot of Mastery Module: the Derivatives explanation, opening with a football analogy.',
+    frameUrl: 'mastery-module.vercel.app',
+    tourTitle: 'What it looks like inside',
+    tourLead: 'These are screenshots of the app with a test account. It is exactly what you will see. (The example account is in Spanish.)',
+    tour: [
+      { key: 'home', title: 'Type a topic', desc: 'Whatever you need to study, in your own words. Add something you like if you want, and the examples come from there. Pick whether you have 2 minutes or half an hour.', alt: 'Home screen: the topic "Price elasticity of demand" typed in, with football as the interest and Fast mode selected.' },
+      { key: 'explain', title: 'Read the explanation', desc: 'It opens with an analogy, then the definition and the formula, and ends with a worked example step by step. If something does not click, tap "I didn\'t get it" for a simpler version.', alt: 'Derivatives explanation: a striker analogy, the definition, the limit formula and a worked example.' },
+      { key: 'quiz', title: 'Take the quiz', desc: 'Every answer is graded on the spot and tells you why. Then comes a longer exam and, at the end, it asks you to explain the topic in your own words.', alt: 'Graded quiz: one answer right, one wrong, with the explanation for each.' },
+      { key: 'review', title: 'Review it before you forget', desc: 'When a topic is about to slip, the app asks you a new question about it. You answer from memory, compare with the model answer and rate how it went: that decides when it comes back.', alt: 'Inflation review card: the student answer next to the model answer.' },
+      { key: 'map', title: 'See everything on your map', desc: 'Each topic hangs from its subject, colored by how well you know it. Dashed lines join topics from different subjects that share ideas, like derivatives and elasticity.', alt: 'Knowledge map: subjects with their topics and a line linking Derivatives with Price elasticity.' },
+    ],
+    demoTitle: 'Examples come from what you like',
+    demoLead: 'The same idea, the derivative, explained for three different people. Tap an interest.',
     demoTopic: 'Derivative',
-    demoFoot: 'The same idea, explained through your interests. In the app it works with any topic.',
     demo: [
       { key: 'futbol', label: 'Football', text: 'A striker sprints toward goal and his position keeps changing. The derivative tells you how fast it is changing at one exact instant: the speed a radar would show right as he shoots.' },
       { key: 'cocina', label: 'Cooking', text: 'You put water on to boil and write down the temperature every minute. The derivative is how fast the temperature is rising at one moment, say how many degrees per second it gains just before it starts to bubble.' },
@@ -135,37 +146,26 @@ const T = {
       { name: 'Economics', topics: ['Supply and demand', 'Elasticity', 'Monetary policy', 'Market structures'] },
       { name: 'Finance', topics: ['DCF valuation', 'Financial ratios', 'Options pricing', 'Portfolio theory'] },
     ],
-    howTitle: 'How it works',
-    steps: [
-      { title: 'Type a topic', desc: 'The more specific the better: "Price elasticity of demand" works better than "Economics". You can also upload a PDF problem set or paste the exercise you are stuck on.' },
-      { title: 'Read and practice', desc: 'The explanation comes in parts, with worked examples step by step. If something does not click, tap "I didn\'t get it" for a simpler version. Then take the quiz and the exam, with feedback on every answer.' },
-      { title: 'Review it before you forget', desc: 'Add the topic to your review deck and the app asks you about it again right when you are about to forget it.' },
+    homeworkTitle: "For this week's homework",
+    hwPdfTitle: 'Upload your problem set',
+    hwPdfDesc: 'The app reads the PDF, groups the exercises by type and teaches you the method for each group, so you can solve the next one yourself.',
+    hwPdfFile: 'Problem_set_3_Derivatives.pdf', hwPdfMeta: '40 exercises',
+    hwPdfFound: 'Found 4 kinds of problem',
+    hwPdfTypes: [['Power rule', 'ex. 1 to 12'], ['Chain rule', 'ex. 13 to 24'], ['Product and quotient', 'ex. 25 to 33'], ['Tangent line', 'ex. 34 to 40']],
+    hwExTitle: 'Paste the exercise you are stuck on',
+    hwExDesc: 'Type it exactly as it is in the problem set and it gets solved step by step, saying why each step happens.',
+    hwExInput: 'Differentiate f(x) = (3x² + 1)⁵',
+    hwExSteps: [
+      'It is a function inside another: (something)⁵, with 3x² + 1 inside. Chain rule.',
+      'Differentiate the outside and keep the inside as is: 5(3x² + 1)⁴.',
+      'Multiply by the derivative of the inside: 6x.',
+      'f′(x) = 30x(3x² + 1)⁴',
     ],
     depthTitle: 'Pick how much time you have',
     depths: [
       { name: 'Lite', desc: 'About 2 minutes: the core idea, two key concepts and three questions.' },
       { name: 'Fast', desc: 'Full explanation, a quiz and a 5-question exam.' },
       { name: 'Deep', desc: 'In-depth analysis, a 10-question exam, challenges and summary slides.' },
-    ],
-    reviewTitle: 'Review that schedules itself',
-    reviewText: 'Each card asks you a fresh question about something you already studied. You answer from memory, compare it with the model answer and rate yourself. That rating decides when the app asks you again.',
-    intervalsTitle: 'Depending on how it went, the card comes back:',
-    intervals: [
-      { r: 'Forgot', when: 'tomorrow' },
-      { r: 'Hard', when: 'a bit later' },
-      { r: 'Good', when: 'in a few days' },
-      { r: 'Easy', when: 'in weeks' },
-    ],
-    mapTitle: 'And everything lands on your map',
-    mapText: 'The topics you studied are grouped by subject and colored by how well you know them. Tap any of them to pick up where you left off.',
-    cardTopic: 'Derivatives', cardQ: 'What does the derivative represent geometrically?',
-    cardYours: 'Your answer', cardYoursText: 'The slope of the tangent line at that point.',
-    cardModel: 'Model answer', cardModelText: 'The instantaneous rate of change: the slope of the line tangent to the curve at that point.',
-    cardRate: 'How well did you remember it?',
-    homeworkTitle: "For this week's homework",
-    homework: [
-      { title: 'Upload your problem set', desc: 'Got a PDF with 40 exercises? Upload it. The app works out what kind of problems they are and teaches you the method, so you can solve the next one yourself.' },
-      { title: 'Paste the exercise you are stuck on', desc: 'Type it into the bar and it gets solved step by step, explaining why each step happens. Perfect for the one that is sure to be on the exam.' },
     ],
     faqTitle: 'Questions',
     faq: [
@@ -253,76 +253,91 @@ const css = (TH) => `
   .lp-btn-ghost:hover { border-color:var(--text2); }
   .lp-btn-sm { font-size:14px; padding:8px 14px; }
 
-  /* hero */
-  .lp-hero { padding:72px 0 64px; }
-  .lp-hero-grid { display:grid; grid-template-columns:1.1fr 1fr; gap:56px; align-items:center; }
-  .lp-hero h1 { font-size:clamp(36px, 5.2vw, 58px); line-height:1.04; letter-spacing:-0.03em; font-weight:800; max-width:15ch; }
-  .lp-hero-sub { margin-top:22px; font-size:19px; color:var(--text2); max-width:34em; }
+  /* hero: copy on the left, the real app on the right, running off the bottom edge */
+  .lp-hero { padding:64px 0 0; overflow:hidden; }
+  .lp-hero-grid { display:grid; grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr); gap:56px; align-items:end; }
+  .lp-hero-copy { padding:24px 0 72px; align-self:center; }
+  .lp-hero h1 { font-size:clamp(36px, 5vw, 56px); line-height:1.04; letter-spacing:-0.03em; font-weight:800; max-width:14ch; }
+  .lp-hero-sub { margin-top:22px; font-size:19px; color:var(--text2); max-width:32em; }
   .lp-hero-ctas { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; }
   .lp-hero-note { margin-top:14px; font-size:14px; color:var(--text2); }
+  .lp-hero-shot { margin-bottom:-2px; }
+  .lp-hero-shot .lp-frame { border-bottom-left-radius:0; border-bottom-right-radius:0; border-bottom:none; }
+  .lp-hero-shot .lp-frame-img { aspect-ratio:1 / 0.95; }
 
-  .lp-demo { position:relative; border:1px solid var(--border); border-radius:18px; background-color:var(--surface);
-             background-image:linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-             background-size:22px 22px; padding:26px; box-shadow:0 18px 50px -24px rgba(31,29,43,.25); }
-  .lp-demo-label { font-size:14px; font-weight:600; color:var(--text2); }
-  .lp-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
-  .lp-chip { border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:999px; padding:7px 15px; font-size:15px; font-weight:600; cursor:pointer; }
-  .lp-chip[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:var(--onAccent); }
-  .lp-demo-topic { margin-top:22px; display:flex; flex-direction:column; gap:2px; }
-  .lp-demo-topic h3 { font-size:28px; font-weight:800; letter-spacing:-0.02em; }
-  .lp-formula { font-family:'Cambria Math','STIX Two Math','Times New Roman',serif; font-size:16px; color:var(--text2); max-width:100%; overflow-wrap:anywhere; }
-  .lp-demo-text { margin-top:12px; font-size:17px; line-height:1.65; background:var(--surface); border-left:3px solid var(--accent); padding:12px 14px; border-radius:0 10px 10px 0; min-height:9.5em; }
-  .lp-demo-text.swap { animation:lpSwap .32s ease; }
-  .lp-demo-foot { margin-top:14px; font-size:14px; color:var(--text2); }
-  @keyframes lpSwap { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+  /* browser-ish frame around every screenshot: the URL says "this is the real app" */
+  .lp-frame { border:1px solid var(--border); border-radius:14px; background:var(--surface); overflow:hidden;
+              box-shadow:0 30px 60px -36px rgba(31,29,43,.45); }
+  .lp-frame-bar { display:flex; align-items:center; gap:10px; height:34px; padding:0 12px; border-bottom:1px solid var(--border); background:var(--bg); }
+  .lp-frame-bar i { width:9px; height:9px; border-radius:50%; background:var(--border); flex:none; }
+  .lp-frame-bar span { flex:1; text-align:center; font-size:12.5px; color:var(--text2); margin-right:37px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lp-frame-img { display:block; width:100%; height:auto; object-fit:cover; object-position:top center; background:var(--bg); }
 
   /* sections */
-  .lp-section { padding:88px 0; border-top:1px solid var(--border); }
+  .lp-section { padding:96px 0; border-top:1px solid var(--border); }
   .lp-h2 { font-size:clamp(30px, 3.6vw, 42px); line-height:1.1; letter-spacing:-0.025em; font-weight:800; max-width:20ch; }
-  .lp-lead { margin-top:16px; font-size:18px; color:var(--text2); max-width:36em; }
+  .lp-lead { margin-top:14px; font-size:18px; color:var(--text2); max-width:38em; }
 
-  .lp-subjects { display:grid; grid-template-columns:repeat(4, 1fr); gap:28px; margin-top:36px; }
-  .lp-subjects h3 { font-size:20px; font-weight:700; padding-bottom:10px; border-bottom:2px solid var(--accent); }
-  .lp-subjects ul { list-style:none; margin:12px 0 0; padding:0; color:var(--text2); font-size:16px; }
-  .lp-subjects li { padding:4px 0; }
+  /* tour: the steps on the left pick the screenshot on the right */
+  .lp-tour { display:grid; grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr); gap:48px; margin-top:44px; align-items:start; }
+  .lp-tour-list { list-style:none; margin:0; padding:0; display:grid; gap:4px; }
+  .lp-tour-btn { display:grid; grid-template-columns:34px 1fr; gap:4px 12px; width:100%; text-align:left; background:none; border:1px solid transparent;
+                 border-radius:14px; padding:14px 16px; cursor:pointer; color:var(--text); }
+  .lp-tour-btn:hover { background:var(--accentBg); }
+  .lp-tour-btn[aria-selected="true"] { background:var(--surface); border-color:var(--border); box-shadow:0 10px 30px -22px rgba(31,29,43,.4); }
+  .lp-tour-n { grid-row:span 2; width:30px; height:30px; border-radius:50%; display:grid; place-items:center; font-size:14px; font-weight:700;
+               border:1.5px solid var(--border); color:var(--text2); margin-top:1px; }
+  .lp-tour-btn[aria-selected="true"] .lp-tour-n { background:var(--accent); border-color:var(--accent); color:var(--onAccent); }
+  .lp-tour-btn b { font-family:'Bricolage Grotesque', sans-serif; font-size:19px; font-weight:700; line-height:1.3; }
+  .lp-tour-btn span.d { font-size:15.5px; color:var(--text2); line-height:1.55; display:none; }
+  .lp-tour-btn[aria-selected="true"] span.d { display:block; }
+  .lp-tour-stage { position:sticky; top:84px; }
+  .lp-tour-stage .lp-frame-img { aspect-ratio:1 / 0.86; }
+  .lp-tour-stage .lp-frame-img.is-wide { aspect-ratio:auto; }
+  .lp-tour-m { display:none; }
+  .lp-depths { margin-top:40px; display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; padding-top:28px; border-top:1px solid var(--border); }
+  .lp-depths strong { display:block; font-size:16px; }
+  .lp-depths span { display:block; margin-top:4px; font-size:15px; color:var(--text2); }
+  .lp-depths-t { grid-column:1 / -1; font-family:'Bricolage Grotesque', sans-serif; font-size:20px; font-weight:700; }
 
-  .lp-steps { display:grid; grid-template-columns:repeat(3, 1fr); gap:36px; margin-top:44px; counter-reset:step; }
-  .lp-step-n { font-family:'Bricolage Grotesque', sans-serif; font-size:44px; font-weight:800; color:var(--accent); line-height:1; }
-  .lp-step h3 { font-size:22px; font-weight:700; margin-top:14px; }
-  .lp-step p { margin-top:10px; color:var(--text2); font-size:16px; }
-  .lp-depths { margin-top:56px; border:1px solid var(--border); border-radius:16px; background:var(--surface); padding:24px 26px; }
-  .lp-depths h3 { font-size:19px; font-weight:700; }
-  .lp-depth-row { display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; margin-top:16px; }
-  .lp-depth-row strong { display:block; font-size:16px; }
-  .lp-depth-row span { display:block; margin-top:4px; font-size:15px; color:var(--text2); }
+  /* interest demo */
+  .lp-demo-grid { display:grid; grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr); gap:56px; align-items:center; }
+  .lp-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:24px; }
+  .lp-chip { border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:999px; padding:8px 16px; font-size:15px; font-weight:600; cursor:pointer; }
+  .lp-chip[aria-pressed="true"] { background:var(--ink); border-color:var(--ink); color:var(--onInk); }
+  .lp-bubble { position:relative; background:var(--surface); border:1px solid var(--border); border-radius:22px 22px 22px 6px; padding:26px 28px; }
+  .lp-bubble h3 { font-size:26px; font-weight:800; letter-spacing:-0.02em; }
+  .lp-formula { display:block; margin-top:2px; font-family:'Cambria Math','STIX Two Math','Times New Roman',serif; font-size:16px; color:var(--text2); overflow-wrap:anywhere; }
+  .lp-bubble p { margin-top:16px; font-size:18px; line-height:1.65; min-height:7.4em; }
+  .lp-bubble p.swap { animation:lpSwap .32s ease; }
+  @keyframes lpSwap { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
 
-  .lp-review-grid { display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:start; }
-  .lp-intervals { margin-top:28px; }
-  .lp-intervals p { font-size:15px; font-weight:600; color:var(--text2); }
-  .lp-intervals ol { list-style:none; padding:0; margin:12px 0 0; display:grid; gap:8px; }
-  .lp-intervals li { display:grid; grid-template-columns:96px 1fr; align-items:center; gap:12px; font-size:16px; }
-  .lp-intervals .bar { height:10px; border-radius:6px; background:var(--accent); }
-  .lp-intervals .lbl { font-weight:700; }
-  .lp-intervals .when { display:flex; align-items:center; gap:10px; color:var(--text2); }
-  .lp-map { margin-top:36px; padding-top:28px; border-top:1px solid var(--border); }
-  .lp-map h3 { font-size:20px; font-weight:700; }
-  .lp-map p { margin-top:8px; color:var(--text2); font-size:16px; }
+  .lp-subjects { display:grid; grid-template-columns:repeat(4, 1fr); gap:28px; margin-top:56px; padding-top:28px; border-top:1px solid var(--border); }
+  .lp-subjects h3 { font-size:18px; font-weight:700; }
+  .lp-subjects ul { list-style:none; margin:8px 0 0; padding:0; color:var(--text2); font-size:16px; }
+  .lp-subjects li { padding:3px 0; }
 
-  .lp-card { border:1px solid var(--border); border-radius:18px; background:var(--surface); padding:24px; box-shadow:0 18px 50px -28px rgba(31,29,43,.3); }
-  .lp-card-topic { display:inline-block; font-size:13px; font-weight:700; color:var(--accentText); background:var(--accentBg); border-radius:999px; padding:3px 10px; }
-  .lp-card-q { margin-top:14px; font-size:19px; font-weight:700; line-height:1.35; font-family:'Bricolage Grotesque', sans-serif; }
-  .lp-card-block { margin-top:14px; border-radius:10px; padding:10px 12px; background:var(--bg); }
-  .lp-card-block b { display:block; font-size:13px; color:var(--text2); }
-  .lp-card-block span { display:block; margin-top:3px; font-size:15px; }
-  .lp-card-rate { margin-top:16px; font-size:13px; font-weight:600; color:var(--text2); }
-  .lp-card-btns { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-top:8px; }
-  .lp-card-btns span { text-align:center; font-size:14px; font-weight:600; border:1px solid var(--border); border-radius:8px; padding:8px 4px; }
-  .lp-card-btns span.on { border-color:var(--accent); background:var(--accentBg); color:var(--accentText); }
-
-  .lp-hw { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:36px; }
-  .lp-hw div { border-left:3px solid var(--accent); padding-left:20px; }
-  .lp-hw h3 { font-size:21px; font-weight:700; }
-  .lp-hw p { margin-top:8px; color:var(--text2); font-size:16px; }
+  /* homework: two worked examples drawn like the app */
+  .lp-hw { display:grid; grid-template-columns:1fr 1fr; gap:28px; margin-top:40px; }
+  .lp-hw-item h3 { font-size:22px; font-weight:700; }
+  .lp-hw-item > p { margin-top:8px; color:var(--text2); font-size:16px; max-width:30em; }
+  .lp-hw-demo { margin-top:20px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px; }
+  .lp-file { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:12px; background:var(--bg); }
+  .lp-file svg { flex:none; color:var(--red); }
+  .lp-file b { display:block; font-size:15px; overflow-wrap:anywhere; }
+  .lp-file small { display:block; font-size:13.5px; color:var(--text2); }
+  .lp-found { margin:16px 2px 8px; font-size:14px; font-weight:600; color:var(--text2); }
+  .lp-types { list-style:none; margin:0; padding:0; }
+  .lp-types li { display:flex; justify-content:space-between; gap:12px; padding:10px 2px; border-top:1px solid var(--border); font-size:15.5px; }
+  .lp-types li span { color:var(--text2); font-size:14px; white-space:nowrap; }
+  .lp-ask { display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px; border:1.5px solid var(--border); background:var(--bg); font-size:16px; font-weight:600; }
+  .lp-ask svg { flex:none; color:var(--text2); }
+  .lp-steps { list-style:none; margin:14px 0 0; padding:0; display:grid; gap:10px; }
+  .lp-steps li { display:grid; grid-template-columns:26px 1fr; gap:10px; font-size:15.5px; line-height:1.5; }
+  .lp-steps li i { font-style:normal; width:26px; height:26px; border-radius:8px; display:grid; place-items:center; font-size:13px; font-weight:700;
+                   background:var(--accentBg); color:var(--accentText); }
+  .lp-steps li.is-result { font-family:'Cambria Math','STIX Two Math','Times New Roman',serif; font-size:18px; font-weight:700; }
+  .lp-steps li.is-result i { background:var(--accent); color:var(--onAccent); font-family:'DM Sans', sans-serif; }
 
   .lp-faq { margin-top:28px; max-width:760px; }
   .lp-faq details { border-bottom:1px solid var(--border); }
@@ -339,11 +354,21 @@ const css = (TH) => `
   .lp-footer { padding:28px 0; font-size:14px; color:var(--text2); }
 
   @media (max-width: 900px) {
-    .lp-hero { padding:40px 0 48px; }
-    .lp-hero-grid, .lp-review-grid, .lp-final-grid { grid-template-columns:1fr; gap:36px; }
+    .lp-hero { padding-top:32px; }
+    .lp-hero-copy { padding:8px 0 36px; }
+    .lp-hero-grid, .lp-demo-grid, .lp-final-grid, .lp-hw { grid-template-columns:1fr; gap:36px; }
+    .lp-hero-grid { gap:0; }
+    .lp-tour { grid-template-columns:1fr; gap:0; }
+    .lp-tour-list, .lp-tour-stage { display:none; }
+    .lp-tour-m { display:grid; gap:44px; list-style:none; margin:0; padding:0; }
+    .lp-tour-m h3 { display:flex; align-items:center; gap:12px; font-size:22px; font-weight:700; }
+    .lp-tour-m h3 .lp-tour-n { background:var(--accent); border-color:var(--accent); color:var(--onAccent); }
+    .lp-tour-m p { margin:8px 0 16px; color:var(--text2); font-size:16px; }
+    .lp-tour-m .lp-frame-img { aspect-ratio:1 / 0.9; }
+    .lp-tour-m .lp-frame-img.is-wide { aspect-ratio:auto; }
     .lp-subjects { grid-template-columns:repeat(2, 1fr); }
-    .lp-steps, .lp-depth-row, .lp-hw { grid-template-columns:1fr; gap:28px; }
-    .lp-section, .lp-final { padding:60px 0; }
+    .lp-depths { grid-template-columns:1fr; gap:16px; }
+    .lp-section, .lp-final { padding:64px 0; }
     .lp-links { display:none; }
   }
   @media (max-width: 520px) {
@@ -351,11 +376,11 @@ const css = (TH) => `
     .lp-nav-in { gap:8px; }
     .lp-logo span:last-child { display:none; }
     .lp-seg button { padding:6px 8px; }
-    .lp-subjects { grid-template-columns:1fr 1fr; gap:20px; }
-    .lp-demo { padding:20px; }
-    .lp-demo-text { min-height:12em; }
+    .lp-subjects { gap:20px; }
+    .lp-bubble { padding:20px; }
+    .lp-bubble p { min-height:10em; font-size:17px; }
   }
-  @media (prefers-reduced-motion: reduce) { .lp-demo-text.swap { animation:none; } html { scroll-behavior:auto; } }
+  @media (prefers-reduced-motion: reduce) { .lp-bubble p.swap { animation:none; } html { scroll-behavior:auto; } }
 `;
 
 /* ═══════════ PAGE ═══════════ */
@@ -392,7 +417,18 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
   const pickInterest = (k) => { if (k !== interest) { setInterest(k); setSwapKey((n) => n + 1); } };
 
   const demo = t.demo.find((d) => d.key === interest) || t.demo[0];
-  const barWidths = [14, 40, 90, 170];
+
+  const [tourStep, setTourStep] = useState(0);
+  /* Arrow keys move between the tour's tabs, like any tab list. */
+  const tourKeys = (e) => {
+    const n = t.tour.length;
+    const next = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+    if (!next && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    const i = e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : (tourStep + next + n) % n;
+    setTourStep(i);
+    document.getElementById('tour-tab-' + t.tour[i].key)?.focus();
+  };
 
   return (
     <div className="lp">
@@ -432,7 +468,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         {/* ── HERO ── */}
         <section className="lp-hero">
           <div className="lp-wrap lp-hero-grid">
-            <div>
+            <div className="lp-hero-copy">
               <h1>{t.heroTitle}</h1>
               <p className="lp-hero-sub">{t.heroSub}</p>
               <div className="lp-hero-ctas">
@@ -441,96 +477,80 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
               </div>
               <p className="lp-hero-note">{t.heroNote}</p>
             </div>
+            <div className="lp-hero-shot">
+              <Shot name="hero" dark={dark} alt={t.heroShotAlt} url={t.frameUrl} eager />
+            </div>
+          </div>
+        </section>
 
-            <div className="lp-demo">
-              <p className="lp-demo-label" id="demo-label">{t.demoLabel}</p>
-              <div className="lp-chips" role="group" aria-labelledby="demo-label">
-                {t.demo.map((d) => (
-                  <button key={d.key} className="lp-chip" aria-pressed={interest === d.key} onClick={() => pickInterest(d.key)}>{d.label}</button>
+        {/* ── TOUR ── */}
+        <section className="lp-section" ref={howRef} style={{ scrollMarginTop: 64 }}>
+          <div className="lp-wrap">
+            <h2 className="lp-h2">{t.tourTitle}</h2>
+            <p className="lp-lead">{t.tourLead}</p>
+            <div className="lp-tour">
+              <ol className="lp-tour-list" role="tablist" aria-orientation="vertical" aria-label={t.tourTitle} onKeyDown={tourKeys}>
+                {t.tour.map((st, i) => (
+                  <li key={st.key} role="presentation">
+                    <button id={'tour-tab-' + st.key} role="tab" className="lp-tour-btn" aria-selected={tourStep === i} aria-controls="tour-panel"
+                      tabIndex={tourStep === i ? 0 : -1} onClick={() => setTourStep(i)}>
+                      <span className="lp-tour-n" aria-hidden="true">{i + 1}</span>
+                      <b>{st.title}</b>
+                      <span className="d">{st.desc}</span>
+                    </button>
+                  </li>
                 ))}
+              </ol>
+              <div className="lp-tour-stage" id="tour-panel" role="tabpanel" aria-labelledby={'tour-tab-' + t.tour[tourStep].key}>
+                <Shot name={t.tour[tourStep].key} dark={dark} alt={t.tour[tourStep].alt} url={t.frameUrl} />
               </div>
-              <div className="lp-demo-topic">
+              <ol className="lp-tour-m">
+                {t.tour.map((st, i) => (
+                  <li key={st.key}>
+                    <h3><span className="lp-tour-n" aria-hidden="true">{i + 1}</span>{st.title}</h3>
+                    <p>{st.desc}</p>
+                    <Shot name={st.key} dark={dark} alt={st.alt} url={t.frameUrl} />
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <div className="lp-depths">
+              <h3 className="lp-depths-t">{t.depthTitle}</h3>
+              {t.depths.map((d) => (
+                <div key={d.name}><strong>{d.name}</strong><span>{d.desc}</span></div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── INTERESTS ── */}
+        <section className="lp-section" ref={reviewRef} style={{ scrollMarginTop: 64 }}>
+          <div className="lp-wrap">
+            <div className="lp-demo-grid">
+              <div>
+                <h2 className="lp-h2">{t.demoTitle}</h2>
+                <p className="lp-lead">{t.demoLead}</p>
+                <div className="lp-chips" role="group" aria-label={t.demoTitle}>
+                  {t.demo.map((d) => (
+                    <button key={d.key} className="lp-chip" aria-pressed={interest === d.key} onClick={() => pickInterest(d.key)}>{d.label}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="lp-bubble">
                 <h3>{t.demoTopic}</h3>
                 <span className="lp-formula" aria-label="f prima de x igual al límite cuando h tiende a cero de f de x más h menos f de x, sobre h">
                   f&prime;(x) = lim<sub>h&rarr;0</sub> (f(x+h) &minus; f(x)) / h
                 </span>
+                <p key={swapKey} className={swapKey ? 'swap' : ''} aria-live="polite">{demo.text}</p>
               </div>
-              <p key={swapKey} className={'lp-demo-text' + (swapKey ? ' swap' : '')} aria-live="polite">{demo.text}</p>
-              <p className="lp-demo-foot">{t.demoFoot}</p>
             </div>
-          </div>
-        </section>
-
-        {/* ── SUBJECTS ── */}
-        <section className="lp-section">
-          <div className="lp-wrap">
-            <h2 className="lp-h2">{t.subjectsTitle}</h2>
             <div className="lp-subjects">
-              {t.subjects.map((s) => (
-                <div key={s.name}>
-                  <h3>{s.name}</h3>
-                  <ul>{s.topics.map((x) => <li key={x}>{x}</li>)}</ul>
+              {t.subjects.map((sub) => (
+                <div key={sub.name}>
+                  <h3>{sub.name}</h3>
+                  <ul>{sub.topics.map((x) => <li key={x}>{x}</li>)}</ul>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── HOW IT WORKS ── */}
-        <section className="lp-section" ref={howRef} style={{ scrollMarginTop: 64 }}>
-          <div className="lp-wrap">
-            <h2 className="lp-h2">{t.howTitle}</h2>
-            <ol className="lp-steps" style={{ listStyle: 'none', padding: 0, margin: '44px 0 0' }}>
-              {t.steps.map((s, i) => (
-                <li key={s.title} className="lp-step">
-                  <span className="lp-step-n" aria-hidden="true">{i + 1}</span>
-                  <h3>{s.title}</h3>
-                  <p>{s.desc}</p>
-                </li>
-              ))}
-            </ol>
-            <div className="lp-depths">
-              <h3>{t.depthTitle}</h3>
-              <div className="lp-depth-row">
-                {t.depths.map((d) => (
-                  <div key={d.name}><strong>{d.name}</strong><span>{d.desc}</span></div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── REVIEW ── */}
-        <section className="lp-section" ref={reviewRef} style={{ scrollMarginTop: 64 }}>
-          <div className="lp-wrap lp-review-grid">
-            <div>
-              <h2 className="lp-h2">{t.reviewTitle}</h2>
-              <p className="lp-lead">{t.reviewText}</p>
-              <div className="lp-intervals">
-                <p>{t.intervalsTitle}</p>
-                <ol>
-                  {t.intervals.map((iv, i) => (
-                    <li key={iv.r}>
-                      <span className="lbl">{iv.r}</span>
-                      <span className="when"><span className="bar" style={{ width: barWidths[i], flex: 'none' }} aria-hidden="true" />{iv.when}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-              <div className="lp-map">
-                <h3>{t.mapTitle}</h3>
-                <p>{t.mapText}</p>
-              </div>
-            </div>
-            <div className="lp-card" aria-hidden="true">
-              <span className="lp-card-topic">{t.cardTopic}</span>
-              <p className="lp-card-q">{t.cardQ}</p>
-              <div className="lp-card-block"><b>{t.cardYours}</b><span>{t.cardYoursText}</span></div>
-              <div className="lp-card-block"><b>{t.cardModel}</b><span>{t.cardModelText}</span></div>
-              <p className="lp-card-rate">{t.cardRate}</p>
-              <div className="lp-card-btns">
-                {t.intervals.map((iv, i) => <span key={iv.r} className={i === 2 ? 'on' : ''}>{iv.r}</span>)}
-              </div>
             </div>
           </div>
         </section>
@@ -540,9 +560,35 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
           <div className="lp-wrap">
             <h2 className="lp-h2">{t.homeworkTitle}</h2>
             <div className="lp-hw">
-              {t.homework.map((h) => (
-                <div key={h.title}><h3>{h.title}</h3><p>{h.desc}</p></div>
-              ))}
+              <div className="lp-hw-item">
+                <h3>{t.hwPdfTitle}</h3>
+                <p>{t.hwPdfDesc}</p>
+                <div className="lp-hw-demo" aria-hidden="true">
+                  <div className="lp-file">
+                    <svg width="26" height="30" viewBox="0 0 26 30" fill="none"><path d="M3 1h13l7 7v19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2z" fill="currentColor" opacity=".14" stroke="currentColor" strokeWidth="1.5"/><path d="M16 1v7h7" stroke="currentColor" strokeWidth="1.5"/><text x="12" y="23" fontSize="7" fontWeight="700" textAnchor="middle" fill="currentColor" fontFamily="DM Sans, sans-serif">PDF</text></svg>
+                    <div><b>{t.hwPdfFile}</b><small>{t.hwPdfMeta}</small></div>
+                  </div>
+                  <p className="lp-found">{t.hwPdfFound}</p>
+                  <ul className="lp-types">
+                    {t.hwPdfTypes.map(([name, range]) => <li key={name}>{name}<span>{range}</span></li>)}
+                  </ul>
+                </div>
+              </div>
+              <div className="lp-hw-item">
+                <h3>{t.hwExTitle}</h3>
+                <p>{t.hwExDesc}</p>
+                <div className="lp-hw-demo" aria-hidden="true">
+                  <div className="lp-ask">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                    {t.hwExInput}
+                  </div>
+                  <ol className="lp-steps">
+                    {t.hwExSteps.map((st, i) => (
+                      <li key={i} className={i === t.hwExSteps.length - 1 ? 'is-result' : ''}><i>{i === t.hwExSteps.length - 1 ? '=' : i + 1}</i><span>{st}</span></li>
+                    ))}
+                  </ol>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -585,6 +631,20 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
         </div>
       </footer>
     </div>
+  );
+}
+
+/* ═══════════ SCREENSHOT ═══════════
+   Real screenshots of the app (scripts/shots/capture.py makes them), in the theme the visitor is using. */
+const SHOT_SIZE = { hero: [1200, 1230], home: [1400, 1478], explain: [1400, 1522], quiz: [1400, 1591], review: [1256, 1156], map: [1400, 935] };
+function Shot({ name, dark, alt, url, eager }) {
+  const [w, h] = SHOT_SIZE[name] || [1400, 1000];
+  return (
+    <figure className="lp-frame" style={{ margin: 0 }}>
+      <div className="lp-frame-bar" aria-hidden="true"><i /><i /><i /><span>{url}</span></div>
+      <img className={'lp-frame-img' + (w / h > 1.2 ? ' is-wide' : '')} src={`/screens/${name}-${dark ? 'dark' : 'light'}.webp`}
+        width={w} height={h} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+    </figure>
   );
 }
 
