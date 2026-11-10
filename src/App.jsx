@@ -1,1765 +1,194 @@
-import { useState, useEffect, useRef } from 'react';
-import LandingPage from './LandingPage';
+/* ═══════════════════════════════════════════════════
+   App — session, account and which screen is showing.
+   Each screen lives in its own file and is loaded only when opened.
+   ═══════════════════════════════════════════════════ */
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { supabase } from './supabase';
-import MasteryModule from './MasteryModule';
-import { reviewCard } from './srs';
+import { usePrefs } from './lib/prefs';
+import TopBar from './components/TopBar';
 
-/* ═══════════ THEMES ═══════════ */
-const LIGHT = {
-  bg: '#f7f5f0', surface: '#ffffff', border: '#e4ded4', borderLight: '#ece8e0',
-  text: '#1f1d2b', textSecondary: '#4a4858', textMuted: '#5f5d6e', textFaint: '#67657a',
-  accent: '#e8940a', accentLight: '#f5a623', accentBg: 'rgba(245,166,35,0.10)',
-  accentText: '#8f5400', onAccent: '#1f1d2b',
-  red: '#b42318', green: '#15803d', purple: '#4f46e5',
+const LandingPage = lazy(() => import('./LandingPage'));
+const MasteryModule = lazy(() => import('./module/MasteryModule'));
+const ReviewMode = lazy(() => import('./views/Review'));
+const KnowledgeMap = lazy(() => import('./views/KnowledgeMap'));
+const ProfileScreen = lazy(() => import('./views/Profile'));
+const AdminDashboard = lazy(() => import('./views/Admin'));
+const ResetPasswordScreen = lazy(() => import('./views/ResetPassword'));
+
+const COPY = {
+  es: { loading: 'Cargando…', suspended: 'Cuenta suspendida',
+        suspendedText: 'Tu cuenta está suspendida por ahora. Escribile al administrador para saber más.', logout: 'Salir' },
+  en: { loading: 'Loading…', suspended: 'Account suspended',
+        suspendedText: 'Your account is suspended for now. Contact the administrator to find out more.', logout: 'Log out' },
 };
 
-const DARK = {
-  bg: '#111114', surface: '#1c1c21', border: '#2c2c38', borderLight: '#222229',
-  text: '#ecebf3', textSecondary: '#b4b2c4', textMuted: '#a3a1b6', textFaint: '#8d8ba0',
-  accent: '#f5a623', accentLight: '#f5a623', accentBg: 'rgba(245,166,35,0.12)',
-  accentText: '#f5a623', onAccent: '#15141c',
-  red: '#f87171', green: '#4ade80', purple: '#a5a8fa',
-};
-
-const getTheme = (dark) => dark ? DARK : LIGHT;
-
-/* Button background + text per subject (both pass WCAG AA). */
-const MOD_BTN = {
-  math: ['#e8940a', '#1f1d2b'], stats: ['#4f46e5', '#ffffff'], econ: ['#047857', '#ffffff'],
-  finance: ['#0e7490', '#ffffff'], general: ['#475569', '#ffffff'],
-};
-const MOD_NAME = {
-  es: { math: 'Matemática', stats: 'Estadística', econ: 'Economía', finance: 'Finanzas', general: 'General' },
-  en: { math: 'Math', stats: 'Statistics', econ: 'Economics', finance: 'Finance', general: 'General' },
-};
-
-/* ═══════════ AUTH TRANSLATIONS ═══════════ */
-const AUTH_T = {
-  en: {
-    welcomeBack: 'Welcome Back', createAccount: 'Create Account',
-    loginSub: 'Log in to continue learning', signupSub: 'Sign up to start your journey',
-    username: 'Username', usernamePH: 'How others will see you',
-    email: 'Email', password: 'Password', confirmPW: 'Confirm Password',
-    pwPH: 'Min 6 characters', confirmPH: 'Repeat your password',
-    loginBtn: 'Log In', signupBtn: 'Sign Up',
-    toSignup: "Don't have an account? Sign up", toLogin: 'Already have an account? Log in',
-    footer: 'Learn by First Principles',
-    emailExists: 'An account with this email already exists.',
-    signupOk: 'Account created! Check your email to confirm, then log in.',
-    pwMismatch: 'Passwords do not match.',
-    emailConfirmed: '✓ Email confirmed! You can now sign in.',
-    forgotPW: 'Forgot password?',
-    forgotTitle: 'Reset Password',
-    forgotSub: 'Enter your email and we\'ll send you a reset link',
-    sendReset: 'Send Reset Link',
-    resetSent: '✓ Check your email for a reset link.',
-    backToLogin: '← Back to log in',
-    newPWTitle: 'Set New Password',
-    newPWSub: 'Choose a new password for your account',
-    newPassword: 'New Password',
-    newPWBtn: 'Update Password',
-    pwUpdated: '✓ Password updated! Redirecting...',
-  },
-  es: {
-    welcomeBack: 'Bienvenido de vuelta', createAccount: 'Crear cuenta',
-    loginSub: 'Iniciá sesión para seguir aprendiendo', signupSub: 'Registrate y empezá a aprender',
-    username: 'Nombre de usuario', usernamePH: 'Cómo te verán los demás',
-    email: 'Email', password: 'Contraseña', confirmPW: 'Confirmar contraseña',
-    pwPH: 'Mínimo 6 caracteres', confirmPH: 'Repetí tu contraseña',
-    loginBtn: 'Iniciar sesión', signupBtn: 'Registrarse',
-    toSignup: '¿No tenés cuenta? Registrate', toLogin: '¿Ya tenés cuenta? Iniciá sesión',
-    footer: 'Aprendé desde los Principios Fundamentales',
-    emailExists: 'Ya existe una cuenta con este email.',
-    signupOk: '¡Cuenta creada! Revisá tu email para confirmar y luego iniciá sesión.',
-    pwMismatch: 'Las contraseñas no coinciden.',
-    emailConfirmed: '✓ ¡Email confirmado! Ya podés iniciar sesión.',
-    forgotPW: '¿Olvidaste tu contraseña?',
-    forgotTitle: 'Resetear contraseña',
-    forgotSub: 'Ingresá tu email y te enviamos un enlace para resetearla',
-    sendReset: 'Enviar enlace',
-    resetSent: '✓ Revisá tu email para el enlace de reset.',
-    backToLogin: '← Volver al inicio de sesión',
-    newPWTitle: 'Nueva contraseña',
-    newPWSub: 'Elegí una nueva contraseña para tu cuenta',
-    newPassword: 'Nueva contraseña',
-    newPWBtn: 'Actualizar contraseña',
-    pwUpdated: '✓ ¡Contraseña actualizada! Redirigiendo...',
-  },
-};
-
-/* ═══════════ PROFILE TRANSLATIONS ═══════════ */
-const PROFILE_T = {
-  en: {
-    title: 'My Profile', sub: 'Customize your experience',
-    email: 'EMAIL', username: 'USERNAME',
-    usernameSub: '(shown in the top bar instead of your email)',
-    usernamePH: 'e.g. Federico, Profe, fede.lr',
-    level: 'KNOWLEDGE LEVEL', levelSub: '(changes how explanations are written for you)',
-    beginner: 'Beginner', beginnerDesc: 'Simple language, more examples',
-    intermediate: 'Intermediate', intermediateDesc: 'Balanced depth & clarity',
-    advanced: 'Advanced', advancedDesc: 'Technical, skips the basics',
-    language: 'LANGUAGE', languageSub: '(for the app and the modules)',
-    appearance: 'APPEARANCE',
-    darkMode: 'Night Mode', darkModeDesc: 'Easier on the eyes in low light',
-    save: 'Save Changes', saving: 'Saving...', saved: '✓ Saved!',
-    changeEmail: 'Change', cancelEmail: 'Cancel',
-    newEmail: 'NEW EMAIL', newEmailPH: 'your@newemail.com',
-    updateEmail: 'Send Confirmation', emailChangeSent: '✓ Confirmation sent to your new address.',
-  },
-  es: {
-    title: 'Mi Perfil', sub: 'Personalizá tu experiencia',
-    email: 'EMAIL', username: 'NOMBRE DE USUARIO',
-    usernameSub: '(aparece arriba en lugar de tu email)',
-    usernamePH: 'ej. Federico, Profe, fede.lr',
-    level: 'NIVEL DE CONOCIMIENTO', levelSub: '(cambia cómo se escriben las explicaciones)',
-    beginner: 'Principiante', beginnerDesc: 'Lenguaje simple, más ejemplos',
-    intermediate: 'Intermedio', intermediateDesc: 'Profundidad y claridad equilibradas',
-    advanced: 'Avanzado', advancedDesc: 'Técnico, sin básicos',
-    language: 'IDIOMA', languageSub: '(para la app y los módulos)',
-    appearance: 'APARIENCIA',
-    darkMode: 'Modo Noche', darkModeDesc: 'Más cómodo con poca luz',
-    save: 'Guardar Cambios', saving: 'Guardando...', saved: '✓ ¡Guardado!',
-    changeEmail: 'Cambiar', cancelEmail: 'Cancelar',
-    newEmail: 'NUEVO EMAIL', newEmailPH: 'tu@nuevoemail.com',
-    updateEmail: 'Enviar confirmación', emailChangeSent: '✓ Confirmación enviada a tu nuevo email.',
-  },
-};
-
-/* ═══════════ TOP BAR TRANSLATIONS ═══════════ */
-const TOP_T = {
-  en: { module: 'Module', profile: 'Profile', dashboard: 'Dashboard', logout: 'Log Out', knowledge: 'Map', review: 'Review' },
-  es: { module: 'Módulo', profile: 'Perfil', dashboard: 'Panel', logout: 'Salir', knowledge: 'Mapa', review: 'Repasar' },
-};
-
-/* ═══════════ REVIEW TRANSLATIONS ═══════════ */
-const REVIEW_T = {
-  en: {
-    title: 'Review Deck', of: 'of', exit: 'Exit',
-    loading: 'Loading cards...',
-    allDone: 'All caught up!',
-    noCards: 'No cards are due right now.',
-    deckTitle: 'Your Deck',
-    dueToday: 'Due today',
-    dueTomorrow: 'Tomorrow',
-    daysLabel: 'days',
-    backToModule: 'Back to Module',
-    sessionDone: 'Session Complete!',
-    passedLabel: 'cards remembered',
-    recallPrompt: 'Take a moment to recall everything you know about this topic.',
-    rateLabel: 'HOW WELL DID YOU REMEMBER?',
-    r1: 'Blackout', r2: 'Hard', r3: 'Good', r4: 'Easy',
-    intervalHint: 'Your rating determines when this card comes back.',
-    rateFailed: "Your rating couldn't be saved. Check your connection and tap it again.",
-    generatingQ: 'Generating question...',
-    answerPH: 'Type your answer here...',
-    checkAnswer: 'Check Answer',
-    yourAnswerLabel: 'YOUR ANSWER',
-    modelAnswerLabel: 'MODEL ANSWER',
-    dailySession: "Today's session",
-    capNote: 'Capped at 5 cards to keep it focused',
-    moreWaiting: 'more due. Come back after a break.',
-    qtDef: 'Definition', qtEx: 'Example', qtApp: 'Apply it', qtChallenge: 'Challenge',
-  },
-  es: {
-    title: 'Mazo de Repaso', of: 'de', exit: 'Salir',
-    loading: 'Cargando tarjetas...',
-    allDone: '¡Todo al día!',
-    noCards: 'No tenés tarjetas para repasar ahora.',
-    deckTitle: 'Tu Mazo',
-    dueToday: 'Hoy',
-    dueTomorrow: 'Mañana',
-    daysLabel: 'días',
-    backToModule: 'Volver al Módulo',
-    sessionDone: '¡Sesión Completada!',
-    passedLabel: 'tarjetas recordadas',
-    recallPrompt: 'Tomate un momento para recordar todo lo que sabés sobre este tema.',
-    rateLabel: '¿QUÉ TAN BIEN LO RECORDASTE?',
-    r1: 'Olvidé', r2: 'Difícil', r3: 'Bien', r4: 'Fácil',
-    intervalHint: 'Tu respuesta determina cuándo vuelve a aparecer esta tarjeta.',
-    rateFailed: 'No se pudo guardar tu calificación. Revisá la conexión y tocala de nuevo.',
-    generatingQ: 'Generando pregunta...',
-    answerPH: 'Escribí tu respuesta acá...',
-    checkAnswer: 'Ver Respuesta',
-    yourAnswerLabel: 'TU RESPUESTA',
-    modelAnswerLabel: 'RESPUESTA MODELO',
-    dailySession: 'Sesión de hoy',
-    capNote: 'Limitado a 5 tarjetas para mantener el foco',
-    moreWaiting: 'más pendientes. Volvé después de un descanso.',
-    qtDef: 'Definición', qtEx: 'Ejemplo', qtApp: 'Aplicación', qtChallenge: 'Desafío',
-  },
-};
-
-/* ═══════════ RESET PASSWORD SCREEN ═══════════ */
-function ResetPasswordScreen({ onDone }) {
-  const [lang] = useState(() => localStorage.getItem('mm_lang') || 'es');
-  const [dark] = useState(() => localStorage.getItem('mm_dark') === 'true');
-  const TH = getTheme(dark);
-  const t = AUTH_T[lang];
-  const [password, setPassword] = useState('');
-  const [confirmPW, setConfirmPW] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-
-  const inputStyle = {
-    width: '100%', padding: '12px 14px', border: '1px solid ' + TH.border, borderRadius: 10,
-    fontSize: 14, fontFamily: 'inherit', background: TH.bg, color: TH.text, outline: 'none',
-    boxSizing: 'border-box',
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (password !== confirmPW) { setError(t.pwMismatch); return; }
-    setLoading(true); setError('');
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess(t.pwUpdated);
-      setTimeout(() => onDone(), 2000);
-    }
-    setLoading(false);
-  };
-
+function Splash({ text }) {
   return (
-    <div style={{ minHeight: '100vh', background: TH.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div style={{ width: '100%', maxWidth: 380, animation: 'fadeUp 0.4s ease' }}>
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: TH.accentBg, border: '1px solid rgba(232,148,10,0.25)', borderRadius: 10, padding: '3px 10px', marginBottom: 12, fontSize: 11, color: TH.accentText, fontWeight: 700, letterSpacing: 1.5 }}>&#x2211; MASTERY MODULE</div>
-          <h1 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 32, fontWeight: 800, color: TH.text, letterSpacing: '-0.02em' }}>{t.newPWTitle}</h1>
-          <p style={{ color: TH.textMuted, fontSize: 13, marginTop: 6 }}>{t.newPWSub}</p>
-        </div>
-        <div style={{ background: TH.surface, borderRadius: 16, border: '1px solid ' + TH.border, padding: 24, boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.3)' : '0 4px 24px rgba(0,0,0,0.04)' }}>
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>{t.newPassword}</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-                placeholder={t.pwPH} minLength={6} style={inputStyle}
-                onFocus={e => e.target.style.borderColor = TH.accent}
-                onBlur={e => e.target.style.borderColor = TH.border} />
-            </div>
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>{t.confirmPW}</label>
-              <input type="password" value={confirmPW} onChange={e => setConfirmPW(e.target.value)} required
-                placeholder={t.confirmPH} minLength={6} style={inputStyle}
-                onFocus={e => e.target.style.borderColor = TH.accent}
-                onBlur={e => e.target.style.borderColor = TH.border} />
-            </div>
-            {error && <div style={{ padding: '8px 12px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)', borderRadius: 8, color: TH.red, fontSize: 12, marginBottom: 14 }}>{error}</div>}
-            {success && <div style={{ padding: '8px 12px', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.12)', borderRadius: 8, color: TH.green, fontSize: 12, marginBottom: 14 }}>{success}</div>}
-            <button type="submit" disabled={loading || !!success} style={{
-              width: '100%', padding: '13px', border: 'none', borderRadius: 10,
-              background: success ? TH.green : loading ? TH.border : TH.accent,
-              color: success ? '#fff' : TH.onAccent, fontWeight: 700, fontSize: 14, cursor: loading ? 'wait' : 'pointer',
-              fontFamily: 'inherit', boxShadow: '0 2px 12px rgba(232,148,10,0.2)',
-            }}>
-              {loading ? '...' : t.newPWBtn}
-            </button>
-          </form>
-        </div>
-        <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 12, marginTop: 16 }}>{AUTH_T[lang].footer}</p>
-      </div>
+    <div className="center-screen" role="status" aria-live="polite">
+      <div className="splash"><span className="brand-mark" aria-hidden="true">&#x2211;</span>{text}</div>
     </div>
   );
 }
 
-/* ═══════════ PROFILE SCREEN ═══════════ */
-function ProfileScreen({ session, profile, onSave, lang, setLang, dark, setDark }) {
-  const TH = getTheme(dark);
-  const t = PROFILE_T[lang] || PROFILE_T.en;
-
-  const [username, setUsername] = useState(profile?.username || '');
-  const [level, setLevel] = useState(profile?.level || 'intermediate');
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [showEmailChange, setShowEmailChange] = useState(false);
-  const [newEmail, setNewEmail] = useState('');
-  const [emailChanging, setEmailChanging] = useState(false);
-  const [emailMsg, setEmailMsg] = useState('');
-
-  useEffect(() => {
-    setUsername(profile?.username || '');
-    setLevel(profile?.level || 'intermediate');
-  }, [profile?.username, profile?.level]);
-
-  const changeLang = (l) => { setLang(l); localStorage.setItem('mm_lang', l); };
-
-  const handleEmailChange = async () => {
-    if (!newEmail.trim()) return;
-    setEmailChanging(true); setEmailMsg('');
-    const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
-    if (error) setEmailMsg(error.message);
-    else { setEmailMsg(t.emailChangeSent); setNewEmail(''); }
-    setEmailChanging(false);
-  };
-
-  const toggleDark = () => {
-    const next = !dark;
-    setDark(next);
-    localStorage.setItem('mm_dark', String(next));
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    const { error } = await supabase
-      .from('profiles')
-      .update({ username: username.trim(), level })
-      .eq('id', session.user.id);
-    if (!error) {
-      onSave({ username: username.trim(), level });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
-    }
-    setSaving(false);
-  };
-
-  const inputStyle = {
-    width: '100%', padding: '12px 14px', border: '1px solid ' + TH.border, borderRadius: 10,
-    fontSize: 14, fontFamily: 'inherit', background: TH.bg, color: TH.text, outline: 'none',
-    boxSizing: 'border-box',
-  };
-
-  const sectionLabel = (main, sub) => (
-    <label style={{ fontSize: 12, fontWeight: 600, color: TH.textSecondary, display: 'block', marginBottom: 5 }}>
-      {main}{sub && <span style={{ color: TH.textFaint, fontWeight: 400 }}> {sub}</span>}
-    </label>
-  );
-
-  return (
-    <div style={{ maxWidth: 520, margin: '0 auto', padding: '32px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
-      <div style={{ marginBottom: 28 }}>
-        <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 24, fontWeight: 800, color: TH.text, marginBottom: 4 }}>{t.title}</h2>
-        <p style={{ color: TH.textMuted, fontSize: 12 }}>{t.sub}</p>
-      </div>
-
-      <div style={{ background: TH.surface, borderRadius: 16, border: '1px solid ' + TH.border, padding: 24, boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.3)' : '0 4px 24px rgba(0,0,0,0.04)' }}>
-
-        {/* Email — with inline change */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
-            {sectionLabel(t.email)}
-            <button onClick={() => { setShowEmailChange(v => !v); setEmailMsg(''); setNewEmail(''); }} style={{
-              background: 'none', border: 'none', color: TH.accentText, fontSize: 12, fontWeight: 600,
-              cursor: 'pointer', fontFamily: 'inherit', padding: 0, marginBottom: 5,
-            }}>
-              {showEmailChange ? t.cancelEmail : t.changeEmail}
-            </button>
-          </div>
-          <div style={{
-            padding: '12px 14px', border: '1px solid ' + TH.borderLight, borderRadius: 10,
-            fontSize: 14, background: TH.bg, color: TH.textMuted,
-          }}>
-            {session.user.email}
-          </div>
-          {showEmailChange && (
-            <div style={{ marginTop: 10 }}>
-              {sectionLabel(t.newEmail)}
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)}
-                  placeholder={t.newEmailPH}
-                  style={{ ...inputStyle, flex: 1 }}
-                  onFocus={e => e.target.style.borderColor = TH.accent}
-                  onBlur={e => e.target.style.borderColor = TH.border}
-                />
-                <button onClick={handleEmailChange} disabled={emailChanging || !newEmail.trim()} style={{
-                  padding: '0 16px', borderRadius: 10, border: 'none', cursor: emailChanging ? 'wait' : 'pointer',
-                  background: TH.accent,
-                  color: TH.onAccent, fontWeight: 700, fontSize: 12, fontFamily: 'inherit', whiteSpace: 'nowrap',
-                }}>
-                  {emailChanging ? '...' : t.updateEmail}
-                </button>
-              </div>
-              {emailMsg && (
-                <div style={{
-                  marginTop: 8, padding: '7px 12px', borderRadius: 8, fontSize: 12,
-                  background: emailMsg.startsWith('✓') ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
-                  border: '1px solid ' + (emailMsg.startsWith('✓') ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'),
-                  color: emailMsg.startsWith('✓') ? TH.green : TH.red,
-                }}>
-                  {emailMsg}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Username */}
-        <div style={{ marginBottom: 20 }}>
-          {sectionLabel(t.username, t.usernameSub)}
-          <input type="text" value={username} onChange={e => setUsername(e.target.value)}
-            placeholder={t.usernamePH}
-            style={inputStyle}
-            onFocus={e => e.target.style.borderColor = TH.accent}
-            onBlur={e => e.target.style.borderColor = TH.border} />
-        </div>
-
-        {/* Knowledge Level */}
-        <div style={{ marginBottom: 24 }}>
-          {sectionLabel(t.level, t.levelSub)}
-          <div style={{ display: 'flex', gap: 0, borderRadius: 10, overflow: 'hidden', border: '1px solid ' + TH.border }}>
-            {[
-              { value: 'beginner', emoji: '🌱', label: t.beginner, desc: t.beginnerDesc },
-              { value: 'intermediate', emoji: '📖', label: t.intermediate, desc: t.intermediateDesc },
-              { value: 'advanced', emoji: '🔬', label: t.advanced, desc: t.advancedDesc },
-            ].map((opt, i) => (
-              <button key={opt.value} onClick={() => setLevel(opt.value)} style={{
-                flex: 1, padding: '14px 8px', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                borderLeft: i > 0 ? '1px solid ' + (level === opt.value ? TH.accent : TH.border) : 'none',
-                background: level === opt.value ? TH.accentBg : TH.surface,
-                transition: 'background 0.15s',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-              }}>
-                <span style={{ fontSize: 20 }}>{opt.emoji}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: level === opt.value ? TH.accentText : TH.text }}>{opt.label}</span>
-                <span style={{ fontSize: 11, color: TH.textMuted, lineHeight: 1.3, textAlign: 'center' }}>{opt.desc}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div style={{ borderTop: '1px solid ' + TH.borderLight, marginBottom: 24 }} />
-
-        {/* Language */}
-        <div style={{ marginBottom: 24 }}>
-          {sectionLabel(t.language, t.languageSub)}
-          <div style={{ display: 'flex', borderRadius: 10, overflow: 'hidden', border: '1px solid ' + TH.border }}>
-            {[
-              { code: 'es', flagSrc: 'https://flagcdn.com/32x24/ar.png', name: 'Español' },
-              { code: 'en', flagSrc: 'https://flagcdn.com/32x24/us.png', name: 'English' },
-            ].map((l, i) => (
-              <button key={l.code} onClick={() => changeLang(l.code)} style={{
-                flex: 1, padding: '12px 8px', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                borderLeft: i > 0 ? '1px solid ' + (lang === l.code ? TH.accent : TH.border) : 'none',
-                background: lang === l.code ? TH.accentBg : TH.surface,
-                transition: 'background 0.15s',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-              }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: lang === l.code ? TH.accentText : TH.text }}>{l.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div style={{ borderTop: '1px solid ' + TH.borderLight, marginBottom: 24 }} />
-
-        {/* Appearance / Night Mode */}
-        <div style={{ marginBottom: 28 }}>
-          {sectionLabel(t.appearance)}
-          <div
-            onClick={toggleDark}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '14px 16px', borderRadius: 10, border: '1px solid ' + (dark ? TH.accent : TH.border),
-              background: dark ? TH.accentBg : TH.bg, cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 20 }}>{dark ? '🌙' : '☀️'}</span>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: dark ? TH.accentText : TH.text }}>{t.darkMode}</div>
-                <div style={{ fontSize: 12, color: TH.textMuted, marginTop: 1 }}>{t.darkModeDesc}</div>
-              </div>
-            </div>
-            {/* Toggle pill */}
-            <div style={{
-              width: 42, height: 24, borderRadius: 12, position: 'relative',
-              background: dark ? TH.accent : TH.border,
-              transition: 'background 0.25s', flexShrink: 0,
-            }}>
-              <div style={{
-                position: 'absolute', top: 3, left: dark ? 21 : 3,
-                width: 18, height: 18, borderRadius: '50%',
-                background: '#fff', transition: 'left 0.25s',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
-              }} />
-            </div>
-          </div>
-        </div>
-
-        <button onClick={handleSave} disabled={saving} style={{
-          width: '100%', padding: '13px', border: 'none', borderRadius: 10,
-          background: saved ? TH.green : saving ? TH.border : TH.accent,
-          color: saved ? '#fff' : TH.onAccent, fontWeight: 700, fontSize: 14, cursor: saving ? 'wait' : 'pointer',
-          fontFamily: 'inherit', boxShadow: '0 2px 12px rgba(232,148,10,0.2)', transition: 'background 0.3s',
-        }}>
-          {saved ? t.saved : saving ? t.saving : t.save}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════ ADMIN DASHBOARD ═══════════ */
-const ADMIN_T = {
-  es: { title: 'Panel de administración', sub: 'Uso de la IA y gestión de usuarios', refresh: 'Actualizar', loading: 'Cargando el panel…',
-        overview: 'Resumen', users: 'Usuarios', requests: 'Pedidos', totalUsers: 'Usuarios', totalRequests: 'Pedidos a la IA', totalCost: 'Costo total',
-        today: 'Hoy', reqs: ' pedidos', tokens: 'Tokens', in: ' entrada', out: ' salida', topUsers: 'Usuarios con más gasto', seeAll: 'Ver todos',
-        noUsage: 'Todavía no hay uso.', email: 'Email', username: 'Usuario', role: 'Rol', signedUp: 'Alta', cost: 'Costo', action: 'Acción',
-        allUsers: 'Todos los usuarios', block: 'Bloquear', unblock: 'Desbloquear', recent: 'Pedidos recientes', total: 'en total', apiCalls: 'llamadas a la API',
-        noRequests: 'Todavía no hay pedidos.', time: 'Hora', user: 'Usuario', topic: 'Tema', module: 'Materia', calls: 'Llamadas', totalCostCol: 'Costo',
-        roles: { admin: 'ADMIN', blocked: 'BLOQUEADO', user: 'USUARIO' } },
-  en: { title: 'Admin dashboard', sub: 'AI usage and user management', refresh: 'Refresh', loading: 'Loading dashboard…',
-        overview: 'Overview', users: 'Users', requests: 'Requests', totalUsers: 'Users', totalRequests: 'AI requests', totalCost: 'Total cost',
-        today: 'Today', reqs: ' reqs', tokens: 'Tokens', in: ' in', out: ' out', topUsers: 'Top users by cost', seeAll: 'See all',
-        noUsage: 'No usage yet.', email: 'Email', username: 'Username', role: 'Role', signedUp: 'Signed up', cost: 'Cost', action: 'Action',
-        allUsers: 'All users', block: 'Block', unblock: 'Unblock', recent: 'Recent requests', total: 'total', apiCalls: 'API calls',
-        noRequests: 'No requests yet.', time: 'Time', user: 'User', topic: 'Topic', module: 'Subject', calls: 'Calls', totalCostCol: 'Cost',
-        roles: { admin: 'ADMIN', blocked: 'BLOCKED', user: 'USER' } },
-};
-
-function AdminDashboard({ dark, lang = 'es' }) {
-  const A = ADMIN_T[lang] || ADMIN_T.en;
-  const TH = getTheme(dark);
-  const [stats, setStats] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [recent, setRecent] = useState([]);
-  const [profiles, setProfiles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('overview');
-
-  useEffect(() => { loadData(); }, []);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const { data: logs } = await supabase.from('usage_logs').select('*').order('created_at', { ascending: false }).limit(500);
-      const { data: profs } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
-      setProfiles(profs || []);
-      if (logs) {
-        setRecent(logs.slice(0, 50));
-        const totalRequests = logs.length;
-        const totalCost = logs.reduce((s, l) => s + (parseFloat(l.estimated_cost) || 0), 0);
-        const totalInput = logs.reduce((s, l) => s + (l.input_tokens || 0), 0);
-        const totalOutput = logs.reduce((s, l) => s + (l.output_tokens || 0), 0);
-        const today = new Date().toDateString();
-        const todayReqs = logs.filter(l => new Date(l.created_at).toDateString() === today).length;
-        const todayCost = logs.filter(l => new Date(l.created_at).toDateString() === today).reduce((s, l) => s + (parseFloat(l.estimated_cost) || 0), 0);
-        setStats({ totalRequests, totalCost, totalInput, totalOutput, totalUsers: profs?.length || 0, todayReqs, todayCost });
-        const byUser = {};
-        logs.forEach(l => {
-          if (!byUser[l.email]) byUser[l.email] = { email: l.email, requests: 0, cost: 0, input: 0, output: 0, last: l.created_at };
-          byUser[l.email].requests++;
-          byUser[l.email].cost += parseFloat(l.estimated_cost) || 0;
-          byUser[l.email].input += l.input_tokens || 0;
-          byUser[l.email].output += l.output_tokens || 0;
-        });
-        setUsers(Object.values(byUser).sort((a, b) => b.requests - a.requests));
-      }
-    } catch (err) { console.error(err); }
-    setLoading(false);
-  };
-
-  const toggleBlock = async (userId, currentRole) => {
-    const newRole = currentRole === 'blocked' ? 'user' : 'blocked';
-    const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId);
-    if (!error) loadData();
-    else alert('Failed to update user: ' + error.message);
-  };
-
-  const card = (label, value, sub, color) => (
-    <div style={{ background: TH.surface, borderRadius: 12, border: '1px solid ' + TH.border, padding: '14px 18px', flex: '1 1 140px', minWidth: 140 }}>
-      <div style={{ fontSize: 11, color: TH.textMuted, fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 800, color: color || TH.text, fontFamily: "'Bricolage Grotesque',sans-serif" }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: TH.textMuted, marginTop: 2 }}>{sub}</div>}
-    </div>
-  );
-
-  const th = { textAlign: 'left', padding: '8px 10px', fontSize: 11, fontWeight: 700, color: TH.textMuted, borderBottom: '1px solid ' + TH.border, letterSpacing: 0.5 };
-  const td = { padding: '8px 10px', fontSize: 12, color: TH.text, borderBottom: '1px solid ' + (dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)') };
-  const tabBtn = (id, label) => (
-    <button key={id} onClick={() => setTab(id)} style={{
-      padding: '6px 16px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-      border: '1px solid ' + (tab === id ? TH.accent : TH.border),
-      background: tab === id ? TH.accentBg : 'transparent', color: tab === id ? TH.accentText : TH.textMuted,
-    }}>{label}</button>
-  );
-
-  if (loading) return <div style={{ padding: 60, textAlign: 'center', color: TH.textMuted, fontSize: 13 }}>{A.loading}</div>;
-
-  return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
-        <div>
-          <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 24, fontWeight: 800, color: TH.text }}>{A.title}</h2>
-          <p style={{ color: TH.textMuted, fontSize: 12, marginTop: 2 }}>{A.sub}</p>
-        </div>
-        <button onClick={loadData} style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 8, padding: '7px 16px', fontSize: 12, color: TH.textSecondary, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>{A.refresh}</button>
-      </div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-        {tabBtn('overview', A.overview)}
-        {tabBtn('users', A.users)}
-        {tabBtn('requests', A.requests)}
-      </div>
-
-      {tab === 'overview' && stats && <>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
-          {card(A.totalUsers, stats.totalUsers)}
-          {card(A.totalRequests, stats.totalRequests)}
-          {card(A.totalCost, '$' + stats.totalCost.toFixed(4), null, TH.accentText)}
-          {card(A.today, stats.todayReqs + A.reqs, '$' + stats.todayCost.toFixed(4), TH.purple)}
-          {card(A.tokens, ((stats.totalInput + stats.totalOutput) / 1000).toFixed(1) + 'K', (stats.totalInput / 1000).toFixed(1) + 'K' + A.in + ' / ' + (stats.totalOutput / 1000).toFixed(1) + 'K' + A.out)}
-        </div>
-        <div style={{ background: TH.surface, borderRadius: 12, border: '1px solid ' + TH.border, overflow: 'hidden' }}>
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid ' + TH.border, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: TH.text }}>{A.topUsers}</span>
-            <button onClick={() => setTab('users')} style={{ fontSize: 12, color: TH.accentText, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit' }}>{A.seeAll}</button>
-          </div>
-          {users.length === 0 ? <div style={{ padding: 20, textAlign: 'center', color: TH.textMuted, fontSize: 12 }}>{A.noUsage}</div> :
-          <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead><tr><th style={th}>{A.email}</th><th style={th}>{A.requests}</th><th style={th}>{A.cost}</th></tr></thead>
-            <tbody>{users.slice(0, 5).map(u => <tr key={u.email}>
-              <td style={td}><span style={{ fontWeight: 600 }}>{u.email}</span></td>
-              <td style={td}>{u.requests}</td>
-              <td style={{ ...td, color: TH.accentText, fontWeight: 700 }}>${u.cost.toFixed(4)}</td>
-            </tr>)}</tbody>
-          </table></div>}
-        </div>
-      </>}
-
-      {tab === 'users' && <div style={{ background: TH.surface, borderRadius: 12, border: '1px solid ' + TH.border, overflow: 'hidden' }}>
-        <div style={{ padding: '12px 16px', borderBottom: '1px solid ' + TH.border }}><span style={{ fontSize: 13, fontWeight: 700, color: TH.text }}>{A.allUsers} ({profiles.length})</span></div>
-        <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr><th style={th}>{A.email}</th><th style={th}>{A.username}</th><th style={th}>{A.role}</th><th style={th}>{A.signedUp}</th><th style={th}>{A.requests}</th><th style={th}>{A.cost}</th><th style={th}>{A.action}</th></tr></thead>
-          <tbody>{profiles.map(p => {
-            const usage = users.find(u => u.email === p.email);
-            return <tr key={p.id}>
-              <td style={td}><span style={{ fontWeight: 600 }}>{p.email}</span></td>
-              <td style={{ ...td, color: p.username ? TH.text : TH.textFaint, fontStyle: p.username ? 'normal' : 'italic' }}>{p.username || '—'}</td>
-              <td style={td}><span style={{
-                fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, letterSpacing: 0.3,
-                background: p.role === 'admin' ? 'rgba(245,166,35,0.1)' : p.role === 'blocked' ? 'rgba(239,68,68,0.08)' : 'rgba(34,197,94,0.06)',
-                color: p.role === 'admin' ? TH.accentText : p.role === 'blocked' ? TH.red : TH.green,
-              }}>{A.roles[p.role || 'user'] || (p.role || 'user').toUpperCase()}</span></td>
-              <td style={{ ...td, fontSize: 12, color: TH.textMuted }}>{new Date(p.created_at).toLocaleDateString()}</td>
-              <td style={td}>{usage?.requests || 0}</td>
-              <td style={{ ...td, color: TH.accentText, fontWeight: 600 }}>${(usage?.cost || 0).toFixed(4)}</td>
-              <td style={td}>{p.role !== 'admin' && <button onClick={() => toggleBlock(p.id, p.role)} style={{
-                fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit',
-                background: p.role === 'blocked' ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.06)',
-                border: '1px solid ' + (p.role === 'blocked' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.15)'),
-                color: p.role === 'blocked' ? TH.green : TH.red,
-              }}>{p.role === 'blocked' ? A.unblock : A.block}</button>}</td>
-            </tr>;
-          })}</tbody>
-        </table></div>
-      </div>}
-
-      {tab === 'requests' && (() => {
-        // Group rows by request_group_id; ungrouped rows each become their own group
-        const groups = [];
-        const seen = {};
-        recent.forEach(r => {
-          const key = r.request_group_id || r.id;
-          if (!seen[key]) {
-            seen[key] = { rows: [], totalCost: 0, totalTokens: 0 };
-            groups.push(seen[key]);
-          }
-          seen[key].rows.push(r);
-          seen[key].totalCost += parseFloat(r.estimated_cost) || 0;
-          seen[key].totalTokens += (r.input_tokens || 0) + (r.output_tokens || 0);
-        });
-        return (
-          <div style={{ background: TH.surface, borderRadius: 12, border: '1px solid ' + TH.border, overflow: 'hidden' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid ' + TH.border }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: TH.text }}>{A.recent} ({groups.length} {A.total})</span>
-              <span style={{ fontSize: 12, color: TH.textMuted, marginLeft: 8 }}>({recent.length} {A.apiCalls})</span>
-            </div>
-            {groups.length === 0 ? <div style={{ padding: 20, textAlign: 'center', color: TH.textMuted, fontSize: 12 }}>{A.noRequests}</div> :
-            <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead><tr>
-                <th style={th}>{A.time}</th><th style={th}>{A.user}</th><th style={th}>{A.topic}</th>
-                <th style={th}>{A.module}</th><th style={th}>{A.calls}</th><th style={th}>{A.tokens}</th>
-                <th style={th}>{A.totalCostCol}</th>
-              </tr></thead>
-              <tbody>{groups.map((g, i) => {
-                const first = g.rows[0];
-                const modules = [...new Set(g.rows.map(r => r.module).filter(Boolean))].join(', ');
-                return (
-                  <tr key={i}>
-                    <td style={{ ...td, fontSize: 12, color: TH.textMuted, whiteSpace: 'nowrap' }}>{new Date(first.created_at).toLocaleString()}</td>
-                    <td style={{ ...td, fontSize: 12 }}>{first.email}</td>
-                    <td style={{ ...td, fontSize: 12, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{first.topic}</td>
-                    <td style={td}><span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, background: TH.bg, fontWeight: 600 }}>{modules}</span></td>
-                    <td style={{ ...td, fontSize: 12, textAlign: 'center' }}>
-                      <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.08)', color: TH.purple, fontWeight: 700 }}>{g.rows.length}</span>
-                    </td>
-                    <td style={{ ...td, fontSize: 12 }}>{g.totalTokens.toLocaleString()}</td>
-                    <td style={{ ...td, color: TH.accentText, fontWeight: 800, fontSize: 12 }}>${g.totalCost.toFixed(5)}</td>
-                  </tr>
-                );
-              })}</tbody>
-            </table></div>}
-          </div>
-        );
-      })()}
-    </div>
-  );
-}
-
-
-
-/* ═══════════ KNOWLEDGE TREE ═══════════ */
-/* ═══════════ KNOWLEDGE TREE ═══════════ */
-function treeNodeW(label){ return Math.min(150, Math.max(84, label.length * 7.4 + 28)); }
-
-function KnowledgeTree({ dark, lang, session, onLoad }) {
-  const TH = getTheme(dark);
-  const canvasRef = useRef(null);
-  const layoutRef = useRef(null);
-  const hovIdRef  = useRef(null);
-  const [loading, setLoading] = useState(true);
-  const [hovInfo, setHovInfo] = useState(null);
-  const [hasData, setHasData] = useState(false);
-
-  const MOD_COL   = { math:'#e8940a', stats:'#6366f1', econ:'#10b981', finance:'#06b6d4', general:'#8a8a96' };
-  const MOD_LABEL = lang === 'es'
-    ? { math:'Mate', stats:'Estad.', econ:'Econ.', finance:'Finanzas', general:'General' }
-    : { math:'Math', stats:'Stats', econ:'Econ', finance:'Finance', general:'General' };
-
-  const TR = lang === 'es' ? {
-    title:'Árbol de Conocimiento', sub:'Tus temas organizados por materia',
-    empty:'Todavía no estudiaste ningún tema.', emptyHint:'Estudiá al menos un tema para comenzar.',
-    mDue:'Para repasar', mLearning:'Aprendiendo', mReviewing:'Repasando', mMastered:'Dominado', mNone:'Sin tarjeta',
-    refresh:'Actualizar', loading:'Cargando árbol...', root:'Mi Conocimiento',
-    hint:'Pasá el cursor por un tema · Hacé clic para abrirlo',
-    studied:'× estudiado', connections:'conexiones entre materias',
-  } : {
-    title:'Knowledge Tree', sub:'Your topics organized by subject',
-    empty:'No topics studied yet.', emptyHint:'Study a topic to get started.',
-    refresh:'Refresh', loading:'Loading tree...', root:'My Knowledge',
-    hint:'Hover a topic to see connections · Click to open it',
-    studied:'× studied', connections:'cross-subject connections',
-    mDue:'Due for review', mLearning:'Learning', mReviewing:'Reviewing', mMastered:'Mastered', mNone:'No card',
-  };
-
-  useEffect(() => { loadAndBuild(); }, []);
-  useEffect(() => { if (layoutRef.current) renderTree(hovIdRef.current); }, [dark]);
-
-  const loadAndBuild = async () => {
-    setLoading(true);
-    hovIdRef.current = null; setHovInfo(null);
-    try {
-      const [{ data }, { data: cardData }] = await Promise.all([
-        supabase.from('study_history').select('id, topic, module, created_at, content').eq('user_id', session.user.id).order('created_at', { ascending: false }),
-        supabase.from('review_cards').select('topic, ease_factor, interval, next_review_at, status').eq('user_id', session.user.id).neq('status', 'suspended'),
-      ]);
-      if (data && data.length > 0) { buildLayout(data, cardData || []); setHasData(true); }
-      else setHasData(false);
-    } catch(e) { console.error(e); setHasData(false); }
-    setLoading(false);
-  };
-
-  const buildLayout = (data, cardData) => {
-    /* Build SRS lookup: normalize topic → best card */
-    const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-    const srsMap = {};
-    (cardData || []).forEach(card => {
-      const key = norm(card.topic);
-      if (!srsMap[key]) srsMap[key] = card;
-    });
-
-    const getMastery = (topicKey) => {
-      const card = srsMap[topicKey];
-      if (!card) return 'none';
-      const isDue = new Date(card.next_review_at) <= new Date();
-      if (isDue) return 'due';
-      const ef = parseFloat(card.ease_factor) || 2.5;
-      const iv = parseInt(card.interval) || 0;
-      if (iv >= 21 && ef >= 2.4) return 'mastered';
-      if (iv >= 7) return 'reviewing';
-      return 'learning';
-    };
-
-    /* Deduplicate by topic */
-    const topicMap = {};
-    data.forEach(entry => {
-      const key = entry.topic.toLowerCase().trim();
-      if (!topicMap[key]) topicMap[key] = { id:key, label:entry.topic, module:entry.module||'general', count:0, lastEntry:entry, keywords:new Set(), masteryLevel: getMastery(norm(entry.topic)) };
-      topicMap[key].count++;
-      (entry.content?.keyConcepts||[]).forEach(kc => {
-        (kc.title||'').split(/[\s\-_/,]+/).forEach(w => {
-          const nw = norm(w).replace(/[^a-z0-9]/g,'');
-          if (nw.length > 3) topicMap[key].keywords.add(nw);
-        });
-      });
-    });
-    const topics = Object.values(topicMap).map(n => ({ ...n, keywords:[...n.keywords] }));
-
-    /* Group by module, sort most-studied first */
-    const byMod = {};
-    topics.forEach(tp => {
-      if (!byMod[tp.module]) byMod[tp.module] = [];
-      byMod[tp.module].push(tp);
-    });
-    Object.values(byMod).forEach(arr => arr.sort((a,b) => b.count - a.count));
-    const mods = Object.keys(byMod);
-
-    /* Cross-subject keyword edges */
-    const edges = [];
-    for (let i = 0; i < topics.length; i++) {
-      const setA = new Set(topics[i].keywords);
-      for (let j = i+1; j < topics.length; j++) {
-        if (topics[i].module === topics[j].module) continue;
-        const shared = topics[j].keywords.filter(k => setA.has(k));
-        if (shared.length > 1) edges.push({ a:i, b:j, w:shared.length, shared });
-      }
-    }
-
-    /* Layout constants */
-    const W = Math.max(760, mods.length * 240), TOPIC_GAP = 54, TOPIC_START_Y = 240, MOD_Y = 142;
-    const modSpacing = W / (mods.length + 1);
-    const modPositions = {};
-    mods.forEach((m, i) => { modPositions[m] = Math.round(modSpacing * (i + 1)); });
-    const maxTopics = Math.max(...mods.map(m => byMod[m].length));
-    const H = TOPIC_START_Y + maxTopics * TOPIC_GAP + 50;
-
-    mods.forEach(m => {
-      const N = byMod[m].length;
-      byMod[m].forEach((tp, i) => {
-        /* Spread topics horizontally so fork drops are visually distinct */
-        tp.x = modPositions[m] + (N <= 1 ? 0 : (i - (N - 1) / 2) * 50);
-        tp.y = TOPIC_START_Y + i * TOPIC_GAP;
-      });
-    });
-
-    layoutRef.current = { topics, byMod, mods, edges, W, H, MOD_Y, modPositions, TOPIC_START_Y };
-    requestAnimationFrame(() => renderTree(null));
-  };
-
-  const renderTree = (hovId) => {
-    const canvas = canvasRef.current;
-    const L = layoutRef.current;
-    if (!canvas || !L) return;
-    const { topics, byMod, mods, edges, W, H, MOD_Y, modPositions, TOPIC_START_Y } = L;
-
-    canvas.width  = W * 2;
-    canvas.height = H * 2;
-    canvas.style.height = H + 'px';
-    const ctx = canvas.getContext('2d');
-    ctx.scale(2, 2);
-    ctx.clearRect(0, 0, W, H);
-
-    const dk = dark;
-    const textPrimary   = dk ? 'rgba(226,226,236,0.92)' : 'rgba(42,42,58,0.88)';
-    const textSecondary = dk ? 'rgba(152,152,176,0.85)' : 'rgba(92,92,108,0.80)';
-    const surfaceBg     = dk ? '#2a2a36' : '#ffffff';
-    const surfaceBorder = dk ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.10)';
-    const ROOT = { x: W/2, y: 46 };
-
-    /* Smooth bezier from (x1,y1) to (x2,y2) */
-    const bz = (x1,y1,x2,y2,col,lw,alpha) => {
-      ctx.save(); ctx.globalAlpha=alpha; ctx.strokeStyle=col; ctx.lineWidth=lw;
-      ctx.lineJoin='round'; ctx.lineCap='round';
-      ctx.beginPath();
-      ctx.moveTo(x1,y1);
-      ctx.bezierCurveTo(x1, y1+(y2-y1)*.5, x2, y2-(y2-y1)*.5, x2, y2);
-      ctx.stroke(); ctx.restore();
-    };
-
-    /* Root → module trunk lines */
-    mods.forEach(m => bz(ROOT.x, ROOT.y+14, modPositions[m], MOD_Y-20, MOD_COL[m]||'#8a8a96', 1.6, 0.3));
-
-    /* Module → topic branch lines (fork/trunk layout)
-       Trunk goes to a fork point ABOVE all topic boxes → horizontal bar → straight drops.
-       Lines never pass through any topic box. */
-    const FORK_Y = TOPIC_START_Y - 32;
-    mods.forEach(m => {
-      const col = MOD_COL[m] || '#8a8a96';
-      const tps = byMod[m];
-      if (!tps.length) return;
-
-      if (tps.length === 1) {
-        /* Single topic — simple bezier, no crossing risk */
-        const isHov = hovId === tps[0].id;
-        bz(modPositions[m], MOD_Y + 20, tps[0].x, tps[0].y - 15, col, isHov ? 2 : 1.1, isHov ? 0.65 : 0.25);
-      } else {
-        /* Trunk from module node bottom to fork point */
-        ctx.save();
-        ctx.strokeStyle = col; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-        ctx.globalAlpha = 0.28; ctx.lineWidth = 1.1;
-        ctx.beginPath(); ctx.moveTo(modPositions[m], MOD_Y + 20); ctx.lineTo(modPositions[m], FORK_Y);
-        ctx.stroke();
-
-        /* Horizontal bar spanning all topic X positions */
-        const xs = tps.map(tp => tp.x);
-        ctx.beginPath(); ctx.moveTo(Math.min(...xs), FORK_Y); ctx.lineTo(Math.max(...xs), FORK_Y);
-        ctx.stroke();
-
-        /* Straight drop from fork bar to top of each topic box */
-        tps.forEach(tp => {
-          const isHov = hovId === tp.id;
-          ctx.globalAlpha = isHov ? 0.65 : 0.28;
-          ctx.lineWidth   = isHov ? 2 : 1.1;
-          ctx.beginPath(); ctx.moveTo(tp.x, FORK_Y); ctx.lineTo(tp.x, tp.y - 15);
-          ctx.stroke();
-        });
-        ctx.restore();
-      }
-    });
-
-    /* Cross-subject arcs — only shown on hover */
-    if (hovId) {
-      const hi = topics.findIndex(tp => tp.id === hovId);
-      if (hi >= 0) {
-        edges.forEach(e => {
-          if (e.a !== hi && e.b !== hi) return;
-          const ta = topics[e.a], tb = topics[e.b];
-          const col = MOD_COL[ta.module] || '#8a8a96';
-          /* Arc curves through mid-space between columns */
-          const mx = (ta.x + tb.x) / 2;
-          const my = Math.min(ta.y, tb.y) - Math.abs(ta.x - tb.x) * 0.18 - 20;
-          ctx.save();
-          ctx.globalAlpha = 0.42;
-          ctx.strokeStyle = col;
-          ctx.lineWidth = Math.min(e.w * 0.65 + 0.6, 2.4);
-          ctx.lineCap = 'round';
-          if (e.w <= 2) ctx.setLineDash([5,4]);
-          ctx.beginPath();
-          ctx.moveTo(ta.x, ta.y);
-          ctx.quadraticCurveTo(mx, my, tb.x, tb.y);
-          ctx.stroke(); ctx.setLineDash([]); ctx.restore();
-          /* Accent dot on the OTHER node */
-          const other = e.a === hi ? tb : ta;
-          ctx.beginPath(); ctx.arc(other.x, other.y, 5.5, 0, Math.PI*2);
-          ctx.fillStyle = MOD_COL[other.module]||'#8a8a96';
-          ctx.globalAlpha = 0.65; ctx.fill(); ctx.globalAlpha = 1;
-        });
-      }
-    }
-
-    /* ── ROOT NODE ── */
-    ctx.beginPath(); ctx.roundRect(ROOT.x-56, ROOT.y-15, 112, 30, 8);
-    ctx.fillStyle = surfaceBg; ctx.strokeStyle = surfaceBorder; ctx.lineWidth = 1.5;
-    ctx.fill(); ctx.stroke();
-    ctx.font = '600 11px system-ui,sans-serif';
-    ctx.fillStyle = textPrimary; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(TR.root, ROOT.x, ROOT.y);
-
-    /* ── MODULE NODES (circles) ── */
-    mods.forEach(m => {
-      const col = MOD_COL[m]||'#8a8a96', mx = modPositions[m];
-      /* Shadow ring */
-      ctx.beginPath(); ctx.arc(mx, MOD_Y, 33, 0, Math.PI*2);
-      ctx.fillStyle = col + '14'; ctx.fill();
-      /* Main circle */
-      ctx.beginPath(); ctx.arc(mx, MOD_Y, 28, 0, Math.PI*2);
-      ctx.fillStyle = col + '1e'; ctx.fill();
-      ctx.strokeStyle = col; ctx.lineWidth = 1.8; ctx.stroke();
-      ctx.font = '700 11px system-ui,sans-serif';
-      ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(MOD_LABEL[m]||m, mx, MOD_Y);
-    });
-
-    /* ── TOPIC LEAF NODES ── */
-    const MASTERY_COL = { due:'#ef4444', learning:'#f5a623', reviewing:'#6366f1', mastered:'#22c55e', none: null };
-    topics.forEach(tp => {
-      const col = MOD_COL[tp.module]||'#8a8a96';   // kept for badge + hover glow only
-      const isHov = hovId === tp.id;
-      /* Determine fade: if something else is hovered and this topic isn't connected */
-      const hi = hovId ? topics.findIndex(x=>x.id===hovId) : -1;
-      const connected = hi >= 0 && edges.some(e =>
-        (e.a===hi||e.b===hi) && (topics[e.a].id===tp.id||topics[e.b].id===tp.id)
-      );
-      const faded = hovId && hovId !== tp.id && !connected;
-
-      const tw = treeNodeW(tp.label), th = 30;
-      ctx.globalAlpha = faded ? 0.15 : 1;
-
-      const masteryCol = MASTERY_COL[tp.masteryLevel];
-
-      /* Border driven by mastery status; neutral when no card */
-      const borderCol = masteryCol
-        ? (isHov ? masteryCol : masteryCol + 'cc')
-        : (isHov
-            ? (dk ? 'rgba(200,200,220,0.65)' : 'rgba(60,60,80,0.38)')
-            : surfaceBorder);
-      const borderWidth = masteryCol ? (isHov ? 2 : 1.5) : (isHov ? 1.5 : 1);
-
-      /* Node pill — opaque base first so underlying lines are hidden */
-      ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
-      ctx.fillStyle = surfaceBg;
-      ctx.fill();
-      /* Mastery tint layer */
-      if (masteryCol) {
-        ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
-        ctx.fillStyle = isHov ? masteryCol + '28' : masteryCol + '12';
-        ctx.fill();
-      } else if (isHov) {
-        ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
-        ctx.fillStyle = dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.03)';
-        ctx.fill();
-      }
-      /* Border */
-      ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
-      ctx.strokeStyle = borderCol;
-      ctx.lineWidth   = borderWidth;
-      ctx.stroke();
-
-      /* Mastery glow on hover */
-      if (isHov && masteryCol) {
-        ctx.save();
-        ctx.globalAlpha = 0.18;
-        ctx.shadowColor = masteryCol;
-        ctx.shadowBlur = 10;
-        ctx.beginPath(); ctx.roundRect(tp.x - tw/2, tp.y - th/2, tw, th, 8);
-        ctx.strokeStyle = masteryCol; ctx.lineWidth = 2.5; ctx.stroke();
-        ctx.restore();
-        ctx.globalAlpha = faded ? 0.15 : 1;
-      }
-
-      /* Label — ensure it stays inside pill */
-      const maxLabelW = tw - 20;
-      ctx.font      = isHov ? '600 10.5px system-ui,sans-serif' : '400 10.5px system-ui,sans-serif';
-      ctx.fillStyle = isHov ? (masteryCol || (dk ? '#e2e2ec' : '#2a2a3a')) : textPrimary;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      /* Truncate if needed */
-      let lbl = tp.label;
-      while (lbl.length > 4 && ctx.measureText(lbl).width > maxLabelW) {
-        lbl = lbl.slice(0, -2) + '…';
-      }
-      ctx.fillText(lbl, tp.x, tp.y);
-
-      /* Study count badge (top-right corner of node) */
-      if (tp.count > 1) {
-        const bx = tp.x + tw/2 - 4, by = tp.y - th/2 + 4;
-        ctx.font = '700 8px system-ui,sans-serif';
-        ctx.fillStyle = col;
-        ctx.textAlign = 'right'; ctx.textBaseline = 'top';
-        ctx.fillText(tp.count + '×', bx, by);
-      }
-      ctx.globalAlpha = 1;
-    });
-  };
-
-  const getHit = (clientX, clientY) => {
-    const canvas = canvasRef.current, L = layoutRef.current;
-    if (!canvas || !L) return null;
-    const rect  = canvas.getBoundingClientRect();
-    const sx    = (clientX - rect.left) * (L.W / rect.width);
-    const sy    = (clientY - rect.top)  * (L.H / rect.height);
-    for (const tp of L.topics) {
-      const tw = treeNodeW(tp.label), th = 32;
-      if (sx >= tp.x-tw/2-4 && sx <= tp.x+tw/2+4 && sy >= tp.y-th/2-4 && sy <= tp.y+th/2+4) return tp;
-    }
-    return null;
-  };
-
-  const handleMouseMove = (e) => {
-    const tp = getHit(e.clientX, e.clientY);
-    const newHov = tp ? tp.id : null;
-    if (newHov !== hovIdRef.current) {
-      hovIdRef.current = newHov;
-      renderTree(newHov);
-      if (tp) {
-        const L = layoutRef.current;
-        const hi = L.topics.findIndex(x => x.id === tp.id);
-        const connCount = L.edges.filter(e => e.a===hi||e.b===hi).length;
-        setHovInfo({ id:tp.id, label:tp.label, mod:tp.module, count:tp.count, connCount, masteryLevel: tp.masteryLevel });
-      } else { setHovInfo(null); }
-      e.currentTarget.style.cursor = tp ? 'pointer' : 'default';
-    }
-  };
-
-  return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
-      {/* Header */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20, flexWrap:'wrap', gap:10 }}>
-        <div>
-          <h2 style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:24, fontWeight:800, color:TH.text }}>{TR.title}</h2>
-          <p style={{ color:TH.textMuted, fontSize:12, marginTop:2 }}>{TR.sub}</p>
-        </div>
-        <button onClick={loadAndBuild} style={{ background:TH.surface, border:'1px solid '+TH.border, borderRadius:8, padding:'7px 16px', fontSize:12, color:TH.textSecondary, cursor:'pointer', fontFamily:'inherit', fontWeight:600 }}>{TR.refresh}</button>
-      </div>
-
-      {loading ? (
-        <div style={{ padding:60, textAlign:'center', color:TH.textMuted, fontSize:13 }}>
-          <div style={{ fontSize:28, marginBottom:10 }}>🌳</div>{TR.loading}
-        </div>
-      ) : !hasData ? (
-        <div style={{ textAlign:'center', padding:'60px 20px' }}>
-          <div style={{ fontSize:36, marginBottom:14 }}>🌱</div>
-          <div style={{ fontSize:14, fontWeight:600, color:TH.textSecondary, marginBottom:6 }}>{TR.empty}</div>
-          <div style={{ fontSize:12, color:TH.textMuted }}>{TR.emptyHint}</div>
-        </div>
-      ) : (
-        <>
-          <div style={{ background:TH.surface, border:'1px solid '+TH.border, borderRadius:16, overflow:'hidden', boxShadow:TH.cardShadow }}>
-            <canvas
-              ref={canvasRef}
-              style={{ width:'100%', display:'block' }}
-              onMouseMove={handleMouseMove}
-              onMouseLeave={() => { hovIdRef.current=null; renderTree(null); setHovInfo(null); if(canvasRef.current) canvasRef.current.style.cursor='default'; }}
-              onClick={e => { const tp=getHit(e.clientX,e.clientY); if(tp) onLoad({ content:tp.lastEntry.content, topic:tp.lastEntry.topic, mod:tp.module, mode:tp.lastEntry.mode }); }}
-            />
-          </div>
-          {/* Info bar */}
-          <div style={{ textAlign:'center', padding:'10px 0 0', minHeight:30 }}>
-            {hovInfo ? (
-              <span style={{ fontSize:12 }}>
-                <strong style={{ color:MOD_COL[hovInfo.mod]||'#8a8a96' }}>{hovInfo.label}</strong>
-                <span style={{ color:TH.textMuted }}> · {hovInfo.count}{TR.studied}{hovInfo.connCount>0?' · '+hovInfo.connCount+' '+TR.connections:''}</span>
-                {hovInfo.masteryLevel && hovInfo.masteryLevel !== 'none' && (() => {
-                  const mCol = { due:'#ef4444', learning:'#f5a623', reviewing:'#6366f1', mastered:'#22c55e' };
-                  const mLabel = { due: TR.mDue, learning: TR.mLearning, reviewing: TR.mReviewing, mastered: TR.mMastered };
-                  return (
-                    <span style={{ marginLeft:8, fontSize:12, fontWeight:700, color: mCol[hovInfo.masteryLevel], background: mCol[hovInfo.masteryLevel]+'18', border:'1px solid '+mCol[hovInfo.masteryLevel]+'30', borderRadius:5, padding:'1px 7px' }}>
-                      {mLabel[hovInfo.masteryLevel]}
-                    </span>
-                  );
-                })()}
-              </span>
-            ) : (
-              <span style={{ fontSize:12, color:TH.textMuted, fontWeight:500 }}>{TR.hint}</span>
-            )}
-          </div>
-          {/* Mastery legend */}
-          <div style={{ display:'flex', justifyContent:'center', gap:14, paddingTop:10, flexWrap:'wrap' }}>
-            {[
-              { col:'#ef4444', label: TR.mDue },
-              { col:'#f5a623', label: TR.mLearning },
-              { col:'#6366f1', label: TR.mReviewing },
-              { col:'#22c55e', label: TR.mMastered },
-            ].map(({ col, label }) => (
-              <span key={label} style={{ display:'flex', alignItems:'center', gap:5, fontSize:12, color:TH.textSecondary }}>
-                <span style={{ width:10, height:10, borderRadius:3, border:'2px solid '+col, display:'inline-block', flexShrink:0 }} />
-                {label}
-              </span>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-
-/* ═══════════ REVIEW MODE ═══════════ */
-function ReviewMode({ dark, lang, session, onDone }) {
-  const TH = getTheme(dark);
-  const t = REVIEW_T[lang] || REVIEW_T.en;
-  const MOD_COL = { math: '#e8940a', stats: '#6366f1', econ: '#10b981', finance: '#06b6d4', general: '#8a8a96' };
-  const DAILY_CAP = 5;
-
-  const [cards, setCards] = useState([]);
-  const [deckCards, setDeckCards] = useState([]);
-  const [totalDue, setTotalDue] = useState(0);
-  const [current, setCurrent] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [lastRating, setLastRating] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
-  const [results, setResults] = useState([]);
-  const [rateError, setRateError] = useState('');
-
-  // Phase state
-  const [phase, setPhase] = useState('loading_q');
-  const [question, setQuestion] = useState('');
-  const [modelAnswer, setModelAnswer] = useState('');
-  const [userAnswer, setUserAnswer] = useState('');
-  const [questionStyle, setQuestionStyle] = useState(null);
-
-  // Assigns a question type + prompt based on SM-2 ease_factor and interval
-  // Lower ef / shorter interval = simpler question; mastered cards get harder question types
-  const getQuestionStyle = (card) => {
-    const ef = parseFloat(card.ease_factor) || 2.5;
-    const iv = parseInt(card.interval) || 0;
-    if (iv <= 1 || ef < 1.8) return {
-      type: 'definition', emoji: '🌱',
-      label: lang === 'es' ? t.qtDef : t.qtDef,
-      color: dark ? '#34d399' : '#047857',
-      promptEn: 'Generate a DEFINITION question: ask the student to define or explain what this concept IS in their own words. Keep it simple and direct — 1 sentence.',
-      promptEs: 'Generá una pregunta de DEFINICIÓN: pedile al estudiante que defina o explique con sus palabras qué ES este concepto. Simple y directa — 1 oración.',
-    };
-    if (iv <= 5 || ef < 2.2) return {
-      type: 'example', emoji: '💡',
-      label: lang === 'es' ? t.qtEx : t.qtEx,
-      color: dark ? '#a5b4fc' : '#4338ca',
-      promptEn: 'Generate an EXAMPLE question: ask the student to give a concrete real-world example of this concept or describe where they would use it in practice.',
-      promptEs: 'Generá una pregunta de EJEMPLO: pedile al estudiante que dé un ejemplo concreto del mundo real de este concepto o dónde lo usaría en la práctica.',
-    };
-    if (iv <= 14 || ef < 2.6) return {
-      type: 'application', emoji: '⚡',
-      label: lang === 'es' ? t.qtApp : t.qtApp,
-      color: dark ? '#f5a623' : '#8f5400',
-      promptEn: 'Generate an APPLICATION question: ask the student to USE this concept — apply it to solve a small problem, explain a process step-by-step, or interpret a result.',
-      promptEs: 'Generá una pregunta de APLICACIÓN: pedile al estudiante que USE este concepto — aplicarlo para resolver un pequeño problema, explicar un proceso paso a paso, o interpretar un resultado.',
-    };
-    return {
-      type: 'challenge', emoji: '🔥',
-      label: lang === 'es' ? t.qtChallenge : t.qtChallenge,
-      color: dark ? '#f87171' : '#b42318',
-      promptEn: 'Generate a CHALLENGE question: ask about a common misconception, an edge case, a comparison with a closely related concept, or a situation where this concept breaks down or needs nuance.',
-      promptEs: 'Generá una pregunta DESAFÍO: preguntá sobre un error conceptual común, un caso borde, una comparación con un concepto relacionado, o cuándo este concepto falla o necesita matices.',
-    };
-  };
-
-  useEffect(() => { loadDue(); }, []);
-
-  // Generate a question whenever the active card changes
-  useEffect(() => {
-    if (loading || done || cards.length === 0) return;
-    const card = cards[current];
-    if (!card) return;
-    setPhase('loading_q');
-    setQuestion('');
-    setModelAnswer('');
-    setUserAnswer('');
-    const style = getQuestionStyle(card);
-    setQuestionStyle(style);
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data: { session: authSession } } = await supabase.auth.getSession();
-        const token = authSession?.access_token;
-        const stylePrompt = lang === 'es' ? style.promptEs : style.promptEn;
-
-        const prompt = lang === 'es'
-          ? `Tema: "${card.topic}" (materia: ${card.module || 'general'})\n\n${stylePrompt}\n\nRespondé SOLO con JSON válido, sin backticks ni texto extra:\n{"question":"...","modelAnswer":"..."}\n\nLa pregunta debe ser 1 oración. La respuesta modelo: clara y concisa (1-2 oraciones). Usá español rioplatense.`
-          : `Topic: "${card.topic}" (subject: ${card.module || 'general'})\n\n${stylePrompt}\n\nRespond ONLY with valid JSON, no backticks or extra text:\n{"question":"...","modelAnswer":"..."}\n\nThe question is 1 sentence. The model answer is clear and concise (1-2 sentences).`;
-
-        const res = await fetch('/api/claude', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body: JSON.stringify({
-            model: 'fast',
-            max_tokens: 300,
-            messages: [{ role: 'user', content: prompt }],
-            _meta: { topic: card.topic, module: 'recall', mode: 'recall', lang },
-          }),
-        });
-        const data = await res.json();
-        const text = (data.content || []).map(b => b.text || '').join('');
-        const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-        if (!cancelled) {
-          setQuestion(parsed.question || '');
-          setModelAnswer(parsed.modelAnswer || '');
-          setPhase('answering');
-        }
-      } catch (_) {
-        if (!cancelled) {
-          setQuestion(lang === 'es'
-            ? `¿Qué recordás sobre "${card.topic}"? Explicalo con tus palabras.`
-            : `What do you remember about "${card.topic}"? Explain it in your own words.`);
-          setModelAnswer('');
-          setPhase('answering');
-        }
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [current, cards.length, loading]);
-
-  const loadDue = async () => {
-    setLoading(true);
-    const now = new Date().toISOString();
-    const [{ data: dueData }, { data: allData }] = await Promise.all([
-      supabase.from('review_cards').select('*').eq('user_id', session.user.id).neq('status', 'suspended').lte('next_review_at', now).order('next_review_at', { ascending: true }),
-      supabase.from('review_cards').select('id, topic, module, next_review_at, ease_factor, interval').eq('user_id', session.user.id).neq('status', 'suspended').order('next_review_at', { ascending: true }),
-    ]);
-    const all = dueData || [];
-    setTotalDue(all.length);
-    setCards(all.slice(0, DAILY_CAP));
-    setDeckCards(allData || []);
-    setLoading(false);
-  };
-
-  const ratingBtns = [
-    { r: 1, label: t.r1, emoji: '😶', color: TH.red,    bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.2)'   },
-    { r: 2, label: t.r2, emoji: '😓', color: '#f97316', bg: 'rgba(249,115,22,0.08)',  border: 'rgba(249,115,22,0.2)'  },
-    { r: 3, label: t.r3, emoji: '🙂', color: TH.accentText, bg: TH.accentBg,             border: 'rgba(245,166,35,0.25)' },
-    { r: 4, label: t.r4, emoji: '😎', color: TH.green,  bg: 'rgba(34,197,94,0.08)',   border: 'rgba(34,197,94,0.2)'   },
-  ];
-
-  const handleRate = async (rating) => {
-    if (submitting) return;
-    setLastRating(rating);
-    setSubmitting(true);
-    setRateError('');
-    const card = cards[current];
-    const saved = await reviewCard(supabase, card.id, rating, card);
-    if (!saved) {
-      // Before, a failed save was ignored and the card moved on as if rated.
-      setRateError(t.rateFailed);
-      setLastRating(null);
-      setSubmitting(false);
-      return;
-    }
-    setResults(prev => [...prev, { rating, topic: card.topic, module: card.module }]);
-    setSubmitting(false);
-    setTimeout(() => {
-      setLastRating(null);
-      if (current + 1 >= cards.length) setDone(true);
-      else setCurrent(prev => prev + 1);
-    }, 380);
-  };
-
-  if (loading) return (
-    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TH.textMuted, fontSize: 13 }}>
-      {t.loading}
-    </div>
-  );
-
-  if (cards.length === 0) {
-    const now = new Date();
-    const fmtDate = (iso) => {
-      const dt = new Date(iso);
-      const diffMs = dt - now;
-      const diffDays = Math.round(diffMs / 86400000);
-      if (diffDays <= 0) return t.dueToday;
-      if (diffDays === 1) return t.dueTomorrow;
-      return diffDays + ' ' + t.daysLabel;
-    };
-    const getMasteryLabel = (card) => {
-      const iv = parseInt(card.interval) || 0;
-      const ef = parseFloat(card.ease_factor) || 2.5;
-      if (iv >= 21 && ef >= 2.4) return { emoji: '🏆', color: TH.green };
-      if (iv >= 7) return { emoji: '⚡', color: TH.purple||'#6366f1' };
-      return { emoji: '🌱', color: TH.accentText };
-    };
-    return (
-      <div style={{ maxWidth: 520, margin: '0 auto', padding: '32px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
-        <div style={{ textAlign: 'center', marginBottom: deckCards.length > 0 ? 28 : 0 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>{deckCards.length > 0 ? '✅' : '🎉'}</div>
-          <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 24, fontWeight: 800, color: TH.text, marginBottom: 6 }}>{t.allDone}</h2>
-          <p style={{ color: TH.textMuted, fontSize: 13 }}>{t.noCards}</p>
-        </div>
-        {deckCards.length > 0 && (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <h3 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 14, fontWeight: 700, color: TH.text }}>{t.deckTitle}</h3>
-              <span style={{ fontSize: 12, fontWeight: 700, color: TH.textMuted, background: TH.bgAlt, padding: '2px 8px', borderRadius: 6 }}>{deckCards.length}</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {deckCards.map((card, i) => {
-                const col = MOD_COL[card.module] || MOD_COL.general;
-                const mastery = getMasteryLabel(card);
-                const isDue = new Date(card.next_review_at) <= now;
-                return (
-                  <div key={i} style={{ background: TH.surface, borderRadius: 10, border: '1px solid ' + (isDue ? col + '55' : TH.border), padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: TH.cardShadow }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: col, flexShrink: 0 }} />
-                      <span style={{ fontSize: 13, fontWeight: 600, color: TH.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.topic}</span>
-                      <span style={{ fontSize: 13, flexShrink: 0 }}>{mastery.emoji}</span>
-                    </div>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: isDue ? col : TH.textMuted, flexShrink: 0, marginLeft: 8 }}>{fmtDate(card.next_review_at)}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-        <div style={{ textAlign: 'center', marginTop: 28 }}>
-          <button onClick={onDone} style={{ padding: '11px 28px', borderRadius: 10, border: 'none', background: TH.accent, color: TH.onAccent, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{t.backToModule}</button>
-        </div>
-      </div>
-    );
-  }
-
-  if (done) {
-    const passed = results.filter(r => r.rating >= 3).length;
-    const remaining = totalDue - cards.length;
-    return (
-      <div style={{ maxWidth: 520, margin: '0 auto', padding: '60px 20px', textAlign: 'center', animation: 'fadeUp 0.3s ease' }}>
-        <div style={{ fontSize: 52, marginBottom: 16 }}>✅</div>
-        <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 26, fontWeight: 800, color: TH.text, marginBottom: 8 }}>{t.sessionDone}</h2>
-        <p style={{ color: TH.textMuted, fontSize: 13, marginBottom: 24 }}>{passed}/{results.length} {t.passedLabel}</p>
-        {remaining > 0 && (
-          <div style={{ marginBottom: 20, padding: '10px 16px', borderRadius: 10, background: TH.accentBg, border: '1px solid rgba(245,166,35,0.2)', fontSize: 12, color: TH.accentText, fontWeight: 600 }}>
-            +{remaining} {t.moreWaiting}
-          </div>
-        )}
-        <div style={{ background: TH.surface, borderRadius: 14, border: '1px solid ' + TH.border, padding: '12px 20px', marginBottom: 28, textAlign: 'left' }}>
-          {results.map((r, i) => {
-            const btn = ratingBtns.find(b => b.r === r.rating);
-            return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < results.length - 1 ? '1px solid ' + TH.borderLight : 'none' }}>
-                <span style={{ fontSize: 12, color: TH.text, fontWeight: 500 }}>{r.topic}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: btn?.bg, color: btn?.color, border: '1px solid ' + btn?.border }}>{btn?.label}</span>
-              </div>
-            );
-          })}
-        </div>
-        <button onClick={onDone} style={{ padding: '11px 28px', borderRadius: 10, border: 'none', background: TH.accent, color: TH.onAccent, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{t.backToModule}</button>
-      </div>
-    );
-  }
-
-  const card = cards[current];
-  const col = MOD_COL[card.module] || MOD_COL.general;
-  const progress = (current / cards.length) * 100;
-
-  return (
-    <div style={{ maxWidth: 520, margin: '0 auto', padding: '32px 20px 60px', animation: 'fadeUp 0.3s ease' }}>
-      <style>{`@keyframes mm-spin { to { transform: rotate(360deg); } }`}</style>
-
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-        <div>
-          <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 22, fontWeight: 800, color: TH.text }}>{t.title}</h2>
-          <p style={{ color: TH.textMuted, fontSize: 12, marginTop: 2 }}>{current + 1} {t.of} {cards.length}</p>
-        </div>
-        <button onClick={onDone} style={{ background: TH.surface, border: '1px solid ' + TH.border, borderRadius: 8, padding: '6px 14px', fontSize: 12, color: TH.textMuted, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>{t.exit}</button>
-      </div>
-
-      {/* Progress bar */}
-      <div style={{ height: 4, borderRadius: 2, background: TH.borderLight, marginBottom: 28, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: progress + '%', background: TH.accent, borderRadius: 2, transition: 'width 0.4s ease' }} />
-      </div>
-
-      {/* Card */}
-      <div style={{
-        background: TH.surface, borderRadius: 20, border: '1px solid ' + TH.border,
-        boxShadow: dark ? '0 4px 32px rgba(0,0,0,0.25)' : '0 4px 24px rgba(0,0,0,0.06)',
-        marginBottom: 24, opacity: submitting ? 0.55 : 1, transition: 'opacity 0.2s',
-        overflow: 'hidden',
-      }}>
-
-        {/* Module badge + question type badge + topic */}
-        <div style={{ padding: '28px 28px 20px', textAlign: 'center', borderBottom: phase !== 'loading_q' ? '1px solid ' + TH.borderLight : 'none' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 14 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', background: col + '18', border: '1px solid ' + col + '44', borderRadius: 8, padding: '3px 10px', fontSize: 11, color: (dark ? { math: '#f5a623', stats: '#a5b4fc', econ: '#34d399', finance: '#22d3ee', general: '#cbd5e1' } : { math: '#8f5400', stats: '#4338ca', econ: '#047857', finance: '#0e7490', general: '#475569' })[card.module] || TH.textSecondary, fontWeight: 700, letterSpacing: 1 }}>
-              {((MOD_NAME[lang] || MOD_NAME.en)[card.module || 'general'] || card.module).toUpperCase()}
-            </div>
-            {questionStyle && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: questionStyle.color + '12', border: '1px solid ' + questionStyle.color + '35', borderRadius: 8, padding: '3px 9px', fontSize: 11, color: questionStyle.color, fontWeight: 700, letterSpacing: 0.5 }}>
-                <span style={{ fontSize: 12 }}>{questionStyle.emoji}</span>
-                {questionStyle.label}
-              </div>
-            )}
-          </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: TH.text, fontFamily: "'Bricolage Grotesque',sans-serif", letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-            {card.topic}
-          </div>
-          {phase === 'loading_q' && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20, marginBottom: 8, color: TH.textMuted, fontSize: 12 }}>
-              <span style={{ display: 'inline-block', width: 13, height: 13, border: '2px solid ' + col + '55', borderTopColor: col, borderRadius: '50%', animation: 'mm-spin 0.75s linear infinite', flexShrink: 0 }} />
-              {t.generatingQ}
-            </div>
-          )}
-        </div>
-
-        {/* Answering phase */}
-        {phase === 'answering' && (
-          <div style={{ padding: '20px 28px 24px' }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: TH.text, lineHeight: 1.5, marginBottom: 16, marginTop: 0 }}>
-              {question}
-            </p>
-            <textarea
-              value={userAnswer}
-              onChange={e => setUserAnswer(e.target.value)}
-              placeholder={t.answerPH}
-              rows={3}
-              style={{
-                width: '100%', boxSizing: 'border-box', padding: '11px 13px',
-                border: '1px solid ' + TH.border, borderRadius: 10,
-                fontSize: 13, fontFamily: 'inherit', background: TH.bg,
-                color: TH.text, resize: 'vertical', outline: 'none', lineHeight: 1.5,
-              }}
-              onFocus={e => e.target.style.borderColor = col}
-              onBlur={e => e.target.style.borderColor = TH.border}
-            />
-            <button
-              onClick={() => setPhase('revealed')}
-              style={{
-                marginTop: 12, width: '100%', padding: '12px', border: 'none', borderRadius: 10,
-                background: (MOD_BTN[card.module] || MOD_BTN.general)[0],
-                color: (MOD_BTN[card.module] || MOD_BTN.general)[1], fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
-              }}
-            >
-              {t.checkAnswer}
-            </button>
-          </div>
-        )}
-
-        {/* Revealed phase */}
-        {phase === 'revealed' && question && (
-          <div style={{ padding: '20px 28px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: TH.textSecondary, lineHeight: 1.5, margin: 0 }}>
-              {question}
-            </p>
-            {userAnswer ? (
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: TH.textMuted, letterSpacing: 1, marginBottom: 5 }}>{t.yourAnswerLabel}</div>
-                <div style={{
-                  padding: '10px 13px', borderRadius: 9,
-                  background: dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-                  border: '1px solid ' + TH.borderLight,
-                  fontSize: 13, color: TH.textSecondary, lineHeight: 1.55,
-                }}>
-                  {userAnswer}
-                </div>
-              </div>
-            ) : null}
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: col, letterSpacing: 1, marginBottom: 5 }}>{t.modelAnswerLabel}</div>
-              <div style={{
-                padding: '10px 13px', borderRadius: 9,
-                background: col + '0f', border: '1px solid ' + col + '30',
-                fontSize: 13, color: TH.text, lineHeight: 1.55, fontWeight: 500,
-              }}>
-                {modelAnswer}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Rating */}
-      {phase === 'revealed' && (
-        <>
-          <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 12, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>{t.rateLabel}</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-            {ratingBtns.map(btn => (
-              <button key={btn.r} onClick={() => handleRate(btn.r)} disabled={submitting} style={{
-                padding: '14px 4px', borderRadius: 12,
-                border: '1px solid ' + (lastRating === btn.r ? btn.border : TH.border),
-                background: lastRating === btn.r ? btn.bg : TH.surface,
-                color: lastRating === btn.r ? btn.color : TH.textSecondary,
-                fontWeight: 700, fontSize: 12, cursor: submitting ? 'wait' : 'pointer',
-                fontFamily: 'inherit', transition: 'all 0.15s',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-              }}>
-                <span style={{ fontSize: 20 }}>{btn.emoji}</span>
-                <span>{btn.label}</span>
-              </button>
-            ))}
-          </div>
-          {rateError && <p role="alert" style={{ textAlign: 'center', color: TH.red, fontSize: 13, marginTop: 14 }}>{rateError}</p>}
-          <p style={{ textAlign: 'center', color: TH.textMuted, fontSize: 12, marginTop: 14 }}>{t.intervalHint}</p>
-        </>
-      )}
-    </div>
-  );
-}
-
-/* ═══════════ TOP BAR ═══════════ */
-function TopBar({ session, profile, isAdmin, view, setView, onLogout, dark, lang, dueCount }) {
-  const TH = getTheme(dark);
-  const t = TOP_T[lang] || TOP_T.en;
-  const displayName = profile?.username || session.user.email;
-  const items = [
-    ['module', t.module], ['knowledge', t.knowledge], ['review', t.review], ['profile', t.profile],
-    ...(isAdmin ? [['admin', t.dashboard]] : []),
-  ];
-  return (
-    <header className="mm-topbar" style={{ background: TH.bg, borderBottom: '1px solid ' + TH.border }}>
-      <style>{`
-        .mm-topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
-        .mm-topbar-inner { max-width: 960px; margin: 0 auto; padding: 8px 20px; display: flex; align-items: center; gap: 12px; min-height: var(--mm-topbar-h); box-sizing: border-box; }
-        .mm-brand { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
-        .mm-name { font-size: 14px; color: ${TH.textSecondary}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
-        .mm-nav { display: flex; align-items: center; gap: 4px; }
-        .mm-nav button, .mm-logout { font-family: inherit; font-size: 14px; font-weight: 600; min-height: 36px; padding: 0 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-        .mm-nav button { border: 1px solid transparent; background: transparent; color: ${TH.textSecondary}; }
-        .mm-nav button:hover { color: ${TH.text}; background: ${TH.accentBg}; }
-        .mm-nav button[aria-current="page"] { color: ${TH.accentText}; background: ${TH.accentBg}; border-color: ${dark ? 'rgba(245,166,35,0.35)' : 'rgba(232,148,10,0.35)'}; }
-        .mm-logout { border: 1px solid ${TH.border}; background: transparent; color: ${TH.textSecondary}; }
-        .mm-badge { background: ${TH.accent}; color: ${TH.onAccent}; border-radius: 999px; font-size: 12px; font-weight: 800; min-width: 20px; height: 20px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; }
-        @media (max-width: 640px) {
-          .mm-topbar-inner { flex-wrap: wrap; padding: 6px 12px 8px; gap: 6px; }
-          .mm-nav { order: 3; width: 100%; }
-          .mm-nav button { flex: 1; padding: 0 4px; font-size: 13px; }
-          .mm-name { max-width: 50vw; }
-        }
-      `}</style>
-      <div className="mm-topbar-inner">
-        <div className="mm-brand">
-          <span style={{ fontSize: 20, fontWeight: 800, color: TH.accent, fontFamily: "'Bricolage Grotesque',sans-serif", lineHeight: 1 }} aria-hidden="true">&#x2211;</span>
-          <span className="mm-name" title={displayName}>{displayName}</span>
-        </div>
-        <nav className="mm-nav" aria-label={lang === 'es' ? 'Secciones' : 'Sections'}>
-          {items.map(([id, label]) => (
-            <button key={id} onClick={() => setView(id)} aria-current={view === id ? 'page' : undefined}>
-              {label}
-              {id === 'review' && dueCount > 0 && (
-                <span className="mm-badge" aria-label={(lang === 'es' ? 'pendientes: ' : 'due: ') + dueCount}>{dueCount}</span>
-              )}
-            </button>
-          ))}
-        </nav>
-        <button onClick={onLogout} className="mm-logout">{t.logout}</button>
-      </div>
-    </header>
-  );
-}
-
-/* ═══════════ MAIN APP ═══════════ */
 export default function App() {
+  const { lang, dark } = usePrefs();
+  const t = COPY[lang] || COPY.en;
+
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isBlocked, setIsBlocked] = useState(false);
-  const [view, setView] = useState('module');
+  const [account, setAccount] = useState(null); // { username, level, role }
+  const [view, setView] = useState('study');
   const [pendingLoad, setPendingLoad] = useState(null);
-  const [profile, setProfile] = useState(null);
   const [confirmedEmail, setConfirmedEmail] = useState(false);
   const [needsNewPassword, setNeedsNewPassword] = useState(false);
   const [dueCount, setDueCount] = useState(0);
+  const loadedFor = useRef(null);
 
-  // ── Persistent preferences ──
-  const [lang, setLang] = useState(() => localStorage.getItem('mm_lang') || 'es');
-  const [dark, setDark] = useState(() => localStorage.getItem('mm_dark') === 'true');
+  const userId = session?.user?.id || null;
+  const isAdmin = account?.role === 'admin';
+  const isBlocked = account?.role === 'blocked';
 
-  const TH = getTheme(dark);
+  const loadDueCount = useCallback(async (uid) => {
+    if (!uid) return;
+    try {
+      const { count, error } = await supabase
+        .from('review_cards')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', uid)
+        .neq('status', 'suspended')
+        .lte('next_review_at', new Date().toISOString());
+      if (!error) setDueCount(count || 0);
+    } catch { /* table may not exist yet */ }
+  }, []);
 
-  // Sync body background with theme
-  useEffect(() => {
-    document.body.style.background = TH.bg;
-    document.body.style.transition = 'background 0.3s';
-  }, [dark]);
+  /* Username typed at sign-up is saved once the account exists, then the profile is read. */
+  const loadAccount = useCallback(async (uid) => {
+    try {
+      const pending = localStorage.getItem('mm_pending_username');
+      if (pending) {
+        const { error } = await supabase.from('profiles').update({ username: pending }).eq('id', uid);
+        if (!error) localStorage.removeItem('mm_pending_username');
+      }
+    } catch { /* ignore */ }
+    try {
+      const { data } = await supabase.from('profiles').select('username, level, role').eq('id', uid).maybeSingle();
+      setAccount(data || {});
+    } catch (e) {
+      console.error('Could not load profile:', e);
+      setAccount({});
+    }
+  }, []);
 
+  /* ── Session ── */
   useEffect(() => {
     const hash = window.location.hash;
     if (hash) {
-      const params = new URLSearchParams(hash.replace(/^#/, ''));
-      const type = params.get('type');
+      const type = new URLSearchParams(hash.replace(/^#/, '')).get('type');
       if (type === 'signup' || type === 'email') setConfirmedEmail(true);
-      // recovery type is handled by PASSWORD_RECOVERY event below
+      // "recovery" is handled by the PASSWORD_RECOVERY event below
       window.history.replaceState(null, '', window.location.pathname);
     }
 
-    // If Supabase is unreachable (e.g. the project is paused), getSession can
-    // hang or reject; without this the app stays on the loading screen forever.
-    const sessionTimeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Supabase getSession timeout')), 8000));
-    Promise.race([supabase.auth.getSession(), sessionTimeout])
-      .then(({ data: { session } }) => {
-        setSession(session);
-        if (session) {
-          applyPendingUsername(session.user.id);
-          checkRole(session.user.id);
-          loadProfile(session.user.id);
-          loadDueCount(session.user.id);
-        }
-      })
-      .catch((err) => {
-        console.error('Could not restore session:', err);
-        setSession(null);
-      })
+    // If Supabase is unreachable (e.g. the project is paused) getSession can hang;
+    // without the timeout the app would stay on the loading screen forever.
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase getSession timeout')), 8000));
+    Promise.race([supabase.auth.getSession(), timeout])
+      .then(({ data }) => setSession(data.session))
+      .catch((err) => { console.error('Could not restore session:', err); setSession(null); })
       .finally(() => setLoading(false));
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (_event === 'PASSWORD_RECOVERY') {
-        setNeedsNewPassword(true);
-        return;
-      }
-      if (_event === 'USER_UPDATED' && session) {
-        // Sync the new confirmed email into profiles table
-        await supabase.from('profiles').update({ email: session.user.email }).eq('id', session.user.id);
-      }
-      setSession(session);
-      if (_event === 'SIGNED_IN') {
-        // Pick up the language/theme chosen on the landing page before logging in.
-        setLang(localStorage.getItem('mm_lang') || 'es');
-        setDark(localStorage.getItem('mm_dark') === 'true');
-      }
-      if (session) {
-        applyPendingUsername(session.user.id);
-        checkRole(session.user.id);
-        loadProfile(session.user.id);
-        loadDueCount(session.user.id);
-      } else {
-        setIsAdmin(false); setIsBlocked(false); setView('module'); setProfile(null); setDueCount(0);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, next) => {
+      if (event === 'PASSWORD_RECOVERY') { setNeedsNewPassword(true); return; }
+      setSession(next);
+      if (event === 'USER_UPDATED' && next) {
+        // Never await Supabase inside this callback (it can deadlock the client): defer it.
+        setTimeout(() => {
+          supabase.from('profiles').update({ email: next.user.email }).eq('id', next.user.id).then(() => {});
+        }, 0);
       }
     });
     return () => subscription.unsubscribe();
   }, []);
 
-  const applyPendingUsername = async (userId) => {
-    const pending = localStorage.getItem('mm_pending_username');
-    if (pending) {
-      await supabase.from('profiles').update({ username: pending }).eq('id', userId);
-      localStorage.removeItem('mm_pending_username');
+  /* ── Account data: once per signed-in user (not on every token refresh) ── */
+  useEffect(() => {
+    if (!userId) {
+      loadedFor.current = null;
+      setAccount(null); setDueCount(0); setView('study'); setPendingLoad(null);
+      return;
     }
-  };
+    if (loadedFor.current === userId) return;
+    loadedFor.current = userId;
+    loadAccount(userId);
+    loadDueCount(userId);
+  }, [userId, loadAccount, loadDueCount]);
 
-  const checkRole = async (userId) => {
-    const { data } = await supabase.from('profiles').select('role').eq('id', userId).single();
-    setIsAdmin(data?.role === 'admin');
-    setIsBlocked(data?.role === 'blocked');
-  };
-
-  const loadProfile = async (userId) => {
-    const { data } = await supabase.from('profiles').select('username, level').eq('id', userId).single();
-    setProfile(data || {});
-  };
-
-  const loadDueCount = async (userId) => {
-    try {
-      const { data } = await supabase
-        .from('review_cards')
-        .select('id')
-        .eq('user_id', userId)
-        .neq('status', 'suspended')
-        .lte('next_review_at', new Date().toISOString());
-      setDueCount(data?.length || 0);
-    } catch (_) { /* table may not exist yet — fail silently */ }
-  };
+  /* Cards become due while the tab is in the background: recount when the user comes back. */
+  useEffect(() => {
+    if (!userId) return;
+    const onVisible = () => { if (document.visibilityState === 'visible') loadDueCount(userId); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [userId, loadDueCount]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setSession(null); setIsAdmin(false); setIsBlocked(false); setView('module'); setProfile(null); setNeedsNewPassword(false);
+    try { await supabase.auth.signOut(); } catch (e) { console.error(e); }
+    setSession(null); setNeedsNewPassword(false);
   };
 
-  const handleProfileSave = (updates) => {
-    setProfile(prev => ({ ...prev, ...updates }));
-  };
+  const splash = <Splash text={t.loading} />;
+  if (loading) return splash;
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: TH.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TH.textMuted, fontSize: 13 }} role="status" aria-live="polite">
-      <span style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 28, fontWeight: 800, color: TH.accent, marginRight: 10 }} aria-hidden="true">&#x2211;</span>
-      {lang === 'es' ? 'Cargando…' : 'Loading…'}
-    </div>
-  );
-
-  // Password recovery flow — shown before the normal app
   if (needsNewPassword) return (
-    <ResetPasswordScreen onDone={() => {
-      setNeedsNewPassword(false);
-      supabase.auth.signOut();
-    }} />
+    <Suspense fallback={splash}>
+      <ResetPasswordScreen onDone={() => { setNeedsNewPassword(false); supabase.auth.signOut(); }} />
+    </Suspense>
   );
 
-  if (!session) return <LandingPage confirmedEmail={confirmedEmail} />;
+  if (!session) return <Suspense fallback={splash}><LandingPage confirmedEmail={confirmedEmail} /></Suspense>;
+
+  if (account === null) return splash;
 
   if (isBlocked) return (
-    <div style={{ minHeight: '100vh', background: TH.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div style={{ textAlign: 'center', maxWidth: 400 }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>&#x1F6AB;</div>
-        <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 22, fontWeight: 800, color: TH.text, marginBottom: 8 }}>{lang === 'es' ? 'Cuenta suspendida' : 'Account suspended'}</h2>
-        <p style={{ color: TH.textMuted, fontSize: 13, lineHeight: 1.6, marginBottom: 20 }}>{lang === 'es' ? 'Tu cuenta está suspendida por ahora. Escribile al administrador para saber más.' : 'Your account is suspended for now. Contact the administrator to find out more.'}</p>
-        <button onClick={handleLogout} style={{ padding: '10px 24px', borderRadius: 10, border: '1px solid ' + TH.border, background: TH.surface, color: TH.textSecondary, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{lang === 'es' ? 'Salir' : 'Log out'}</button>
+    <div className="center-screen app">
+      <div className="empty" style={{ maxWidth: 440 }}>
+        <div className="empty-mark" aria-hidden="true">!</div>
+        <h2>{t.suspended}</h2>
+        <p>{t.suspendedText}</p>
+        <button type="button" className="btn btn-ghost" style={{ marginTop: 20 }} onClick={handleLogout}>{t.logout}</button>
       </div>
     </div>
   );
 
+  const backToStudy = () => { loadDueCount(userId); setView('study'); };
+
   return (
-    <div style={{ minHeight: '100vh', background: TH.bg, transition: 'background 0.3s' }}>
-      <style>{`
-        :root { --mm-topbar-h: 56px; }
-        @media (max-width: 640px) { :root { --mm-topbar-h: 96px; } }
-        button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, [tabindex]:focus-visible {
-          outline: 3px solid ${TH.accent}; outline-offset: 2px;
-        }
-        ::placeholder { color: ${TH.textFaint}; opacity: 1; }
-        @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
-        }
-      `}</style>
-      <TopBar session={session} profile={profile} isAdmin={isAdmin} view={view} setView={setView} onLogout={handleLogout} dark={dark} lang={lang} dueCount={dueCount} />
-      <div style={{ paddingTop: 'var(--mm-topbar-h)' }}>
-        {view === 'admin' && isAdmin && <AdminDashboard dark={dark} lang={lang} />}
-        {view === 'profile' && <ProfileScreen session={session} profile={profile} onSave={handleProfileSave} lang={lang} setLang={setLang} dark={dark} setDark={setDark} />}
-        {view === 'knowledge' && <KnowledgeTree dark={dark} lang={lang} session={session} onLoad={(item) => { setPendingLoad(item); setView('module'); }} />}
-        {view === 'review' && <ReviewMode dark={dark} lang={lang} session={session} onDone={() => { loadDueCount(session.user.id); setView('module'); }} />}
-        <div style={{ display: (view !== 'admin' && view !== 'profile' && view !== 'knowledge' && view !== 'review') ? 'block' : 'none', maxWidth: 960, margin: '0 auto' }}>
-          <MasteryModule session={session} level={profile?.level || 'intermediate'} lang={lang} dark={dark} pendingLoad={pendingLoad} onLoadDone={() => setPendingLoad(null)} />
-        </div>
-      </div>
+    <div className="app">
+      <TopBar view={view} setView={setView} isAdmin={isAdmin} dueCount={dueCount}
+        name={account.username} email={session.user.email} onLogout={handleLogout} />
+      <main>
+        <Suspense fallback={<div className="page"><div className="skeleton" style={{ height: 220 }} /></div>}>
+          {view === 'admin' && isAdmin && <AdminDashboard />}
+          {view === 'profile' && (
+            <ProfileScreen session={session} profile={account} onSave={(u) => setAccount((p) => ({ ...p, ...u }))} />
+          )}
+          {view === 'map' && (
+            <KnowledgeMap session={session} dueCount={dueCount}
+              onOpen={(item) => { setPendingLoad(item); setView('study'); }}
+              onReview={() => setView('review')} onStudy={() => setView('study')} />
+          )}
+          {view === 'review' && (
+            <ReviewMode session={session} onDone={backToStudy} onProgress={() => loadDueCount(userId)} />
+          )}
+        </Suspense>
+        <Suspense fallback={<div className="page"><div className="skeleton" style={{ height: 220 }} /></div>}>
+          {/* The study screen stays mounted so a module being generated isn't lost when you look at another tab. */}
+          <div hidden={view !== 'study'}>
+            <MasteryModule session={session} level={account.level || 'intermediate'} lang={lang} dark={dark}
+              pendingLoad={pendingLoad} onLoadDone={() => setPendingLoad(null)} onCardAdded={() => loadDueCount(userId)} />
+          </div>
+        </Suspense>
+      </main>
     </div>
   );
 }
