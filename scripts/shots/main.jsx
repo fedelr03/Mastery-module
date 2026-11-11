@@ -4,7 +4,7 @@ import { REVIEW_QA } from './fixtures';
 const params = new URLSearchParams(location.search);
 localStorage.setItem('mm_lang', params.get('lang') || 'es');
 localStorage.setItem('mm_dark', params.get('theme') === 'dark' ? 'true' : 'false');
-localStorage.setItem('mm_interest', 'fútbol');
+localStorage.setItem('mm_interest', params.get('lang') === 'en' ? 'football' : 'fútbol');
 localStorage.setItem('mm_mode', 'fast');
 
 const realFetch = window.fetch.bind(window);
