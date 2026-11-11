@@ -123,7 +123,7 @@ const T = {
     heroShotAlt: 'Screenshot of Mastery Module: the Derivatives explanation, opening with a football analogy.',
     frameUrl: 'mastery-module.vercel.app',
     tourTitle: 'What it looks like inside',
-    tourLead: 'These are screenshots of the app with a test account. It is exactly what you will see. (The example account is in Spanish.)',
+    tourLead: 'These are screenshots of the app with a test account. It is exactly what you will see.',
     tour: [
       { key: 'home', title: 'Type a topic', desc: 'Whatever you need to study, in your own words. Add something you like if you want, and the examples come from there. Pick whether you have 2 minutes or half an hour.', alt: 'Home screen: the topic "Price elasticity of demand" typed in, with football as the interest and Fast mode selected.' },
       { key: 'explain', title: 'Read the explanation', desc: 'It opens with an analogy, then the definition and the formula, and ends with a worked example step by step. If something does not click, tap "I didn\'t get it" for a simpler version.', alt: 'Derivatives explanation: a striker analogy, the definition, the limit formula and a worked example.' },
@@ -478,7 +478,7 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
               <p className="lp-hero-note">{t.heroNote}</p>
             </div>
             <div className="lp-hero-shot">
-              <Shot name="hero" dark={dark} alt={t.heroShotAlt} url={t.frameUrl} eager />
+              <Shot name="hero" dark={dark} lang={lang} alt={t.heroShotAlt} url={t.frameUrl} eager />
             </div>
           </div>
         </section>
@@ -502,14 +502,14 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
                 ))}
               </ol>
               <div className="lp-tour-stage" id="tour-panel" role="tabpanel" aria-labelledby={'tour-tab-' + t.tour[tourStep].key}>
-                <Shot name={t.tour[tourStep].key} dark={dark} alt={t.tour[tourStep].alt} url={t.frameUrl} />
+                <Shot name={t.tour[tourStep].key} dark={dark} lang={lang} alt={t.tour[tourStep].alt} url={t.frameUrl} />
               </div>
               <ol className="lp-tour-m">
                 {t.tour.map((st, i) => (
                   <li key={st.key}>
                     <h3><span className="lp-tour-n" aria-hidden="true">{i + 1}</span>{st.title}</h3>
                     <p>{st.desc}</p>
-                    <Shot name={st.key} dark={dark} alt={st.alt} url={t.frameUrl} />
+                    <Shot name={st.key} dark={dark} lang={lang} alt={st.alt} url={t.frameUrl} />
                   </li>
                 ))}
               </ol>
@@ -635,14 +635,14 @@ export default function LandingPage({ confirmedEmail, initialForm }) {
 }
 
 /* ═══════════ SCREENSHOT ═══════════
-   Real screenshots of the app (scripts/shots/capture.py makes them), in the theme the visitor is using. */
+   Real screenshots of the app (scripts/shots/capture.py makes them), in the visitor's theme and language. */
 const SHOT_SIZE = { hero: [1200, 1230], home: [1400, 1478], explain: [1400, 1522], quiz: [1400, 1591], review: [1256, 1156], map: [1400, 935] };
-function Shot({ name, dark, alt, url, eager }) {
+function Shot({ name, dark, lang, alt, url, eager }) {
   const [w, h] = SHOT_SIZE[name] || [1400, 1000];
   return (
     <figure className="lp-frame" style={{ margin: 0 }}>
       <div className="lp-frame-bar" aria-hidden="true"><i /><i /><i /><span>{url}</span></div>
-      <img className={'lp-frame-img' + (w / h > 1.2 ? ' is-wide' : '')} src={`/screens/${name}-${dark ? 'dark' : 'light'}.webp`}
+      <img className={'lp-frame-img' + (w / h > 1.2 ? ' is-wide' : '')} src={`/screens/${name}-${dark ? 'dark' : 'light'}${lang === 'en' ? '-en' : ''}.webp`}
         width={w} height={h} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
     </figure>
   );
