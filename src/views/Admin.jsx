@@ -67,7 +67,8 @@ const kilo = (n) => ((Number(n) || 0) / 1000).toFixed(1) + 'K';
 const costOf = (l) => parseFloat(l.estimated_cost) || 0;
 const dayKey = (d) => { const x = new Date(d); return x.getFullYear() + '-' + (x.getMonth() + 1) + '-' + x.getDate(); };
 
-function summarize(logs) {
+function summarize(allLogs) {
+  const logs = allLogs.filter((l) => l.mode !== 'pending'); // requests still in progress
   const today = dayKey(Date.now());
   const stats = { requests: logs.length, cost: 0, input: 0, output: 0, todayReqs: 0, todayCost: 0 };
   const byUser = {};
@@ -115,6 +116,7 @@ export default function AdminDashboard() {
   const [ask, setAsk] = useState(null); // { action, ids, role?, days?, text }
   const [notice, setNotice] = useState('');
   const [purgeDays, setPurgeDays] = useState(7);
+  const [serverStats, setServerStats] = useState(null); // totals over every log row
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -125,6 +127,9 @@ export default function AdminDashboard() {
     if (l.error || p.error) { console.error(l.error || p.error); setError(t.loadFailed); }
     setLogs(l.data || []); setProfiles(p.data || []);
     try {
+      setServerStats(await adminApi({ action: 'stats', tzOffset: new Date().getTimezoneOffset() }));
+    } catch (e) { console.error('Usage stats unavailable, using the latest rows:', e); setServerStats(null); }
+    try {
       const { users: au } = await adminApi({ action: 'list' });
       setAuthUsers(au || []); setAuthError('');
     } catch (e) { console.error(e); setAuthUsers(null); setAuthError(e.message); }
@@ -133,7 +138,9 @@ export default function AdminDashboard() {
 
   useEffect(() => { load(); }, [load]);
 
-  const { stats, byUser, users, days, groups } = useMemo(() => summarize(logs), [logs]);
+  const local = useMemo(() => summarize(logs), [logs]);
+  const { groups } = local;
+  const { stats, byUser, users, days } = serverStats || local;
   const maxDay = Math.max(1, ...days.map((d) => d.n));
 
   /* One row per account: auth data (confirmation) joined with the profile (name, role). */
@@ -235,7 +242,7 @@ export default function AdminDashboard() {
             <div className="stat"><b>{stats.todayReqs}</b><span>{t.today} · {t.reqs}</span><small>{money(stats.todayCost)}</small></div>
             <div className="stat"><b>{kilo(stats.input + stats.output)}</b><span>{t.tokens}</span><small>{kilo(stats.input)} {t.tokIn} · {kilo(stats.output)} {t.tokOut}</small></div>
           </div>
-          {logs.length >= LOG_LIMIT && <p className="small muted" style={{ marginBottom: 14 }}>{t.window.replace('{n}', LOG_LIMIT)}</p>}
+          {!serverStats && logs.length >= LOG_LIMIT && <p className="small muted" style={{ marginBottom: 14 }}>{t.window.replace('{n}', LOG_LIMIT)}</p>}
 
           <section className="card ad-panel">
             <div className="ad-panel-head"><h2>{t.last14}</h2></div>

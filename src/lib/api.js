@@ -56,7 +56,7 @@ export function apiError(data) {
 
 /* ── User-facing error text, in both languages ── */
 const ERRORS = [
-  [/Límite diario|Daily budget/i, null], // already written for the user by the server
+  [/Límite diario|Daily budget|Hiciste muchos pedidos|in a short time/i, null], // already written for the user by the server
   [/timed out|AbortError|aborted/i, {
     es: 'La respuesta tardó demasiado. Probá de nuevo en un ratito.',
     en: 'That took too long. Please try again in a moment.' }],
