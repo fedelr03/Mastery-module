@@ -95,8 +95,53 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
   throw new Error(`Claude API unavailable after ${maxRetries + 1} attempts (last: ${lastError})`);
 }
 
+// ─── Limits (counted in usage_logs) ──────────────────────────────────────────
+const PENDING = 'pending';
+const LIMITS = {
+  dailyCost: 0.40,     // USD per user per UTC day
+  perMinute: 20,       // AI calls (one click fans out to ~3)
+  perHour: 200,
+  pendingTtlMs: 5 * 60 * 1000, // reservations older than this are stale (crashed instance) and don't count
+};
+
+/* Returns null if the user may proceed, or the 429 payload if not. */
+async function checkLimits(sb, userId, now = Date.now()) {
+  const dayStart = new Date(now); dayStart.setUTCHours(0, 0, 0, 0);
+  const since = new Date(Math.min(dayStart.getTime(), now - 3600 * 1000)).toISOString();
+  const { data: rows, error } = await sb
+    .from('usage_logs')
+    .select('created_at, estimated_cost, mode')
+    .eq('user_id', userId)
+    .gte('created_at', since)
+    .limit(5000);
+  if (error) throw error;
+  let spent = 0; let lastMinute = 0; let lastHour = 0;
+  (rows || []).forEach((r) => {
+    const t = new Date(r.created_at).getTime();
+    if (r.mode === PENDING && now - t > LIMITS.pendingTtlMs) return;
+    if (t >= dayStart.getTime()) spent += parseFloat(r.estimated_cost) || 0;
+    if (now - t < 60 * 1000) lastMinute += 1;
+    if (now - t < 3600 * 1000) lastHour += 1;
+  });
+  if (spent >= LIMITS.dailyCost) {
+    return {
+      code: 'DAILY_LIMIT_REACHED', spent: parseFloat(spent.toFixed(4)), limit: LIMITS.dailyCost,
+      errorEs: `Límite diario alcanzado ($${spent.toFixed(2)} de $${LIMITS.dailyCost.toFixed(2)}). Tu presupuesto se reinicia a medianoche (UTC).`,
+      errorEn: `Daily budget reached ($${spent.toFixed(2)} of $${LIMITS.dailyCost.toFixed(2)}). Your budget resets at midnight UTC.`,
+    };
+  }
+  if (lastMinute >= LIMITS.perMinute || lastHour >= LIMITS.perHour) {
+    return {
+      code: 'RATE_LIMITED',
+      errorEs: 'Hiciste muchos pedidos seguidos. Esperá un minuto y probá de nuevo.',
+      errorEn: 'Too many requests in a short time. Wait a minute and try again.',
+    };
+  }
+  return null;
+}
+
 // ─── Main handler ────────────────────────────────────────────────────────────
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   /* ── CORS ── */
   // The app calls this endpoint from its own domain, so other websites don't need access.
   // (Before, '*' let any site call it from a visitor's browser.)
@@ -136,6 +181,7 @@ module.exports = async function handler(req, res) {
   }
 
   /* ── Blocked users can't use the AI (before, the block only hid the UI) ── */
+  let isAdminUser = false;
   try {
     const sbRole = SB_SERVICE_KEY
       ? createClient(SB_URL, SB_SERVICE_KEY)
@@ -144,6 +190,7 @@ module.exports = async function handler(req, res) {
     if (roleRow?.role === 'blocked') {
       return res.status(403).json({ error: 'Account blocked.', code: 'ACCOUNT_BLOCKED' });
     }
+    isAdminUser = roleRow?.role === 'admin';
   } catch (roleErr) {
     console.error('Role check failed (non-blocking):', roleErr);
   }
@@ -195,43 +242,42 @@ module.exports = async function handler(req, res) {
     return res.status(200).json(cached);
   }
 
-  /* ── Daily budget check (non-admin users, $0.40/day, resets midnight UTC) ── */
-  if (user && SB_SERVICE_KEY) {
+  /* ── Limits, checked in the database so they hold across every server instance ──
+     In-memory counters (isOnCooldown) only see requests that hit the same instance;
+     Vercel runs many, so the real limits are counted in usage_logs. Each request
+     reserves its row *before* calling Claude (mode 'pending'), so requests still in
+     flight count too. Admins are exempt. */
+  const sbLog = SB_SERVICE_KEY ? createClient(SB_URL, SB_SERVICE_KEY) : null;
+  let reservationId = null;
+  if (user && sbLog && !isAdminUser) {
     try {
-      const sbBudget = createClient(SB_URL, SB_SERVICE_KEY);
-      const { data: profileData } = await sbBudget.from('profiles').select('role').eq('id', user.id).single();
-      const isAdminUser = profileData?.role === 'admin';
-
-      if (!isAdminUser) {
-        const DAILY_LIMIT = 0.40;
-        const todayStart = new Date();
-        todayStart.setUTCHours(0, 0, 0, 0);
-
-        const { data: todayLogs } = await sbBudget
-          .from('usage_logs')
-          .select('estimated_cost')
-          .eq('user_id', user.id)
-          .gte('created_at', todayStart.toISOString());
-
-        const todaySpend = (todayLogs || []).reduce((sum, log) => sum + (parseFloat(log.estimated_cost) || 0), 0);
-
-        if (todaySpend >= DAILY_LIMIT) {
-          const isEs = (meta.lang || '') === 'es';
-          return res.status(429).json({
-            error: isEs
-              ? `Límite diario alcanzado ($${todaySpend.toFixed(2)} de $${DAILY_LIMIT.toFixed(2)}). Tu presupuesto se reinicia a medianoche (UTC).`
-              : `Daily budget reached ($${todaySpend.toFixed(2)} of $${DAILY_LIMIT.toFixed(2)}). Your budget resets at midnight UTC.`,
-            code: 'DAILY_LIMIT_REACHED',
-            spent: parseFloat(todaySpend.toFixed(4)),
-            limit: DAILY_LIMIT,
-          });
-        }
+      const verdict = await checkLimits(sbLog, user.id);
+      if (verdict) {
+        const isEs = (meta.lang || '') === 'es';
+        return res.status(429).json({ ...verdict, error: isEs ? verdict.errorEs : verdict.errorEn, errorEs: undefined, errorEn: undefined });
       }
-    } catch (budgetErr) {
-      console.error('Daily budget check failed (non-blocking):', budgetErr);
-      // Don't block the request if the budget check itself fails
+    } catch (limitErr) {
+      console.error('Limit check failed (non-blocking):', limitErr);
     }
   }
+  if (user && sbLog) {
+    try {
+      const { data: row } = await sbLog.from('usage_logs').insert({
+        user_id: user.id, email: user.email, topic: meta.topic || '', module: meta.module || '',
+        mode: PENDING, lang: meta.lang || '', input_tokens: 0, output_tokens: 0, estimated_cost: 0,
+        request_group_id: meta.request_group_id || null,
+      }).select('id').single();
+      reservationId = row?.id || null;
+    } catch (resErr) {
+      console.error('Usage reservation failed (non-blocking):', resErr);
+    }
+  }
+  /* If the request ends without a usage row being filled in, drop the reservation. */
+  const releaseReservation = async () => {
+    if (!reservationId || !sbLog) return;
+    try { await sbLog.from('usage_logs').delete().eq('id', reservationId); } catch (_) { /* ignore */ }
+    reservationId = null;
+  };
 
   /* ── Call Claude API with retry ── */
   try {
@@ -260,6 +306,7 @@ module.exports = async function handler(req, res) {
     }
 
     if (claudeRes.status === 200 && data.stop_reason === 'refusal') {
+      await releaseReservation();
       return res.status(422).json({ error: { message: 'refusal' }, code: 'REFUSAL' });
     }
     data = cleanResponse(data);
@@ -274,8 +321,7 @@ module.exports = async function handler(req, res) {
       const cost = estimateCost(usedModel, data.usage);
 
       try {
-        const sb = createClient(SB_URL, SB_SERVICE_KEY);
-        await sb.from('usage_logs').insert({
+        const row = {
           user_id: user.id,
           email: user.email,
           topic: meta.topic || '',
@@ -286,15 +332,27 @@ module.exports = async function handler(req, res) {
           output_tokens: outputTokens,
           estimated_cost: cost,
           request_group_id: meta.request_group_id || null,
-        });
+        };
+        if (reservationId) {
+          await sbLog.from('usage_logs').update(row).eq('id', reservationId);
+          reservationId = null;
+        } else {
+          await sbLog.from('usage_logs').insert(row);
+        }
       } catch (logErr) {
         console.error('Usage log failed:', logErr);
       }
     }
 
+    await releaseReservation();
     return res.status(claudeRes.status).json(data);
   } catch (err) {
+    await releaseReservation();
     console.error('Claude API error:', err);
     return res.status(502).json({ error: 'Failed to reach Claude API. Please try again.' });
   }
-};
+}
+
+module.exports = handler;
+module.exports.checkLimits = checkLimits;
+module.exports.LIMITS = LIMITS;

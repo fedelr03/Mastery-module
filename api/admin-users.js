@@ -11,6 +11,7 @@
  *   delete   → delete the accounts (auth user + profile)
  *   purge    → delete unconfirmed accounts older than `days` days
  *   role     → set profiles.role to 'user' or 'blocked'
+ *   stats    → AI usage totals over every usage_logs row (not just the latest page)
  * Admin accounts and the caller's own account are never touched by these commands.
  */
 const { createClient } = require('@supabase/supabase-js');
@@ -31,6 +32,39 @@ async function listAllUsers(admin) {
   return all;
 }
 
+/* Totals over all usage rows. tzOffset = the browser's getTimezoneOffset(), so "today" and
+   the 14-day chart use the admin's local days. In-flight reservations (mode 'pending') are skipped. */
+async function usageStats(admin, tzOffset = 0, now = Date.now()) {
+  const local = (t) => new Date(new Date(t).getTime() - tzOffset * 60000).toISOString().slice(0, 10);
+  const today = local(now);
+  const stats = { requests: 0, cost: 0, input: 0, output: 0, todayReqs: 0, todayCost: 0 };
+  const byUser = {}; const byDay = {};
+  const PAGE = 1000;
+  for (let from = 0; from < 500000; from += PAGE) {
+    const { data, error } = await admin.from('usage_logs')
+      .select('created_at, email, estimated_cost, input_tokens, output_tokens, mode')
+      .order('created_at', { ascending: true }).range(from, from + PAGE - 1);
+    if (error) throw error;
+    (data || []).forEach((l) => {
+      if (l.mode === 'pending') return;
+      const c = parseFloat(l.estimated_cost) || 0;
+      stats.requests += 1; stats.cost += c; stats.input += l.input_tokens || 0; stats.output += l.output_tokens || 0;
+      const d = local(l.created_at);
+      byDay[d] = (byDay[d] || 0) + 1;
+      if (d === today) { stats.todayReqs += 1; stats.todayCost += c; }
+      const u = byUser[l.email] || (byUser[l.email] = { email: l.email, requests: 0, cost: 0 });
+      u.requests += 1; u.cost += c;
+    });
+    if (!data || data.length < PAGE) break;
+  }
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const key = local(now - i * 86400000);
+    days.push({ label: Number(key.slice(8, 10)) + '/' + Number(key.slice(5, 7)), n: byDay[key] || 0 });
+  }
+  return { stats, byUser, users: Object.values(byUser).sort((a, b) => b.cost - a.cost), days };
+}
+
 const shape = (u) => ({
   id: u.id,
   email: u.email,
@@ -40,7 +74,7 @@ const shape = (u) => ({
   last_sign_in_at: u.last_sign_in_at || null,
 });
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   const origin = req.headers.origin;
   if (origin) {
     let sameSite = false;
@@ -79,6 +113,10 @@ module.exports = async function handler(req, res) {
   const action = body.action;
 
   try {
+    if (action === 'stats') {
+      return res.status(200).json(await usageStats(admin, Number(body.tzOffset) || 0));
+    }
+
     if (action === 'list') {
       const users = await listAllUsers(admin);
       return res.status(200).json({ users: users.map(shape) });
@@ -144,4 +182,7 @@ module.exports = async function handler(req, res) {
     console.error('admin-users action failed:', action, e);
     return res.status(500).json({ error: e.message || 'Action failed.' });
   }
-};
+}
+
+module.exports = handler;
+module.exports.usageStats = usageStats;

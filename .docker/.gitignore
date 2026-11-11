@@ -1,4 +1,0 @@
-/.env
-/dynamodb/*
-!/dynamodb/items.json
-!/dynamodb/schema.json
