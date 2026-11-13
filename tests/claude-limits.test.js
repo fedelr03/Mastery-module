@@ -69,6 +69,12 @@ describe('/api/claude', () => {
     expect(r.status).toBe(502);
     expect(db.tables.usage_logs).toHaveLength(0);
   });
+  it('a token claiming to be someone else is judged as the real user', async () => {
+    // Payload says "adm" (admin, no limits) but Supabase says the token is u1's, who is blocked.
+    const forged = 'x.' + Buffer.from(JSON.stringify({ sub: 'adm' })).toString('base64url') + '.y';
+    db.tables.profiles[0].role = 'blocked';
+    expect((await call(api, { token: forged, body: { ...body, _meta: { ...body._meta, topic: 'forged' } } })).status).toBe(403);
+  });
   it('blocked users get 403', async () => {
     db.tables.profiles[0].role = 'blocked';
     expect((await call(api, { token: 'u1', body })).status).toBe(403);

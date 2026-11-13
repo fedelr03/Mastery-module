@@ -7,6 +7,43 @@ const { buildRequest, estimateCost, cleanResponse } = require('./_lib/models');
 const PUBLIC_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
   || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkeXd4b3hhbnVsbW5qdGNtdWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzODY3MDUsImV4cCI6MjA4OTk2MjcwNX0.A9L18tI9xEAy66n7kfMu6wSNjWvVNjaq1wcc7j-EVi4';
 
+// ─── Speed: reuse connections and skip repeated work ────────────────────────
+// One Supabase client per key for the life of the instance (before, each request
+// built up to four of them).
+const clients = new Map();
+function clientFor(url, key) {
+  const id = url + '|' + key;
+  if (!clients.has(id)) clients.set(id, createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } }));
+  return clients.get(id);
+}
+
+// A click sends up to 3 requests with the same login token. Once Supabase has
+// confirmed a token, remember it briefly instead of asking again for each one.
+const verifiedTokens = new Map(); // token → { user, until }
+const TOKEN_TTL_MS = 60 * 1000;
+
+/* Reads the token's payload WITHOUT trusting it. Only used to start database
+   lookups early; their results are thrown away unless Supabase confirms the token. */
+function peekToken(token) {
+  try {
+    const p = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'));
+    return { sub: typeof p.sub === 'string' ? p.sub : null, exp: Number(p.exp) || 0 };
+  } catch (_) { return { sub: null, exp: 0 }; }
+}
+
+async function verifyToken(sbAuth, token) {
+  const now = Date.now();
+  const hit = verifiedTokens.get(token);
+  if (hit && hit.until > now) return hit.user;
+  const { data, error } = await sbAuth.auth.getUser(token);
+  if (error || !data?.user) return null;
+  const expMs = peekToken(token).exp * 1000;
+  const until = Math.min(now + TOKEN_TTL_MS, expMs || now + TOKEN_TTL_MS);
+  if (verifiedTokens.size > 500) verifiedTokens.delete(verifiedTokens.keys().next().value);
+  verifiedTokens.set(token, { user: data.user, until });
+  return data.user;
+}
+
 // ─── In-memory response cache ────────────────────────────────────────────────
 // Key: "<topic>|<level>|<lang>|<module>"  →  { data, expiresAt }
 // Best-effort: resets on cold starts, but very effective under real load.
@@ -169,31 +206,44 @@ async function handler(req, res) {
 
   // Always verify the token. Before, if SUPABASE_SERVICE_ROLE_KEY was missing,
   // any non-empty token was accepted with no rate limit or budget.
+  //
+  // The session check, the role lookup and the usage limits used to run one after
+  // another (three round trips before Claude was even called). They now run at the
+  // same time. The role and limit lookups are started with the user id read from the
+  // token, and are only used once Supabase confirms that token belongs to that user.
+  const sbLog = SB_SERVICE_KEY ? clientFor(SB_URL, SB_SERVICE_KEY) : null;
+  const claimedId = peekToken(token).sub;
+  const lookRole = (uid) => {
+    const sbRole = sbLog
+      || createClient(SB_URL, PUBLIC_ANON_KEY, { global: { headers: { Authorization: 'Bearer ' + token } }, auth: { persistSession: false, autoRefreshToken: false } });
+    return Promise.resolve(sbRole.from('profiles').select('role').eq('id', uid).maybeSingle())
+      .then(({ data }) => ({ role: data?.role || null }), (err) => ({ err }));
+  };
+  const lookLimits = (uid) => (sbLog
+    ? checkLimits(sbLog, uid).then((verdict) => ({ verdict }), (err) => ({ err }))
+    : Promise.resolve({ verdict: null }));
+  let roleP = claimedId ? lookRole(claimedId) : null;
+  let limitsP = claimedId ? lookLimits(claimedId) : null;
+
   let user = null;
   try {
-    const sbAuth = createClient(SB_URL, SB_SERVICE_KEY || PUBLIC_ANON_KEY);
-    const { data, error } = await sbAuth.auth.getUser(token);
-    if (error || !data?.user) return res.status(401).json({ error: 'Invalid session. Please log in again.' });
-    user = data.user;
+    user = await verifyToken(clientFor(SB_URL, SB_SERVICE_KEY || PUBLIC_ANON_KEY), token);
+    if (!user) return res.status(401).json({ error: 'Invalid session. Please log in again.' });
   } catch (authErr) {
     console.error('Auth check failed:', authErr);
     return res.status(503).json({ error: 'Could not verify your session. Please try again in a moment.' });
   }
 
   /* ── Blocked users can't use the AI (before, the block only hid the UI) ── */
+  // Early lookups only count if they were made for the user Supabase just confirmed.
+  if (user.id !== claimedId) { roleP = lookRole(user.id); limitsP = lookLimits(user.id); }
   let isAdminUser = false;
-  try {
-    const sbRole = SB_SERVICE_KEY
-      ? createClient(SB_URL, SB_SERVICE_KEY)
-      : createClient(SB_URL, PUBLIC_ANON_KEY, { global: { headers: { Authorization: 'Bearer ' + token } } });
-    const { data: roleRow } = await sbRole.from('profiles').select('role').eq('id', user.id).maybeSingle();
-    if (roleRow?.role === 'blocked') {
-      return res.status(403).json({ error: 'Account blocked.', code: 'ACCOUNT_BLOCKED' });
-    }
-    isAdminUser = roleRow?.role === 'admin';
-  } catch (roleErr) {
-    console.error('Role check failed (non-blocking):', roleErr);
+  const roleRes = await roleP;
+  if (roleRes?.err) console.error('Role check failed (non-blocking):', roleRes.err);
+  if (roleRes?.role === 'blocked') {
+    return res.status(403).json({ error: 'Account blocked.', code: 'ACCOUNT_BLOCKED' });
   }
+  isAdminUser = roleRes?.role === 'admin';
 
   /* ── Per-user cooldown check ── */
   if (user && isOnCooldown(user.id)) {
@@ -221,8 +271,7 @@ async function handler(req, res) {
     console.log(`Cache hit: ${cacheKey}`);
     if (user && SB_SERVICE_KEY) {
       try {
-        const sb = createClient(SB_URL, SB_SERVICE_KEY);
-        await sb.from('usage_logs').insert({
+        await sbLog.from('usage_logs').insert({
             user_id: user.id,
             email: user.email,
             topic: meta.topic || '',
@@ -247,33 +296,31 @@ async function handler(req, res) {
      Vercel runs many, so the real limits are counted in usage_logs. Each request
      reserves its row *before* calling Claude (mode 'pending'), so requests still in
      flight count too. Admins are exempt. */
-  const sbLog = SB_SERVICE_KEY ? createClient(SB_URL, SB_SERVICE_KEY) : null;
   let reservationId = null;
   if (user && sbLog && !isAdminUser) {
-    try {
-      const verdict = await checkLimits(sbLog, user.id);
-      if (verdict) {
-        const isEs = (meta.lang || '') === 'es';
-        return res.status(429).json({ ...verdict, error: isEs ? verdict.errorEs : verdict.errorEn, errorEs: undefined, errorEn: undefined });
-      }
-    } catch (limitErr) {
-      console.error('Limit check failed (non-blocking):', limitErr);
+    const limitRes = await limitsP; // already running since the start of the request
+    if (limitRes.err) console.error('Limit check failed (non-blocking):', limitRes.err);
+    if (limitRes.verdict) {
+      const verdict = limitRes.verdict;
+      const isEs = (meta.lang || '') === 'es';
+      return res.status(429).json({ ...verdict, error: isEs ? verdict.errorEs : verdict.errorEn, errorEs: undefined, errorEn: undefined });
     }
   }
+  /* The reservation is written while Claude is already working, instead of making
+     Claude wait for it. It still lands within milliseconds, long before the answer. */
+  let reservationP = Promise.resolve();
   if (user && sbLog) {
-    try {
-      const { data: row } = await sbLog.from('usage_logs').insert({
-        user_id: user.id, email: user.email, topic: meta.topic || '', module: meta.module || '',
-        mode: PENDING, lang: meta.lang || '', input_tokens: 0, output_tokens: 0, estimated_cost: 0,
-        request_group_id: meta.request_group_id || null,
-      }).select('id').single();
-      reservationId = row?.id || null;
-    } catch (resErr) {
-      console.error('Usage reservation failed (non-blocking):', resErr);
-    }
+    reservationP = Promise.resolve(sbLog.from('usage_logs').insert({
+      user_id: user.id, email: user.email, topic: meta.topic || '', module: meta.module || '',
+      mode: PENDING, lang: meta.lang || '', input_tokens: 0, output_tokens: 0, estimated_cost: 0,
+      request_group_id: meta.request_group_id || null,
+    }).select('id').single())
+      .then(({ data: row }) => { reservationId = row?.id || null; })
+      .catch((resErr) => { console.error('Usage reservation failed (non-blocking):', resErr); });
   }
   /* If the request ends without a usage row being filled in, drop the reservation. */
   const releaseReservation = async () => {
+    await reservationP;
     if (!reservationId || !sbLog) return;
     try { await sbLog.from('usage_logs').delete().eq('id', reservationId); } catch (_) { /* ignore */ }
     reservationId = null;
@@ -296,6 +343,7 @@ async function handler(req, res) {
     let usedModel = model;
     let claudeRes = await send(body);
     let data = await claudeRes.json();
+    await reservationP;
 
     /* Plan B: if the new model or one of its new fields is rejected, retry once on the previous model. */
     if ((claudeRes.status === 400 || claudeRes.status === 404) && fallbackBody.model) {

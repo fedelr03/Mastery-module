@@ -643,7 +643,7 @@ function Shot({ name, dark, lang, alt, url, eager }) {
     <figure className="lp-frame" style={{ margin: 0 }}>
       <div className="lp-frame-bar" aria-hidden="true"><i /><i /><i /><span>{url}</span></div>
       <img className={'lp-frame-img' + (w / h > 1.2 ? ' is-wide' : '')} src={`/screens/${name}-${dark ? 'dark' : 'light'}${lang === 'en' ? '-en' : ''}.webp`}
-        width={w} height={h} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+        width={w} height={h} alt={alt} loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : undefined} decoding="async" />
     </figure>
   );
 }
