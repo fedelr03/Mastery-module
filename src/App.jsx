@@ -7,8 +7,29 @@ import { supabase } from './supabase';
 import { usePrefs } from './lib/prefs';
 import TopBar from './components/TopBar';
 
-const LandingPage = lazy(() => import('./LandingPage'));
-const MasteryModule = lazy(() => import('./module/MasteryModule'));
+const loadLanding = () => import('./LandingPage');
+const loadStudy = () => import('./module/MasteryModule');
+const LandingPage = lazy(loadLanding);
+const MasteryModule = lazy(loadStudy);
+
+/* Speed: start downloading the first screen right away, while the session is being
+   checked, instead of after. A saved login means the study screen; otherwise the landing
+   page and its main image. If the guess is wrong the other screen loads as before. */
+try {
+  const hasLogin = Object.keys(localStorage).some((k) => /^sb-.+-auth-token$/.test(k));
+  if (hasLogin) {
+    loadStudy().catch(() => {});
+    fetch('/api/claude', { method: 'OPTIONS' }).catch(() => {}); // wakes the AI server so the first answer doesn't wait for it
+  } else {
+    loadLanding().catch(() => {});
+    const dark = document.documentElement.dataset.theme === 'dark';
+    const en = document.documentElement.lang === 'en';
+    const link = document.createElement('link');
+    link.rel = 'preload'; link.as = 'image'; link.fetchPriority = 'high';
+    link.href = `/screens/hero-${dark ? 'dark' : 'light'}${en ? '-en' : ''}.webp`;
+    document.head.appendChild(link);
+  }
+} catch { /* storage blocked: screens load on demand */ }
 const ReviewMode = lazy(() => import('./views/Review'));
 const KnowledgeMap = lazy(() => import('./views/KnowledgeMap'));
 const ProfileScreen = lazy(() => import('./views/Profile'));
